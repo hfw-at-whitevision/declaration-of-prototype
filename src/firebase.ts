@@ -55,9 +55,9 @@ export const getNotifications = async () => {
     });
     return notifications;
 }
-export const createNotification = async (message) => {
+export const createNotification = async (notification) => {
     const docRef = await addDoc(collection(db, "notifications"), {
-        message,
+        ...notification,
         timestamp: new Date(),
     });
     console.log("Notification written with ID: ", docRef.id);

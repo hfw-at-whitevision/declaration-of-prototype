@@ -15,6 +15,19 @@ export default function NotificationsScreen() {
         });
     }, []);
 
+    const notificationIcon = (type) => {
+        switch (type) {
+            case 'warning':
+                return <BsExclamationDiamond className="w-full h-full text-red-500"/>;
+                break;
+            case 'success':
+                return <BsCheckLg className="w-full h-full text-green-500"/>;
+                break;
+            default:
+                return null;
+        }
+    }
+
     if (!showNotificationsScreen) return null;
     return <div className="absolute inset-0 bg-gray-100 z-10 p-8 pt-32">
         <section className="w-full flex flex-col space-y-1">
@@ -27,10 +40,7 @@ export default function NotificationsScreen() {
                     .map((notification) => (
                         <div className="p-8 bg-white flex flex-row gap-8">
                             <span className="w-12 h-12">
-                                {notification.type === 'warning'
-                                    ? <BsExclamationDiamond className="w-full h-full text-red-500"/>
-                                    : <BsCheckLg className="w-full h-full text-green-500"/>
-                                }
+                                {notificationIcon(notification.type)}
                             </span>
 
                             <span className="flex-1">

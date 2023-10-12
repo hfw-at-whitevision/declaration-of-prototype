@@ -56,7 +56,9 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
             });
         }
 
-        await createNotification(`Declaratie <b>${declaration.name}</b> is succesvol ingediend.`);
+        await createNotification({
+            message: `Declaratie <b>${declaration.name}</b> is succesvol ingediend.`,
+        });
         setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
         setShowConfirmationOverlay(true);
         router.push('/');
@@ -116,10 +118,6 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
 
                 <div className="bg-white p-8">
                     Foto
-                </div>
-
-                <div className="bg-white p-8">
-                    Naam
                 </div>
 
                 <div className="bg-white p-8">
