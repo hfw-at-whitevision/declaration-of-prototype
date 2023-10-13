@@ -8,13 +8,14 @@
     "start": "next start",
     "export": "next export",
     "lint": "next lint",
-    "static": "next build && next export",
+    "static": "next build && next export && npx cap sync",
     "test": "jest"
   },
   "dependencies": {
     "@capacitor/android": "^5.5.0",
     "@capacitor/app": "^5.0.6",
     "@capacitor/core": "^5.5.0",
+    "@capacitor/haptics": "^5.0.6",
     "@capacitor/ios": "^5.5.0",
     "@capacitor/toast": "^5.0.6",
     "capacitor-document-scanner": "^2.0.0",

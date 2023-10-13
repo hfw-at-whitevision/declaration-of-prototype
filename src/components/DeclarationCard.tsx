@@ -18,7 +18,11 @@ export default function DeclarationCard({
 
             <button
                 key={declaration.id}
-                className="w-full grid grid-cols-2 p-4 gap-2 bg-white hover:bg-gray-200 cursor-pointer justify-between"
+                className={`
+                    w-full grid grid-cols-2 p-4 gap-2 rounded-md bg-white cursor-pointer justify-between
+                    ring-black
+                    ${selected ? 'ring-2 shadow-md' : ''}
+                `}
             >
                 <span className="flex-1 font-bold text-left">
                     {declaration.name}

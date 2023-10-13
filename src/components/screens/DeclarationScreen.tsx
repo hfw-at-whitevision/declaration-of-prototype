@@ -81,6 +81,9 @@ export default function DeclarationScreen({ declaration: inputDeclaration }: any
                 attachments: scannedImages,
             }));
         }
+        return () => {
+            setScannedImages([]);
+        }
     }, []);
 
     return (
@@ -135,7 +138,7 @@ export default function DeclarationScreen({ declaration: inputDeclaration }: any
                         <img
                             key={image}
                             src={image}
-                            className="w-full h-auto object-contain"
+                            className="w-[200px] h-auto object-contain"
                         />
                     ))}
                 </div>
@@ -194,7 +197,7 @@ export default function DeclarationScreen({ declaration: inputDeclaration }: any
                 </Button>
             </div>
 
-            <pre className="hidden">
+            <pre className="">
                 {JSON.stringify(declaration, null, 2)}
             </pre>
         </Content>

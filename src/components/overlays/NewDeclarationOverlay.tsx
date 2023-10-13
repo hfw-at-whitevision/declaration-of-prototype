@@ -4,11 +4,14 @@ import { useAtom } from "jotai";
 import { scannedImagesAtom, showNewDeclarationOverlayAtom } from "@/store/atoms";
 import { DocumentScanner } from "capacitor-document-scanner";
 import { Capacitor } from "@capacitor/core";
+import { useEffect, useRef, useState } from "react";
 
 export default function NewDeclarationOverlay(props: any) {
     const router = useRouter();
     const [showNewDeclarationOverlay, setShowNewDeclarationOverlay] = useAtom(showNewDeclarationOverlayAtom);
     const [scannedImages, setScannedImages]: any = useAtom(scannedImagesAtom);
+    const fileInputRef: any = useRef(null);
+    const [selectedFiles, setSelectedFiles]: any = useState([]);
 
     const handleCameraClick = async (e: any) => {
         e.preventDefault();
@@ -30,10 +33,44 @@ export default function NewDeclarationOverlay(props: any) {
         router.push('/declaration');
     }
 
+    const handleFileImportClick = () => {
+        fileInputRef.current.click();
+    }
+
+    useEffect(() => {
+        if (!selectedFiles.length) return;
+
+        const base64Images: any = [];
+        for (const selectedFile of selectedFiles) {
+            const reader = new FileReader();
+            reader.readAsDataURL(selectedFile);
+            reader.onloadend = () => {
+                const base64Image = reader.result;
+                base64Images.push(base64Image);
+            }
+        }
+
+        console.log('base64Images', base64Images)
+
+        setScannedImages(base64Images);
+        router.push('/declaration');
+    }, [selectedFiles]);
+
     if (!showNewDeclarationOverlay) return null;
     return <>
         <div {...props} className="flex flex-row w-full gap-4">
-            <div className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center">
+            <div
+                className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center"
+                onClick={handleFileImportClick}
+            >
+                <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    hidden
+                    onChange={(e) => setSelectedFiles(e.target.files)}
+                    ref={fileInputRef}
+                />
                 <BsUpload className="w-8 h-8" />
                 Importeer
             </div>
