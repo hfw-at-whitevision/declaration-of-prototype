@@ -22,7 +22,7 @@ export default function Overlay() {
     }
 
     const stopPropagationProps = {
-        onClick: (e) => e.stopPropagation(),
+        onClick: (e: any) => e.stopPropagation(),
     };
 
     const autoCloseConfirmationOverlay = () => {

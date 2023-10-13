@@ -4,10 +4,10 @@ export default function DeclarationCard({
     onClick = () => {},
     selected,
     declaration,
-}) {
+}: any) {
     return (
         <div
-            className="flex flex-row items-center gap-4"
+            className="flex flex-row items-center gap-4 text-xs"
             onClick={onClick}
         >
             {selected
@@ -18,7 +18,7 @@ export default function DeclarationCard({
 
             <div
                 key={declaration.id}
-                className="w-full grid grid-cols-2 p-8 gap-2 bg-white justify-between"
+                className="w-full grid grid-cols-2 p-4 gap-2 bg-white hover:bg-gray-200 cursor-pointer justify-between"
             >
                 <span className="flex-1 font-bold">
                     {declaration.name}

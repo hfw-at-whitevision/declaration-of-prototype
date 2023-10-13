@@ -29,19 +29,19 @@ export const getDeclarations = async () => {
     });
     return declarations;
 }
-export const getDeclaration = async (id) => {
+export const getDeclaration = async (id: any) => {
     const docRef = doc(db, "declarations", id);
     const docSnap = await getDoc(docRef);
     return docSnap.data();
 }
-export const createDeclaration = async (declaration) => {
+export const createDeclaration = async (declaration: any) => {
     const docRef = await addDoc(collection(db, "declarations"), declaration);
     console.log("Document written with ID: ", docRef.id);
 }
-export const deleteDeclaration = async (id) => {
+export const deleteDeclaration = async (id: any) => {
     await deleteDoc(doc(db, "declarations", id));
 }
-export const updateDeclaration = async (id, declaration) => {
+export const updateDeclaration = async (id: any, declaration: any) => {
     await updateDoc(doc(db, "declarations", id), declaration);
 }
 
@@ -55,7 +55,7 @@ export const getNotifications = async () => {
     });
     return notifications;
 }
-export const createNotification = async (notification) => {
+export const createNotification = async (notification: any) => {
     const docRef = await addDoc(collection(db, "notifications"), {
         ...notification,
         timestamp: new Date(),

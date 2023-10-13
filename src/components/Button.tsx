@@ -1,3 +1,14 @@
+interface Props {
+    primary?: boolean;
+    secondary?: boolean;
+    tertiary?: boolean;
+    children: React.ReactNode;
+    padding?: 'small' | 'large';
+    fullWidth?: boolean;
+    className?: string;
+    onClick?: (e: any) => void;
+}
+
 export default function Button({
     primary = false,
     secondary = false,
@@ -7,7 +18,7 @@ export default function Button({
     fullWidth = false,
     className = '',
     ...props
-}) {
+}: Props) {
     return <>
             <button
                 className={`

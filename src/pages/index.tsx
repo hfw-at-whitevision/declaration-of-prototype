@@ -23,7 +23,7 @@ export default function Home() {
     const [, setShowOverlay] = useAtom(showOverlayAtom);
     const [notifications] = useAtom(notificationsAtom);
 
-    const handleSelectDeclaration = async (inputDeclaration) => {
+    const handleSelectDeclaration = async (inputDeclaration: any) => {
         const declaration = JSON.stringify(inputDeclaration);
 
         // remove
@@ -34,7 +34,7 @@ export default function Home() {
             setSelectedDeclarations([...selectedDeclarations, declaration]);
     }
 
-    const handleClickDeclaration = (id) => {
+    const handleClickDeclaration = (id: any) => {
         router.push('/declaration?id=' + id);
     }
 
@@ -57,10 +57,11 @@ export default function Home() {
 
             {
                 declarations
-                    .filter((declaration) => declaration?.status === tabs[currentTabIndex])
-                    .filter((declaration) => declaration?.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((declaration) => (
+                    .filter((declaration: any) => declaration?.status === tabs[currentTabIndex])
+                    .filter((declaration: any) => declaration?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((declaration: any) => (
                         <DeclarationCard
+                            key={JSON.stringify(declaration)}
                             declaration={declaration}
                             selected={selectedDeclarations.includes(JSON.stringify(declaration))}
                             onClick={() => handleClickDeclaration(declaration?.id)}
