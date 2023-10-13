@@ -19,6 +19,7 @@
     "@capacitor/toast": "^5.0.6",
     "capacitor-document-scanner": "^2.0.0",
     "firebase": "^10.4.0",
+    "framer-motion": "^10.16.4",
     "html-react-parser": "^4.2.2",
     "jotai": "^2.4.3",
     "next": "13.5.4",

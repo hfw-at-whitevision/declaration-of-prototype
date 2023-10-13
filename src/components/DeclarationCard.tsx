@@ -16,11 +16,11 @@ export default function DeclarationCard({
                 />
             }
 
-            <div
+            <button
                 key={declaration.id}
                 className="w-full grid grid-cols-2 p-4 gap-2 bg-white hover:bg-gray-200 cursor-pointer justify-between"
             >
-                <span className="flex-1 font-bold">
+                <span className="flex-1 font-bold text-left">
                     {declaration.name}
                 </span>
 
@@ -28,14 +28,14 @@ export default function DeclarationCard({
                     €{declaration.amount}
                 </span>
 
-                <span className="flex-1">
+                <span className="flex-1 text-left">
                     {declaration.status}
                 </span>
 
                 <span className="flex-1 text-right">
                     {declaration.date}
                 </span>
-            </div>
+            </button>
         </div>
     )
 }
