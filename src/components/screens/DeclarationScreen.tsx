@@ -1,22 +1,23 @@
-import router, { useRouter } from "next/router";
-import { BsArrowLeft } from "react-icons/bs";
+import router, {useRouter} from "next/router";
+import {BsArrowLeft} from "react-icons/bs";
 import Button from "../Button";
 import Content from "../Content";
-import { useEffect, useState } from "react";
-import { createDeclaration, createNotification, deleteDeclaration, updateDeclaration } from "@/firebase";
-import { confirmationOverlayTitleAtom, scannedImagesAtom, showConfirmationOverlayAtom } from "@/store/atoms";
-import { useAtom } from "jotai";
+import {useEffect, useState} from "react";
+import {createDeclaration, createNotification, deleteDeclaration, updateDeclaration} from "@/firebase";
+import {confirmationOverlayTitleAtom, scannedImagesAtom, showConfirmationOverlayAtom} from "@/store/atoms";
+import {useAtom} from "jotai";
 
-export default function DeclarationScreen({ declaration: inputDeclaration }: any) {
+export default function DeclarationScreen({declaration: inputDeclaration}: any) {
     const [declaration, setDeclaration] = useState(inputDeclaration);
     const [, setShowConfirmationOverlay] = useAtom(showConfirmationOverlayAtom);
     const [, setConfirmationOverlayTitle] = useAtom(confirmationOverlayTitleAtom);
     const [scannedImages, setScannedImages] = useAtom(scannedImagesAtom);
     const declarationId = useRouter()?.query?.id ?? null;
     const status = declaration?.status ?? 'concept';
+    const router = useRouter();
 
     const onInputChange = (e: any) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setDeclaration((oldDeclaration: any) => ({
             ...oldDeclaration,
             [name]: (name === 'amount') ? parseInt(value) : value,
@@ -75,16 +76,16 @@ export default function DeclarationScreen({ declaration: inputDeclaration }: any
     }
 
     useEffect(() => {
-        if (scannedImages?.length) {
-            setDeclaration((oldDeclaration: any) => ({
-                ...oldDeclaration,
-                attachments: scannedImages,
-            }));
-        }
+        if(!scannedImages?.length || !router.isReady) return;
+        setDeclaration((oldDeclaration: any) => ({
+            ...oldDeclaration,
+            attachments: scannedImages,
+        }));
+
         return () => {
             setScannedImages([]);
         }
-    }, []);
+    }, [router.pathname, router.asPath, scannedImages, router.isReady]);
 
     return (
         <Content>
@@ -92,7 +93,7 @@ export default function DeclarationScreen({ declaration: inputDeclaration }: any
 
                 <div className="w-full justify-between items-center flex">
                     <Button secondary padding='small' onClick={() => router.push('/')}>
-                        <BsArrowLeft className="w-8 h-8" />
+                        <BsArrowLeft className="w-8 h-8"/>
                         Terug
                     </Button>
 
@@ -197,7 +198,7 @@ export default function DeclarationScreen({ declaration: inputDeclaration }: any
                 </Button>
             </div>
 
-            <pre className="">
+            <pre className="break-all overflow-x-auto">
                 {JSON.stringify(declaration, null, 2)}
             </pre>
         </Content>

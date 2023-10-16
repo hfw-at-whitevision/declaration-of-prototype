@@ -16,7 +16,7 @@ export default function DeclarationCard({
                 />
             }
 
-            <button
+            <a
                 key={declaration.id}
                 className={`
                     w-full grid grid-cols-2 p-4 gap-2 rounded-md bg-white cursor-pointer justify-between
@@ -39,7 +39,7 @@ export default function DeclarationCard({
                 <span className="flex-1 text-right">
                     {declaration.date}
                 </span>
-            </button>
+            </a>
         </div>
     )
 }

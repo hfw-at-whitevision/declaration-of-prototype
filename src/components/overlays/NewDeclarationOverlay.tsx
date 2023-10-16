@@ -1,10 +1,10 @@
-import { useRouter } from "next/router";
-import { BsCamera, BsUpload } from "react-icons/bs";
-import { useAtom } from "jotai";
-import { scannedImagesAtom, showNewDeclarationOverlayAtom } from "@/store/atoms";
-import { DocumentScanner } from "capacitor-document-scanner";
-import { Capacitor } from "@capacitor/core";
-import { useEffect, useRef, useState } from "react";
+import {useRouter} from "next/router";
+import {BsCamera, BsUpload} from "react-icons/bs";
+import {useAtom} from "jotai";
+import {scannedImagesAtom, showNewDeclarationOverlayAtom} from "@/store/atoms";
+import {DocumentScanner} from "capacitor-document-scanner";
+import {Capacitor} from "@capacitor/core";
+import {useEffect, useRef, useState} from "react";
 
 export default function NewDeclarationOverlay(props: any) {
     const router = useRouter();
@@ -18,7 +18,7 @@ export default function NewDeclarationOverlay(props: any) {
         setShowNewDeclarationOverlay(false);
 
         if (Capacitor.isNativePlatform()) {
-            const { scannedImages }: any = await DocumentScanner.scanDocument({
+            const {scannedImages}: any = await DocumentScanner.scanDocument({
                 letUserAdjustCrop: false,
             });
 
@@ -37,24 +37,27 @@ export default function NewDeclarationOverlay(props: any) {
         fileInputRef.current.click();
     }
 
-    useEffect(() => {
+    const handleFileInputChange = async (e: any) => {
+        const selectedFiles = e.target.files;
+        setSelectedFiles(selectedFiles);
         if (!selectedFiles.length) return;
+
+        console.log('selectedFiles', selectedFiles)
 
         const base64Images: any = [];
         for (const selectedFile of selectedFiles) {
             const reader = new FileReader();
-            reader.readAsDataURL(selectedFile);
+            await reader.readAsDataURL(selectedFile);
             reader.onloadend = () => {
                 const base64Image = reader.result;
                 base64Images.push(base64Image);
             }
         }
 
-        console.log('base64Images', base64Images)
-
-        setScannedImages(base64Images);
+        await setScannedImages(base64Images);
+        setShowNewDeclarationOverlay(false);
         router.push('/declaration');
-    }, [selectedFiles]);
+    }
 
     if (!showNewDeclarationOverlay) return null;
     return <>
@@ -68,17 +71,17 @@ export default function NewDeclarationOverlay(props: any) {
                     accept="image/*"
                     multiple
                     hidden
-                    onChange={(e) => setSelectedFiles(e.target.files)}
+                    onChange={async (e) => await handleFileInputChange(e)}
                     ref={fileInputRef}
                 />
-                <BsUpload className="w-8 h-8" />
+                <BsUpload className="w-8 h-8"/>
                 Importeer
             </div>
             <div
                 className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center"
                 onClick={handleCameraClick}
             >
-                <BsCamera className="w-8 h-8" />
+                <BsCamera className="w-8 h-8"/>
                 Neem foto
             </div>
         </div>
