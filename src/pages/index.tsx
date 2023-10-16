@@ -118,10 +118,10 @@ export default function Home() {
                 declarations
                     .filter((declaration: any) => declaration?.status === tabs[currentTabIndex])
                     .filter((declaration: any) => declaration?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((declaration: any) => (
+                    .map((declaration: any, index: number) => (
 
                         <motion.button
-                            key={JSON.stringify(declaration)}
+                            key={`${JSON.stringify(declaration)}-${index}`}
                             onTapStart={async () => await handleTapStart(declaration)}
                             onTapCancel={handleTapCancel}
                             onTap={async () => await handleTapEnd(declaration)}
