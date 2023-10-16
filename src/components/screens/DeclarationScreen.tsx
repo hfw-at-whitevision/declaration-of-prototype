@@ -60,9 +60,9 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
             });
         }
 
-        await createNotification({
-            message: `Declaratie <b>${declaration.name}</b> is succesvol ingediend.`,
-        });
+        // await createNotification({
+        //     message: `Declaratie <b>${declaration.name}</b> is succesvol ingediend.`,
+        // });
         setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
         setShowConfirmationOverlay(true);
         setScannedImages([]);
@@ -198,7 +198,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                 </Button>
             </div>
 
-            <pre className="break-all overflow-x-auto">
+            <pre className="break-all overflow-x-auto hidden">
                 {JSON.stringify(declaration, null, 2)}
             </pre>
         </Content>

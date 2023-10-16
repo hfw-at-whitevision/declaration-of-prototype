@@ -54,7 +54,7 @@ export default function Overlay() {
             className="fixed inset-0 bg-black/50 flex flex-col justify-end items-end"
             onClick={closeOverlay}
         >
-            <div className="bg-white p-8 rounded-t-2xl flex flex-row justify-center items-center gap-4 w-full">
+            <div className="bg-white p-4 rounded-t-2xl flex flex-row justify-center items-center gap-4 w-full">
                 <NewDeclarationOverlay {...stopPropagationProps} />
                 <ConfirmationOverlay title={confirmationOverlayTitle}  {...stopPropagationProps} />
             </div>

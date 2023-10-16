@@ -29,8 +29,8 @@ export default function NewDeclarationOverlay(props: any) {
             }
 
             setScannedImages(base64Images);
+            router.push('/declaration');
         }
-        router.push('/declaration');
     }
 
     const handleFileImportClick = () => {
@@ -63,7 +63,7 @@ export default function NewDeclarationOverlay(props: any) {
     return <>
         <div {...props} className="flex flex-row w-full gap-4">
             <div
-                className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center"
+                className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center rounded-lg"
                 onClick={handleFileImportClick}
             >
                 <input
@@ -78,8 +78,8 @@ export default function NewDeclarationOverlay(props: any) {
                 Importeer
             </div>
             <div
-                className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center"
-                onClick={handleCameraClick}
+                className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center rounded-lg"
+                onClick={(Capacitor.isNativePlatform()) ? handleCameraClick : handleFileImportClick}
             >
                 <BsCamera className="w-8 h-8"/>
                 Neem foto

@@ -4,10 +4,11 @@ import { useEffect } from 'react'
 import { BsCheckLg, BsExclamationDiamond } from 'react-icons/bs'
 import { useAtom } from "jotai";
 import { notificationsAtom, showNotificationsScreenAtom } from "@/store/atoms";
+import { AiOutlineClose } from 'react-icons/ai';
 
 export default function NotificationsScreen() {
     const [notifications, setNotifications] = useAtom(notificationsAtom);
-    const [showNotificationsScreen] = useAtom(showNotificationsScreenAtom);
+    const [showNotificationsScreen, setShowNotificationsScreen] = useAtom(showNotificationsScreenAtom);
 
     useEffect(() => {
         getNotifications().then((res) => {
@@ -27,9 +28,13 @@ export default function NotificationsScreen() {
     }
 
     if (!showNotificationsScreen) return null;
-    return <div className="absolute inset-0 bg-gray-100 z-10 p-2 text-xs">
+    return <div className="absolute inset-0 bg-gray-100 z-20 p-2 text-xs">
 
-        <h1 className="text-lg font-extrabold h-16">Notificaties</h1>
+        <div className="flex flex-row justify-between w-full">
+            <h1 className="text-lg font-extrabold h-16">Notificaties</h1>
+
+            <AiOutlineClose className="w-12 h-12" onClick={() => setShowNotificationsScreen(false)} />
+        </div>
 
         <section className="w-full flex flex-col space-y-1">
 
