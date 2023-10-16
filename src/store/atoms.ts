@@ -13,3 +13,5 @@ export const trulyShowConfirmationOverlayAtom = atom(false);
 
 export const notificationsAtom = atom([]);
 export const showNotificationsScreenAtom = atom(false);
+
+export const scannedImagesAtom = atom([]);

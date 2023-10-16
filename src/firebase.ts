@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc } from "firebase/firestore";
+import { getDownloadURL, getStorage, ref, uploadString } from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -19,6 +20,9 @@ const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
 
+// storage
+const storage = getStorage(app, 'gs://declaration-of-prototype.appspot.com');
+
 // Declaration functions
 const declarationsCollection = collection(db, "declarations");
 export const getDeclarations = async () => {
@@ -29,20 +33,57 @@ export const getDeclarations = async () => {
     });
     return declarations;
 }
-export const getDeclaration = async (id) => {
+export const getDeclaration = async (id: any) => {
     const docRef = doc(db, "declarations", id);
     const docSnap = await getDoc(docRef);
-    return docSnap.data();
+
+    const attachments = [];
+    for (let i = 0; i < docSnap.data()?.attachments; i++) {
+        const fileRef = ref(storage, `${id}/${i}`);
+        const url = await getDownloadURL(fileRef);
+        attachments.push(url);
+    }
+
+    return {
+        ...docSnap.data(),
+        id: docSnap.id,
+        attachments,
+    };
 }
-export const createDeclaration = async (declaration) => {
-    const docRef = await addDoc(collection(db, "declarations"), declaration);
+export const createDeclaration = async (declaration: any) => {
+    const docRef = await addDoc(collection(db, "declarations"), {
+        ...declaration,
+        attachments: declaration.attachments.length,
+    });
     console.log("Document written with ID: ", docRef.id);
+
+    // upload attachments
+    const promises: any = [];
+    for (let i = 0; i < declaration?.attachments?.length; i++) {
+        const attachment = declaration.attachments[i];
+        console.log('attachment', attachment)
+        const fileRef = ref(storage, `${docRef.id}/${i}`);
+        const uploadTask = uploadString(fileRef, attachment, 'data_url');
+        promises.push(uploadTask);
+    }
+    await Promise.all(promises);
 }
-export const deleteDeclaration = async (id) => {
+export const deleteDeclaration = async (id: any) => {
     await deleteDoc(doc(db, "declarations", id));
 }
-export const updateDeclaration = async (id, declaration) => {
-    await updateDoc(doc(db, "declarations", id), declaration);
+export const updateDeclaration = async (id: any, declaration: any) => {
+    // upload attachments
+    const promises: any = [];
+    for (let i = 0; i < declaration?.attachments?.length; i++) {
+        const fileRef = ref(storage, `${id}/${i}`);
+        const uploadTask = uploadString(fileRef, declaration.attachments[i], 'data_url');
+        promises.push(uploadTask);
+    }
+    await Promise.all(promises);
+    await updateDoc(doc(db, "declarations", id), {
+        ...declaration,
+        attachments: declaration.attachments.length,
+    });
 }
 
 // Notification functions
@@ -55,9 +96,9 @@ export const getNotifications = async () => {
     });
     return notifications;
 }
-export const createNotification = async (message) => {
+export const createNotification = async (notification: any) => {
     const docRef = await addDoc(collection(db, "notifications"), {
-        message,
+        ...notification,
         timestamp: new Date(),
     });
     console.log("Notification written with ID: ", docRef.id);

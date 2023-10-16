@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">declaration-of-prototype</string>
+    <string name="title_activity_main">declaration-of-prototype</string>
+    <string name="package_name">com.declarationofprototype.app</string>
+    <string name="custom_url_scheme">com.declarationofprototype.app</string>
+</resources>

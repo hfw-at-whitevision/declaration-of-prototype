@@ -10,7 +10,7 @@ export default function DeclarationScreenPage() {
 
     useEffect(() => {
         if (!id) return;
-        getDeclaration(id).then((declaration) => {
+        getDeclaration(id).then((declaration: any) => {
             setDeclaration(declaration);
         });
     }, [id]);

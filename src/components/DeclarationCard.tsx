@@ -4,10 +4,10 @@ export default function DeclarationCard({
     onClick = () => {},
     selected,
     declaration,
-}) {
+}: any) {
     return (
         <div
-            className="flex flex-row items-center gap-4"
+            className="flex flex-row items-center gap-4 text-xs"
             onClick={onClick}
         >
             {selected
@@ -16,11 +16,15 @@ export default function DeclarationCard({
                 />
             }
 
-            <div
+            <button
                 key={declaration.id}
-                className="w-full grid grid-cols-2 p-8 gap-2 bg-white justify-between"
+                className={`
+                    w-full grid grid-cols-2 p-4 gap-2 rounded-md bg-white cursor-pointer justify-between
+                    ring-black
+                    ${selected ? 'ring-2 shadow-md' : ''}
+                `}
             >
-                <span className="flex-1 font-bold">
+                <span className="flex-1 font-bold text-left">
                     {declaration.name}
                 </span>
 
@@ -28,14 +32,14 @@ export default function DeclarationCard({
                     €{declaration.amount}
                 </span>
 
-                <span className="flex-1">
+                <span className="flex-1 text-left">
                     {declaration.status}
                 </span>
 
                 <span className="flex-1 text-right">
                     {declaration.date}
                 </span>
-            </div>
+            </button>
         </div>
     )
 }
