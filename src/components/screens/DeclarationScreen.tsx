@@ -22,7 +22,9 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
     const declarationId = useRouter()?.query?.id ?? null;
     const status = declaration?.status ?? 'concept';
     const router = useRouter();
-    const allowEdit = status === 'concept';
+    const allowEdit =
+        status !== 'goedgekeurd'
+        && status !== 'ingediend';
 
     const [name, setName] = useState(declaration?.name);
     const [description, setDescription] = useState(declaration?.description);
