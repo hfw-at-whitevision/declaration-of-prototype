@@ -28,15 +28,13 @@ export default function NotificationsScreen() {
     }
 
     if (!showNotificationsScreen) return null;
-    return <div className="absolute inset-0 bg-gray-100 z-20 p-2 text-xs">
+    return <div className="absolute inset-0 bg-gray-100 z-20 p-2 py-8 text-sm">
 
-        <div className="flex flex-row justify-between w-full">
-            <h1 className="text-lg font-extrabold h-16">Notificaties</h1>
-
-            <AiOutlineClose className="w-12 h-12" onClick={() => setShowNotificationsScreen(false)} />
+        <div className="flex flex-row justify-end w-full">
+            <AiOutlineClose className="w-8 h-8 p-1 opacity-50" strokeWidth={1} onClick={() => setShowNotificationsScreen(false)} />
         </div>
 
-        <section className="w-full flex flex-col space-y-1">
+        <section className="w-full flex flex-col space-y-1 mt-4">
 
             {
                 notifications

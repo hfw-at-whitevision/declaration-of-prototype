@@ -53,17 +53,19 @@ export const getDeclaration = async (id: any) => {
     };
 }
 export const createDeclaration = async (declaration: any) => {
+    console.log('creating new declaration', declaration);
+
     const docRef = await addDoc(collection(db, "declarations"), {
         ...declaration,
-        attachments: declaration.attachments.length,
+        attachments: declaration?.attachments?.length,
     });
-    console.log("Document written with ID: ", docRef.id);
+    const newId = docRef.id;
 
     // upload attachments
     const promises: any = [];
     for (let i = 0; i < declaration?.attachments?.length; i++) {
-        const attachment = declaration.attachments[i];
-        const fileRef = ref(storage, `${docRef.id}/${i}`);
+        const attachment = declaration?.attachments[i];
+        const fileRef = ref(storage, `${newId}/${i}`);
         const uploadTask = uploadString(fileRef, attachment, 'data_url');
         promises.push(uploadTask);
     }
@@ -77,13 +79,13 @@ export const updateDeclaration = async (id: any, declaration: any) => {
     // const promises: any = [];
     // for (let i = 0; i < declaration?.attachments?.length; i++) {
     //     const fileRef = ref(storage, `${id}/${i}`);
-    //     const uploadTask = uploadString(fileRef, declaration.attachments[i], 'data_url');
+    //     const uploadTask = uploadString(fileRef, declaration?.attachments[i], 'data_url');
     //     promises.push(uploadTask);
     // }
     // await Promise.all(promises);
     await updateDoc(doc(db, "declarations", id), {
         ...declaration,
-        attachments: declaration.attachments.length,
+        attachments: declaration?.attachments?.length,
     });
 }
 
@@ -95,7 +97,7 @@ export const getDeclarationAttachments = async (id: any, numberOfAttachments: nu
     for (let i = 0; i < numberOfAttachments; i++) {
         const fileRef = ref(storage, `${id}/${i}`);
         const url = await getDownloadURL(fileRef);
-        attachments.push(url);
+        attachments?.push(url);
     }
     return attachments;
 }

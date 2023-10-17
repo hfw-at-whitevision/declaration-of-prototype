@@ -36,10 +36,18 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
     const [attachments, setAttachments] = useState(declaration?.attachments);
 
     const serializeDeclaration = (props?: any) => ({
-        ...declarationId && {id: declarationId},
+        ...declarationId
+            ? {
+                // edit declaration
+                id: declarationId,
+                attachments: declaration?.attachments,
+            }
+            : {
+                // new declaration
+                attachments: declaration?.attachments,
+            },
         ...name && {name},
         ...description && {description},
-        ...attachments && {attachments},
         ...amount && {amount},
         ...currency && {currency},
         ...category && {category},
@@ -113,7 +121,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
             .then((attachments: any) => {
                 setScannedImages(attachments);
             });
-    }, [declarationId])
+    }, [declarationId]);
 
     return (
         <Content>
@@ -154,7 +162,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                             onConfirm: (value: string) => setName(value),
                         })}
                     >
-                        {name ?? 'Nieuwe uitgave'}
+                        {name ?? <span className="opacity-25">Nieuwe uitgave</span>}
                     </button>
 
                     <div className="flex flex-row justify-between items-center text-sm">

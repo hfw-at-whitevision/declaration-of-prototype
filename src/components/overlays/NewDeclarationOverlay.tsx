@@ -29,7 +29,7 @@ export default function NewDeclarationOverlay(props: any) {
             }
 
             setScannedImages(base64Images);
-            router.push('/declaration');
+            await router.push('/declaration');
         }
     }
 
@@ -56,7 +56,7 @@ export default function NewDeclarationOverlay(props: any) {
 
         await setScannedImages(base64Images);
         setShowNewDeclarationOverlay(false);
-        router.push('/declaration');
+        await router.push('/declaration');
     }
 
     if (!showNewDeclarationOverlay) return null;
