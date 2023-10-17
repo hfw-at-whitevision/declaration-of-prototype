@@ -57,8 +57,11 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
         else {
             const res = await createDeclaration(serializeDeclaration());
         }
-        setConfirmationOverlayTitle('Bon opgeslagen.');
-        setShowConfirmationOverlay(true);
+        // setConfirmationOverlayTitle('Bon opgeslagen.');
+        // setShowConfirmationOverlay(true);
+        await Toast.show({
+            text: 'Declaratie opgeslagen.',
+        });
         await router.push('/');
     }
 
@@ -130,6 +133,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                         padding='small'
                         className={`
                         ${status === 'ingediend' ? '!bg-green-600' : undefined}
+                        ${status === 'afgekeurd' ? '!bg-red-600' : undefined}
                         h-full !rounded-full
                     `}>
                         {status}
@@ -153,8 +157,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
 
                     <div className="flex flex-row justify-between items-center text-sm">
                         <span className="flex flex-row">
-                            {currency}
-                            {amount}
+                            {amount} {currency}
                         </span>
 
                         <span>
@@ -233,7 +236,8 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                         ...inputModal,
                         show: true,
                         title: 'Voer een valuta in:',
-                        type: 'text',
+                        type: 'select',
+                        options: ['EUR', 'USD', 'GBP'],
                         defaultValue: currency,
                         onConfirm: (value: string) => setCurrency(value),
                     })}
@@ -248,7 +252,8 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                         ...inputModal,
                         show: true,
                         title: 'Voer een BTW percentage in:',
-                        type: 'text',
+                        type: 'select',
+                        options: ['0%', '9%', '21%'],
                         defaultValue: vat,
                         onConfirm: (value: number) => setVat(value),
                     })}
@@ -263,7 +268,8 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                         ...inputModal,
                         show: true,
                         title: 'Voer een betaalmethode in:',
-                        type: 'text',
+                        type: 'select',
+                        options: ['cash', 'pin', 'creditcard'],
                         defaultValue: paymentMethod,
                         onConfirm: (value: string) => setPaymentMethod(value),
                     })}

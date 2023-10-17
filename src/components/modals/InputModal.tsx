@@ -6,11 +6,12 @@ interface InputModalProps {
     show: boolean;
     title: string;
     type?: string;
+    options?: Array<any>;
     defaultValue: string | number;
     onConfirm: (value: string) => void;
 }
 
-export default function InputModal({show, title, defaultValue, onConfirm, type = 'text'}: InputModalProps) {
+export default function InputModal({show, title, options, defaultValue, onConfirm, type = 'text',}: InputModalProps) {
     const [inputModal, setInputModal]: any = useAtom(inputModalAtom);
     const [inputModalValue, setInputModalValue] = useState<any>(null);
     const inputRef: any = useRef(null);
@@ -38,7 +39,7 @@ export default function InputModal({show, title, defaultValue, onConfirm, type =
     useEffect(() => {
         if (!show) return;
         inputRef.current?.focus();
-        inputRef.current?.select();
+        if (type !== 'select') inputRef.current?.select();
     }, [show]);
 
     useEffect(() => {
@@ -59,7 +60,7 @@ export default function InputModal({show, title, defaultValue, onConfirm, type =
                         {title}
                     </h2>
 
-                    {inputModal?.type === 'text'
+                    {type === 'text'
                         ? <textarea
                             className="w-full outline-none ring-2 rounded-md p-2 ring-amber-400 resize-none overflow-y-auto"
                             onChange={handleInputChange ?? null}
@@ -67,14 +68,31 @@ export default function InputModal({show, title, defaultValue, onConfirm, type =
                             autoFocus
                             defaultValue={defaultValue}
                         />
-                        : <input
-                            className="w-full outline-none ring-2 rounded-md p-2 ring-amber-400"
-                            onChange={handleInputChange ?? null}
-                            ref={inputRef}
-                            autoFocus
-                            defaultValue={defaultValue}
-                            type={type}
-                        />
+                        : type === 'select'
+                            ? <select
+                                className="w-full outline-none ring-2 rounded-md p-2 ring-amber-400"
+                                onChange={handleInputChange ?? null}
+                                ref={inputRef}
+                                autoFocus
+                                defaultValue={defaultValue}
+                            >
+                                {options?.map((option: any, index: number) => (
+                                    <option
+                                        key={`${option}-${index}`}
+                                        value={option}
+                                    >
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
+                            : <input
+                                className="w-full outline-none ring-2 rounded-md p-2 ring-amber-400"
+                                onChange={handleInputChange ?? null}
+                                ref={inputRef}
+                                autoFocus
+                                defaultValue={defaultValue}
+                                type={type}
+                            />
                     }
                 </div>
 

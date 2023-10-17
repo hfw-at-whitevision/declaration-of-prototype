@@ -12,7 +12,7 @@ import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
 const inter = Inter({ subsets: ["latin"] });
 
-defineCustomElements(window);
+process.browser ? defineCustomElements(window) : null;
 
 export default function DOPApp({ Component, pageProps }: AppProps) {
   const [inputModal, setInputModal] = useAtom(inputModalAtom);
@@ -47,6 +47,7 @@ export default function DOPApp({ Component, pageProps }: AppProps) {
         title={inputModal?.title}
         type={inputModal?.type}
         defaultValue={inputModal?.defaultValue ? inputModal?.defaultValue : ''}
+        options={inputModal?.options}
         onConfirm={inputModal?.onConfirm}
       />
     </div>

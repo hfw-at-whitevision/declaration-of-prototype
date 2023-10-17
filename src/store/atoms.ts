@@ -22,6 +22,7 @@ export const inputModalAtom = atom(
         title: '',
         value: '',
         defaultValue: '',
+        options: [],
         type: '',
         onConfirm: () => {},
     },
@@ -30,6 +31,8 @@ export const inputModalAtom = atom(
             show: props?.show,
             title: props?.title,
             value: props?.value,
+            type: props?.type,
+            options: props?.options,
             defaultValue: props?.defaultValue,
             onConfirm: props?.onConfirm,
         });
