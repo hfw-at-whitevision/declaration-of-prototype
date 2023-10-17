@@ -30,7 +30,7 @@ export default function Header() {
         <header className="flex sticky top-0 flex-col bg-amber-400 p-4 gap-2 z-10">
             <div className="flex flex-row justify-between items-center">
                 <h1 className="text-white font-extrabold text-xl">
-                    Bonnen
+                    Uitgaven
                 </h1>
 
                 <div className="flex flex-row gap-2 text-white">

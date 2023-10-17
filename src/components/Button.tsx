@@ -23,8 +23,9 @@ export default function Button({
             <button
                 className={`
                 inline-flex flex-row justify-center items-center font-bold gap-2
+                rounded-md
                 ${fullWidth ? 'w-full flex-1' : ''}
-                ${padding === 'large' ? 'p-8' : 'p-4'}
+                ${padding === 'large' ? 'p-8' : 'p-4 px-8'}
                 ${primary ? "bg-amber-400 text-white" : ""}
                 ${!primary && !tertiary ? "bg-gray-200 text-black" : ""}
                 ${tertiary ? "bg-transparent text-black" : ""}

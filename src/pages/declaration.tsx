@@ -2,6 +2,7 @@ import DeclarationScreen from "@/components/screens/DeclarationScreen";
 import { getDeclaration } from "@/firebase";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import Loading from "@/components/Loading";
 
 export default function DeclarationScreenPage() {
     const router = useRouter();
@@ -15,6 +16,6 @@ export default function DeclarationScreenPage() {
         });
     }, [id]);
 
-    if (id && !declaration) return <>Loading...</>
+    if (id && !declaration) return <Loading />
     return <DeclarationScreen declaration={declaration}/>
 }
