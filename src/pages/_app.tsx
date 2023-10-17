@@ -8,8 +8,11 @@ import NativeStatusBar from "@/components/NativeStatusBar";
 import InputModal from "@/components/modals/InputModal";
 import {useAtom} from "jotai";
 import {inputModalAtom} from "@/store/atoms";
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
 const inter = Inter({ subsets: ["latin"] });
+
+defineCustomElements(window);
 
 export default function DOPApp({ Component, pageProps }: AppProps) {
   const [inputModal, setInputModal] = useAtom(inputModalAtom);
@@ -43,7 +46,7 @@ export default function DOPApp({ Component, pageProps }: AppProps) {
         show={inputModal?.show}
         title={inputModal?.title}
         type={inputModal?.type}
-        defaultValue={inputModal?.defaultValue}
+        defaultValue={inputModal?.defaultValue ? inputModal?.defaultValue : ''}
         onConfirm={inputModal?.onConfirm}
       />
     </div>

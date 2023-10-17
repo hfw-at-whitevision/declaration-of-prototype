@@ -23,7 +23,9 @@ const db = getFirestore(app);
 // storage
 const storage = getStorage(app, 'gs://declaration-of-prototype.appspot.com');
 
-// Declaration functions
+// *********************************************************************************
+// declarations
+// *********************************************************************************
 const declarationsCollection = collection(db, "declarations");
 export const getDeclarations = async () => {
     const querySnapshot = await getDocs(declarationsCollection);
@@ -61,7 +63,6 @@ export const createDeclaration = async (declaration: any) => {
     const promises: any = [];
     for (let i = 0; i < declaration?.attachments?.length; i++) {
         const attachment = declaration.attachments[i];
-        console.log('attachment', attachment)
         const fileRef = ref(storage, `${docRef.id}/${i}`);
         const uploadTask = uploadString(fileRef, attachment, 'data_url');
         promises.push(uploadTask);
@@ -73,20 +74,39 @@ export const deleteDeclaration = async (id: any) => {
 }
 export const updateDeclaration = async (id: any, declaration: any) => {
     // upload attachments
-    const promises: any = [];
-    for (let i = 0; i < declaration?.attachments?.length; i++) {
-        const fileRef = ref(storage, `${id}/${i}`);
-        const uploadTask = uploadString(fileRef, declaration.attachments[i], 'data_url');
-        promises.push(uploadTask);
-    }
-    await Promise.all(promises);
+    // const promises: any = [];
+    // for (let i = 0; i < declaration?.attachments?.length; i++) {
+    //     const fileRef = ref(storage, `${id}/${i}`);
+    //     const uploadTask = uploadString(fileRef, declaration.attachments[i], 'data_url');
+    //     promises.push(uploadTask);
+    // }
+    // await Promise.all(promises);
     await updateDoc(doc(db, "declarations", id), {
         ...declaration,
         attachments: declaration.attachments.length,
     });
 }
 
-// Notification functions
+// *********************************************************************************
+// attachments
+// *********************************************************************************
+export const getDeclarationAttachments = async (id: any, numberOfAttachments: number) => {
+    const attachments: any = [];
+    for (let i = 0; i < numberOfAttachments; i++) {
+        const fileRef = ref(storage, `${id}/${i}`);
+        const url = await getDownloadURL(fileRef);
+        attachments.push(url);
+    }
+    return attachments;
+}
+
+// export const getDeclarationAttachments = async (id: any, numberOfAttachments: number) => {
+//     return await fetchDeclarationAttachments(id, numberOfAttachments);
+// }
+
+// *********************************************************************************
+// Notifications
+// *********************************************************************************
 const notificationsCollection = collection(db, "notifications");
 export const getNotifications = async () => {
     const querySnapshot = await getDocs(notificationsCollection);

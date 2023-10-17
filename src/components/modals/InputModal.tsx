@@ -6,7 +6,7 @@ interface InputModalProps {
     show: boolean;
     title: string;
     type?: string;
-    defaultValue: string;
+    defaultValue: string | number;
     onConfirm: (value: string) => void;
 }
 
@@ -19,6 +19,7 @@ export default function InputModal({show, title, defaultValue, onConfirm, type =
         setInputModal({
             show: false,
         });
+        inputRef.current.value = '';
     }
 
     const handleInputChange = (e: any) => {

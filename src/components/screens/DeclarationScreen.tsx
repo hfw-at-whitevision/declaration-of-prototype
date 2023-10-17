@@ -1,9 +1,9 @@
-import router, {useRouter} from "next/router";
+import {useRouter} from "next/router";
 import {BsArrowLeft} from "react-icons/bs";
 import Button from "../Button";
 import Content from "../Content";
 import {useEffect, useState} from "react";
-import {createDeclaration, createNotification, deleteDeclaration, updateDeclaration} from "@/firebase";
+import {createDeclaration, deleteDeclaration, getDeclarationAttachments, updateDeclaration} from "@/firebase";
 import {
     confirmationOverlayTitleAtom,
     inputModalAtom,
@@ -11,6 +11,7 @@ import {
     showConfirmationOverlayAtom
 } from "@/store/atoms";
 import {useAtom} from "jotai";
+import {Toast} from '@capacitor/toast';
 
 export default function DeclarationScreen({declaration: inputDeclaration}: any) {
     const [declaration, setDeclaration] = useState(inputDeclaration);
@@ -21,75 +22,72 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
     const declarationId = useRouter()?.query?.id ?? null;
     const status = declaration?.status ?? 'concept';
     const router = useRouter();
+    const allowEdit = status === 'concept';
 
     const [name, setName] = useState(declaration?.name);
-    const [description, setDescription] = useState('');
+    const [description, setDescription] = useState(declaration?.description);
     const [amount, setAmount] = useState(declaration?.amount);
     const [currency, setCurrency] = useState(declaration?.currency);
     const [category, setCategory] = useState(declaration?.category);
     const [vat, setVat] = useState(declaration?.vat);
     const [paymentMethod, setPaymentMethod] = useState(declaration?.paymentMethod);
+    const [attachments, setAttachments] = useState(declaration?.attachments);
 
-    const onInputChange = (e: any) => {
-        const {name, value} = e.target;
-        setDeclaration((oldDeclaration: any) => ({
-            ...oldDeclaration,
-            [name]: (name === 'amount') ? parseInt(value) : value,
-        }));
-    }
+    const serializeDeclaration = (props?: any) => ({
+        ...declarationId && {id: declarationId},
+        ...name && {name},
+        ...description && {description},
+        ...attachments && {attachments},
+        ...amount && {amount},
+        ...currency && {currency},
+        ...category && {category},
+        ...vat && {vat},
+        ...paymentMethod && {paymentMethod},
+        status: props?.status ?? status,
+    });
 
     const handleSave = async (e: any) => {
         e.preventDefault();
 
         // update
         if (declarationId) {
-            const res = await updateDeclaration(declarationId, declaration);
+            const res = await updateDeclaration(declarationId, serializeDeclaration());
         }
         // create
         else {
-            const res = await createDeclaration({
-                ...declaration,
-                status: status,
-            });
+            const res = await createDeclaration(serializeDeclaration());
         }
         setConfirmationOverlayTitle('Bon opgeslagen.');
         setShowConfirmationOverlay(true);
-        router.push('/');
+        await router.push('/');
     }
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
 
         if (declarationId) {
-            await updateDeclaration(declarationId, {
-                ...declaration,
-                name,
-                description,
-                amount,
-                attachments: scannedImages,
+            await updateDeclaration(declarationId, serializeDeclaration({
                 status: 'ingediend',
-            });
+            }));
         } else {
-            await createDeclaration({
-                ...declaration,
-                attachments: scannedImages,
+            await createDeclaration(serializeDeclaration({
                 status: 'ingediend',
-            });
+            }));
         }
 
-        // await createNotification({
-        //     message: `Declaratie <b>${declaration.name}</b> is succesvol ingediend.`,
-        // });
         setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
         setShowConfirmationOverlay(true);
         setScannedImages([]);
-        router.push('/');
+        await router.push('/');
     }
 
     const handleDelete = async (e: any) => {
         e.preventDefault();
         await deleteDeclaration(declarationId);
-        router.push('/');
+        await Toast.show({
+            text: 'Declaratie verwijderd.',
+        });
+        await router.push('/');
     }
 
     useEffect(() => {
@@ -103,6 +101,14 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
             setScannedImages([]);
         }
     }, [router.pathname, router.asPath, scannedImages, router.isReady]);
+
+    useEffect(() => {
+        if (!declarationId) return;
+        getDeclarationAttachments(declarationId, declaration?.attachments)
+            .then((attachments: any) => {
+                setScannedImages(attachments);
+            });
+    }, [declarationId])
 
     return (
         <Content>
@@ -131,8 +137,9 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                 </div>
 
                 <div className="bg-white p-4 space-y-2 rounded-md">
-                    <span
-                        className="text-xl font-extrabold focus:outline-2 outline-amber-400 break-all w-full h-auto overflow-hidden cursor-pointer"
+                    <button
+                        disabled={!allowEdit}
+                        className="text-xl font-extrabold focus:outline-2 outline-amber-400 break-all w-full h-auto overflow-hidden cursor-pointer text-left"
                         onClick={() => setInputModal({
                             show: true,
                             title: 'Voer een naam in:',
@@ -142,9 +149,9 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                         })}
                     >
                         {name ?? 'Nieuwe uitgave'}
-                    </span>
+                    </button>
 
-                    <div className="flex flex-row justify-between items-center">
+                    <div className="flex flex-row justify-between items-center text-sm">
                         <span className="flex flex-row">
                             {currency}
                             {amount}
@@ -174,8 +181,9 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                     ))}
                 </div>
 
-                <div
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative"
+                <button
+                    disabled={!allowEdit}
+                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
                     onClick={() => setInputModal({
                         ...inputModal,
                         show: true,
@@ -186,10 +194,11 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                     })}
                 >
                     <InputLabel label={'Omschrijving'} value={description}/>
-                </div>
+                </button>
 
-                <div
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative"
+                <button
+                    disabled={!allowEdit}
+                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
                     onClick={() => setInputModal({
                         ...inputModal,
                         show: true,
@@ -200,10 +209,11 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                     })}
                 >
                     <InputLabel label={'Categorie'} value={category}/>
-                </div>
+                </button>
 
-                <div
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative"
+                <button
+                    disabled={!allowEdit}
+                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
                     onClick={() => setInputModal({
                         ...inputModal,
                         show: true,
@@ -214,10 +224,11 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                     })}
                 >
                     <InputLabel label={'Bedrag'} value={amount}/>
-                </div>
+                </button>
 
-                <div
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative"
+                <button
+                    disabled={!allowEdit}
+                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
                     onClick={() => setInputModal({
                         ...inputModal,
                         show: true,
@@ -228,10 +239,11 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                     })}
                 >
                     <InputLabel label={'Valuta'} value={currency}/>
-                </div>
+                </button>
 
-                <div
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative"
+                <button
+                    disabled={!allowEdit}
+                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
                     onClick={() => setInputModal({
                         ...inputModal,
                         show: true,
@@ -242,10 +254,11 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                     })}
                 >
                     <InputLabel label={'BTW percentage'} value={vat}/>
-                </div>
+                </button>
 
-                <div
-                    className="bg-white py-6 text-sm rounded-md p-4 relative cursor-pointer"
+                <button
+                    disabled={!allowEdit}
+                    className="bg-white py-6 text-sm rounded-md p-4 relative cursor-pointer text-left"
                     onClick={() => setInputModal({
                         ...inputModal,
                         show: true,
@@ -256,36 +269,40 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                     })}
                 >
                     <InputLabel label={'Betaalmethode'} value={paymentMethod}/>
-                </div>
+                </button>
 
-                <div className="flex flex-row justify-between items-center gap-2">
-                    <Button
-                        secondary
-                        padding='small'
-                        fullWidth
-                        onClick={handleSave}
-                    >
-                        Opslaan
-                    </Button>
+                {allowEdit
+                    ? <>
+                        <div className="flex flex-row justify-between items-center gap-2">
+                            <Button
+                                secondary
+                                padding='small'
+                                fullWidth
+                                onClick={handleSave}
+                            >
+                                Opslaan
+                            </Button>
 
-                    <Button
-                        primary
-                        padding='small'
-                        fullWidth
-                        onClick={handleSubmit}
-                    >
-                        Indienen
-                    </Button>
-                </div>
+                            <Button
+                                primary
+                                padding='small'
+                                fullWidth
+                                onClick={handleSubmit}
+                            >
+                                Indienen
+                            </Button>
+                        </div>
 
-                <Button
-                    tertiary
-                    padding='small'
-                    fullWidth
-                    onClick={handleDelete}
-                >
-                    Verwijderen
-                </Button>
+                        <Button
+                            tertiary
+                            padding='small'
+                            fullWidth
+                            onClick={handleDelete}
+                        >
+                            Verwijderen
+                        </Button>
+                    </>
+                    : null}
             </div>
 
             <pre className="break-all overflow-x-auto hidden">
