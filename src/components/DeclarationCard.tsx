@@ -1,4 +1,5 @@
 import { BsFillCheckSquareFill } from "react-icons/bs";
+import {motion} from 'framer-motion';
 
 export default function DeclarationCard({
     onClick = () => {},
@@ -6,8 +7,10 @@ export default function DeclarationCard({
     declaration,
 }: any) {
     return (
-        <div
-            className="flex flex-row items-center gap-4 text-xs"
+        <motion.button
+            whileHover={{scale: 1.01}}
+            whileTap={{scale: 0.99}}
+            className="flex flex-row items-center gap-4 text-xs shadow-xl shadow-gray-500/5 w-full"
             onClick={onClick}
         >
             {selected
@@ -19,8 +22,8 @@ export default function DeclarationCard({
             <a
                 key={declaration.id}
                 className={`
-                    w-full grid grid-cols-2 p-4 gap-2 rounded-md bg-white cursor-pointer justify-between
-                    ring-black
+                    w-full grid grid-cols-2 p-4 gap-2 rounded-md bg-white focus:bg-black/5
+                    cursor-pointer justify-between ring-black
                     ${selected ? 'ring-2 shadow-md' : ''}
                 `}
             >
@@ -28,7 +31,7 @@ export default function DeclarationCard({
                     {declaration.name}
                 </span>
 
-                <span className="flex-1 text-right">
+                <span className="text-right">
                     €{declaration.amount}
                 </span>
 
@@ -36,10 +39,10 @@ export default function DeclarationCard({
                     {declaration.status}
                 </span>
 
-                <span className="flex-1 text-right">
+                <span className="text-right">
                     {declaration.date}
                 </span>
             </a>
-        </div>
+        </motion.button>
     )
 }

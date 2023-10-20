@@ -4,7 +4,9 @@ import {useAtom} from "jotai";
 import {scannedImagesAtom, showNewDeclarationOverlayAtom} from "@/store/atoms";
 import {DocumentScanner} from "capacitor-document-scanner";
 import {Capacitor} from "@capacitor/core";
-import {useEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
+import {motion} from 'framer-motion';
+import {Filesystem} from "@capacitor/filesystem";
 
 export default function NewDeclarationOverlay(props: any) {
     const router = useRouter();
@@ -46,11 +48,20 @@ export default function NewDeclarationOverlay(props: any) {
 
         const base64Images: any = [];
         for (const selectedFile of selectedFiles) {
-            const reader = new FileReader();
-            await reader.readAsDataURL(selectedFile);
-            reader.onloadend = () => {
-                const base64Image = reader.result;
-                base64Images.push(base64Image);
+            if (Capacitor.isNativePlatform()) {
+                console.log('selectedFile', selectedFile)
+                const content = await Filesystem.readFile({
+                    path: selectedFile.path,
+                });
+                base64Images.push(content);
+            }
+            else {
+                const reader = new FileReader();
+                await reader.readAsDataURL(selectedFile);
+                reader.onloadend = () => {
+                    const base64Image = reader.result;
+                    base64Images.push(base64Image);
+                }
             }
         }
 
@@ -60,30 +71,36 @@ export default function NewDeclarationOverlay(props: any) {
     }
 
     if (!showNewDeclarationOverlay) return null;
-    return <>
-        <div {...props} className="flex flex-row w-full gap-4">
-            <div
-                className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center rounded-lg"
-                onClick={handleFileImportClick}
-            >
-                <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    hidden
-                    onChange={async (e) => await handleFileInputChange(e)}
-                    ref={fileInputRef}
-                />
-                <BsUpload className="w-8 h-8"/>
-                Importeer
-            </div>
-            <div
-                className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center rounded-lg"
-                onClick={(Capacitor.isNativePlatform()) ? handleCameraClick : handleFileImportClick}
-            >
-                <BsCamera className="w-8 h-8"/>
-                Neem foto
-            </div>
-        </div>
-    </>
+    return <motion.div
+        layout
+        {...props}
+        className={`flex flex-row w-full gap-4`}
+    >
+        <motion.button
+            whileHover={{scale: 1.02}}
+            whileTap={{scale: 0.98}}
+            className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center rounded-lg text-sm gap-2"
+            onClick={handleFileImportClick}
+        >
+            <input
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={async (e) => await handleFileInputChange(e)}
+                ref={fileInputRef}
+            />
+            <BsUpload className="w-8 h-8"/>
+            Importeer
+        </motion.button>
+        <motion.button
+            whileHover={{scale: 1.02}}
+            whileTap={{scale: 0.98}}
+            className="flex flex-col flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer p-8 items-center justify-center rounded-lg gap-2 text-sm"
+            onClick={(Capacitor.isNativePlatform()) ? handleCameraClick : handleFileImportClick}
+        >
+            <BsCamera className="w-8 h-8"/>
+            Neem foto
+        </motion.button>
+    </motion.div>
 }

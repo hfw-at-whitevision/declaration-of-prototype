@@ -5,18 +5,14 @@ import Content from "../Content";
 import {useEffect, useState} from "react";
 import {createDeclaration, deleteDeclaration, getDeclarationAttachments, updateDeclaration} from "@/firebase";
 import {
-    confirmationOverlayTitleAtom,
     inputModalAtom,
     scannedImagesAtom,
-    showConfirmationOverlayAtom
 } from "@/store/atoms";
 import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
 
 export default function DeclarationScreen({declaration: inputDeclaration}: any) {
     const [declaration, setDeclaration] = useState(inputDeclaration);
-    const [, setShowConfirmationOverlay] = useAtom(showConfirmationOverlayAtom);
-    const [, setConfirmationOverlayTitle] = useAtom(confirmationOverlayTitleAtom);
     const [scannedImages, setScannedImages] = useAtom(scannedImagesAtom);
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
     const declarationId = useRouter()?.query?.id ?? null;
@@ -87,9 +83,11 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                 status: 'ingediend',
             }));
         }
-
-        setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
-        setShowConfirmationOverlay(true);
+        // setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
+        // setShowConfirmationOverlay(true);
+        await Toast.show({
+            text: 'Declaratie succesvol ingediend.'
+        });
         setScannedImages([]);
         await router.push('/');
     }
@@ -165,18 +163,27 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                         {name ?? <span className="opacity-25">Nieuwe uitgave</span>}
                     </button>
 
-                    <div className="flex flex-row justify-between items-center text-sm">
+                    <div className="flex flex-row justify-between items-center text-lg">
                         <span className="flex flex-row">
                             {amount} {currency}
                         </span>
 
                         <span>
-                            {declaration?.date}
+                        </span>
+                    </div>
+
+                    <div className="flex flex-row justify-between items-center text-xs opacity-50">
+                        <span>
+                            DECL-18992/565
+                        </span>
+
+                        <span>
+                            08-06-1992
                         </span>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-md p-4 grid gap-2 grid-cols-2 relative pt-5">
+                <div className="bg-white rounded-md p-4 grid gap-2 grid-cols-3 relative pt-5">
                     <span className={
                         declaration?.attachments?.length
                             ? 'absolute top-1 left-4 text-[10px] opacity-50'
@@ -189,7 +196,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                         <img
                             key={image}
                             src={image}
-                            className="w-full h-auto object-contain rounded-md border-2 border-amber-400"
+                            className="w-full h-[100px] p-2 object-contain rounded-md border-2 border-amber-400"
                         />
                     ))}
                 </div>
@@ -216,7 +223,8 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                         ...inputModal,
                         show: true,
                         title: 'Voer een categorie in:',
-                        type: 'text',
+                        type: 'select',
+                        options: ['voeding', 'kleding', 'transport', 'accomodatie', 'overig'],
                         defaultValue: category,
                         onConfirm: (value: number) => setCategory(value),
                     })}
@@ -295,6 +303,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                                 padding='small'
                                 fullWidth
                                 onClick={handleSave}
+                                className="shadow-lg"
                             >
                                 Opslaan
                             </Button>
@@ -304,6 +313,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                                 padding='small'
                                 fullWidth
                                 onClick={handleSubmit}
+                                className="shadow-lg"
                             >
                                 Indienen
                             </Button>

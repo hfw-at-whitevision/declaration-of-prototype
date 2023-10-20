@@ -139,7 +139,7 @@ export default function Home() {
             {selectedDeclarations?.length
                 ? <Button
                     primary
-                    className="fixed bottom-8 left-8 right-8 h-16 rounded-lg !bg-black shadow-lg"
+                    className="fixed bottom-8 left-8 right-8 h-16 rounded-lg !bg-black shadow-lg text-sm"
                 >
                     Geselecteerde {selectedDeclarations.length} bonnen samenvoegen
                 </Button>

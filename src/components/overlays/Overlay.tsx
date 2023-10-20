@@ -45,13 +45,19 @@ export default function Overlay() {
         autoCloseConfirmationOverlay();
     }, [trulyShowConfirmationOverlay]);
 
-    if (
-        !showNewDeclarationOverlay
-        && !trulyShowConfirmationOverlay
-    ) return null;
+    // if (
+    //     !showNewDeclarationOverlay
+    //     && !trulyShowConfirmationOverlay
+    // ) return null;
     return (
         <div
-            className="fixed inset-0 bg-black/50 flex flex-col justify-end items-end"
+            className={`
+                fixed inset-0 flex flex-col justify-end items-end z-50
+                ${!showNewDeclarationOverlay && !trulyShowConfirmationOverlay
+                    ? 'opacity-0 z-[-1] pointer-events-none bg-transparent'
+                    : 'opacity-100 z-[50] bg-black/50'
+                }
+            `}
             onClick={closeOverlay}
         >
             <div className="bg-white p-4 rounded-t-2xl flex flex-row justify-center items-center gap-4 w-full">

@@ -49,7 +49,7 @@ export default function InputModal({show, title, options, defaultValue, onConfir
     return (
         <div
             className={`
-                fixed inset-0 bg-black/50 flex flex-col justify-center items-center
+                fixed inset-0 bg-black/50 flex flex-col justify-center items-center z-50
                 ${!show && 'hidden'}
             `}
         >
