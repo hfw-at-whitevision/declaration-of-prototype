@@ -27,7 +27,7 @@ export default function Header() {
     return <>
         <NotificationsScreen />
 
-        <header className="flex sticky top-0 flex-col bg-amber-400 p-4 py-8 gap-4 z-10">
+        <header className="flex sticky top-0 flex-col bg-amber-400 p-4 py-8 pt-16 gap-4 z-10">
             <div className="flex flex-row justify-between items-center">
                 <h1 className="text-white font-extrabold text-xl">
                     Uitgaven

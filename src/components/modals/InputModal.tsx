@@ -1,6 +1,7 @@
 import {inputModalAtom} from "@/store/atoms"
 import {useAtom} from "jotai"
 import {useEffect, useRef, useState} from "react";
+import {motion} from "framer-motion";
 
 interface InputModalProps {
     show: boolean;
@@ -38,8 +39,8 @@ export default function InputModal({show, title, options, defaultValue, onConfir
 
     useEffect(() => {
         if (!show) return;
-        inputRef.current?.focus();
         if (type !== 'select') inputRef.current?.select();
+        inputRef.current?.focus();
     }, [show]);
 
     useEffect(() => {
@@ -98,18 +99,20 @@ export default function InputModal({show, title, options, defaultValue, onConfir
 
                 <div
                     className="flex flex-row gap justify-between w-full border-t border-black/10 divide-x divide-black/10">
-                    <button
+                    <motion.button
+                        whileTap={{backgroundColor: 'rgba(0,0,0,0.1)'}}
                         className="flex-1 p-4"
                         onClick={handleCancel}
                     >
                         Annuleren
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                        whileTap={{backgroundColor: 'rgba(0,0,0,0.1)'}}
                         className="flex-1 p-4"
                         onClick={handleSave}
                     >
                         Opslaan
-                    </button>
+                    </motion.button>
                 </div>
 
             </div>

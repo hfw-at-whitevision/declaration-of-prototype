@@ -19,16 +19,16 @@ export default function NotificationsScreen() {
     const notificationIcon = (type: string) => {
         switch (type) {
             case 'warning':
-                return <BsExclamationDiamond className="text-red-500 w-8 h-8" />;
+                return <BsExclamationDiamond className="text-red-500 w-10 h-10" />;
             case 'success':
-                return <BsCheckLg className="w-8 h-8 text-green-500" />;
+                return <BsCheckLg className="w-10 h-10 text-green-500" />;
             default:
                 return null;
         }
     }
 
     if (!showNotificationsScreen) return null;
-    return <div className="absolute inset-0 bg-gray-100 z-20 p-4 py-8 text-sm">
+    return <div className="absolute inset-0 bg-gray-100 z-20 p-4 py-8 pt-16 text-sm">
 
         <div className="flex flex-row justify-end w-full">
             <AiOutlineClose className="bg-black/10 cursor-pointer rounded-full w-8 h-8 p-1 opacity-50" strokeWidth={1} onClick={() => setShowNotificationsScreen(false)} />
@@ -42,7 +42,7 @@ export default function NotificationsScreen() {
                     .map((notification: any) => (
                         <div
                             key={JSON.stringify(notification)}
-                            className="p-4 bg-white flex flex-row gap-4 rounded-lg shadow-xl shadow-gray-500/10"
+                            className="p-4 bg-white flex flex-row gap-4 rounded-lg shadow-xl shadow-gray-500/5"
                         >
                             {notificationIcon(notification.type)}
 

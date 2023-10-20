@@ -123,7 +123,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
 
     return (
         <Content>
-            <div className="grid gap-2 text-xs">
+            <div className="mt-8 grid gap-2 text-xs">
 
                 <div className="w-full justify-between items-center flex">
                     <Button
