@@ -10,6 +10,7 @@ import {
 } from "@/store/atoms";
 import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
+import {LoadingSpinner} from "@/components/Loading";
 
 export default function DeclarationScreen({declaration: inputDeclaration}: any) {
     const [declaration, setDeclaration] = useState(inputDeclaration);
@@ -52,8 +53,10 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
         status: props?.status ?? status,
     });
 
+    const [isSaving, setIsSaving] = useState(false);
     const handleSave = async (e: any) => {
         e.preventDefault();
+        setIsSaving(true);
 
         // update
         if (declarationId) {
@@ -68,6 +71,8 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
         await Toast.show({
             text: 'Declaratie opgeslagen.',
         });
+
+        setIsSaving(false);
         await router.push('/');
     }
 
@@ -304,7 +309,11 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                                 fullWidth
                                 onClick={handleSave}
                                 className="shadow-lg"
+                                disabled={isSaving}
                             >
+                                {isSaving &&
+                                    <LoadingSpinner className="w-5 h-5"/>
+                                }
                                 Opslaan
                             </Button>
 

@@ -39,7 +39,7 @@ export default function DOPApp({Component, pageProps}: AppProps) {
             <section className="w-full flex flex-col relative bg-gray-100 border-black overflow-y-auto bg-no-repeat bg-bottom bg-[url('/bg-dots.png')] bg-[length:100%]">
                 <div
                     id="bg-inset"
-                    className="fixed left-0 right-0 bottom-0 h-[360px] bg-gradient-to-b from-black/0 to-black/25 pointer-events-none z-0"
+                    className="fixed left-0 right-0 bottom-0 h-[360px] bg-gradient-to-b from-zinc/0 to-zinc/25 pointer-events-none z-0"
                 />
                 <div id="content" className="z-[1]">
                     <Component {...pageProps} />

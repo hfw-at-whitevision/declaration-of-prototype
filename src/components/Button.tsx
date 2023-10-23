@@ -9,6 +9,7 @@ interface Props {
     fullWidth?: boolean;
     className?: string;
     onClick?: (e: any) => void;
+    disabled?: boolean;
 }
 
 export default function Button({
@@ -22,8 +23,8 @@ export default function Button({
    ...props
 }: Props) {
     return <motion.button
-        whileHover={{scale: 1.02}}
-        whileTap={{scale: 0.98, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}
+        whileHover={{scale: 1.01}}
+        whileTap={{scale: 0.99, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}
         className={`
             inline-flex flex-row justify-center items-center font-bold gap-2 rounded-md
             ${fullWidth ? 'w-full flex-1' : ''}

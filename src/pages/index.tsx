@@ -1,21 +1,23 @@
-import { useAtom } from 'jotai'
+import {useAtom} from 'jotai'
 import {
     currentTabIndexAtom,
     declarationsAtom, notificationsAtom,
     searchQueryAtom,
     showOverlayAtom,
 } from '@/store/atoms'
-import React, { useEffect, useState } from 'react';
-import { getDeclarations } from '@/firebase';
+import React, {useEffect, useState} from 'react';
+import {deleteDeclaration, getDeclarations} from '@/firebase';
 import DeclarationCard from '@/components/DeclarationCard';
 import SearchSortBar from '@/components/SearchSortBar';
-import Header, { tabs } from '@/components/Header';
+import Header, {tabs} from '@/components/Header';
 import Content from '@/components/Content';
-import { useRouter } from 'next/router';
+import {useRouter} from 'next/router';
 import Overlay from "@/components/overlays/Overlay";
-import { motion } from "framer-motion";
+import {motion} from "framer-motion";
 import Button from '@/components/Button';
-import { Haptics } from '@capacitor/haptics';
+import {Haptics} from '@capacitor/haptics';
+import {BsTrash} from "react-icons/bs";
+import {Toast} from "@capacitor/toast";
 
 let longPressStartTimestamp: any = null;
 let longPressTimer: any = null;
@@ -43,15 +45,13 @@ export default function Home() {
     const [, setShowOverlay] = useAtom(showOverlayAtom);
     const [notifications] = useAtom(notificationsAtom);
 
-    const handleSelectDeclaration = async (inputDeclaration: any) => {
-        const declaration = JSON.stringify(inputDeclaration);
-
+    const handleSelectDeclaration = async (declarationId: any) => {
         // remove
-        if (selectedDeclarations.includes(declaration))
-            setSelectedDeclarations(selectedDeclarations.filter((selectedDeclaration) => selectedDeclaration !== declaration));
+        if (selectedDeclarations.includes(declarationId))
+            setSelectedDeclarations(selectedDeclarations.filter((selectedDeclarationId) => selectedDeclarationId !== declarationId));
         // add
         else
-            setSelectedDeclarations([...selectedDeclarations, declaration]);
+            setSelectedDeclarations([...selectedDeclarations, declarationId]);
     }
 
     const handleClickDeclaration = (id: any) => {
@@ -66,7 +66,7 @@ export default function Home() {
             await Haptics.vibrate({
                 duration: 50,
             });
-            handleSelectDeclaration(declaration);
+            handleSelectDeclaration(declaration.id);
         }, 500);
     }
 
@@ -81,10 +81,11 @@ export default function Home() {
             if (selectedDeclarations?.length) {
                 // (de-)select declaration
                 if (selectedDeclarations.includes(JSON.stringify(declaration))) {
-                    handleSelectDeclaration(declaration);
+                    handleSelectDeclaration(declaration.id);
                 }
                 return;
-            };
+            }
+            ;
             // else open the declaration
             handleClickDeclaration(declaration?.id);
         }
@@ -93,6 +94,25 @@ export default function Home() {
     const handleTapCancel = () => {
         clearTimeout(longPressTimer);
         longPressStartTimestamp = null;
+    }
+
+    const handleDeleteSelectedDeclarations = async (e) => {
+        e.preventDefault();
+        const deletePromises = [];
+        for (const declarationId of selectedDeclarations) {
+            deletePromises.push(deleteDeclaration(declarationId));
+        }
+        const res = await Promise.all(deletePromises);
+        if (!res) await Toast.show({
+            text: 'Error.',
+        });
+        else {
+            await Toast.show({
+                text: 'Geselecteerde declaraties verwijderd.',
+            });
+            setDeclarations(oldDeclarations => oldDeclarations.filter((oldDeclaration: any) => !selectedDeclarations.includes(oldDeclaration.id)));
+            setSelectedDeclarations([]);
+        }
     }
 
     useEffect(() => {
@@ -109,11 +129,10 @@ export default function Home() {
     }, [router.query, router.asPath, router.pathname, router.query]);
 
     return <>
-        <Header />
+        <Header/>
 
         <Content>
-            <SearchSortBar />
-
+            <SearchSortBar/>
             {
                 declarations
                     .filter((declaration: any) => declaration?.status === tabs[currentTabIndex])
@@ -128,39 +147,47 @@ export default function Home() {
                         >
                             <DeclarationCard
                                 declaration={declaration}
-                                selected={selectedDeclarations.includes(JSON.stringify(declaration))}
-                            // onClick={() => handleClickDeclaration(declaration?.id)}
+                                selected={selectedDeclarations.includes(declaration.id)}
+                                // onClick={() => handleClickDeclaration(declaration?.id)}
                             />
                         </motion.button>
 
                     ))
             }
 
-            {selectedDeclarations?.length
-                ? <Button
-                    primary
-                    className="fixed bottom-8 left-8 right-8 h-16 rounded-lg !bg-black shadow-lg text-sm"
-                >
-                    Geselecteerde {selectedDeclarations.length} bonnen samenvoegen
-                </Button>
-                : null
+            {selectedDeclarations?.length > 0
+                && <div className="fixed bottom-4 left-4 right-4 flex flex-row items-center justify-center gap-2">
+                    <Button
+                        primary
+                        className="flex-1 h-16 rounded-lg !bg-black shadow-lg text-sm"
+                    >
+                        Geselecteerde {selectedDeclarations.length} bonnen samenvoegen
+                    </Button>
+                    <Button
+                        primary
+                        className="h-16 rounded-lg !bg-red-600 shadow-lg text-sm"
+                        onClick={handleDeleteSelectedDeclarations}
+                    >
+                        <BsTrash className="w-6 h-6 text-white"/>
+                    </Button>
+                </div>
             }
 
             <pre className="text-xs mt-8 overflow-x-auto hidden">
                 notifications: {JSON.stringify(notifications, null, 2)}
-                <br />
+                <br/>
                 currentTab: {tabs[currentTabIndex]}
-                <br />
+                <br/>
                 currentTabIndex: {JSON.stringify(currentTabIndex, null, 2)}
-                <br />
+                <br/>
                 tabs: {JSON.stringify(tabs, null, 2)}
-                <br />
+                <br/>
                 searchQuery: {searchQuery}
-                <br />
+                <br/>
                 declarations: {JSON.stringify(declarations, null, 2)}
             </pre>
         </Content>
 
-        <Overlay />
+        <Overlay/>
     </>
 }

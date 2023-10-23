@@ -4,6 +4,6 @@ export default function Loading() {
     </div>
 }
 
-export function LoadingSpinner() {
-        return <img src="/loadingspinner.svg" className="w-10 h-10 invert" />
+export function LoadingSpinner({className = ''}) {
+        return <img src="/loadingspinner.svg" className={`w-10 h-10 invert ${className}`} />
 }

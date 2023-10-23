@@ -10,7 +10,7 @@ export default function DeclarationCard({
         <motion.button
             whileHover={{scale: 1.01}}
             whileTap={{scale: 0.99}}
-            className="flex flex-row items-center gap-4 text-xs shadow-xl shadow-gray-500/5 w-full"
+            className="flex flex-row items-center gap-4 text-xs w-full"
             onClick={onClick}
         >
             {selected
@@ -23,7 +23,7 @@ export default function DeclarationCard({
                 key={declaration.id}
                 className={`
                     w-full grid grid-cols-2 p-4 gap-2 rounded-md bg-white focus:bg-black/5
-                    cursor-pointer justify-between ring-black
+                    cursor-pointer justify-between ring-black shadow-xl shadow-gray-500/5
                     ${selected ? 'ring-2 shadow-md' : ''}
                 `}
             >

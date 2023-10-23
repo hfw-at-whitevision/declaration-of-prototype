@@ -2,7 +2,7 @@ import {useRouter} from "next/router";
 import {BsCamera, BsUpload} from "react-icons/bs";
 import {useAtom} from "jotai";
 import {scannedImagesAtom, showNewDeclarationOverlayAtom} from "@/store/atoms";
-import {DocumentScanner} from "capacitor-document-scanner";
+import {DocumentScanner, ResponseType} from "capacitor-document-scanner";
 import {Capacitor} from "@capacitor/core";
 import {useRef, useState} from "react";
 import {motion} from 'framer-motion';
@@ -22,12 +22,18 @@ export default function NewDeclarationOverlay(props: any) {
         if (Capacitor.isNativePlatform()) {
             const {scannedImages}: any = await DocumentScanner.scanDocument({
                 letUserAdjustCrop: false,
+                responseType: ResponseType.Base64,
             });
+
+            console.log('scannedImages', scannedImages);
 
             const base64Images = [];
             for (const scannedImage of scannedImages) {
-                const base64Image = Capacitor.convertFileSrc(scannedImage);
-                base64Images.push(base64Image);
+                const isPng = scannedImage.includes('iVBORw0KGgoAAAANSUhEUgAA');
+                const isJpeg = scannedImage.includes('/9j/');
+
+                if (isJpeg) base64Images.push(`data:image/jpeg;base64,${scannedImage}`);
+                else if (isPng) base64Images.push(`data:image/png;base64,${scannedImage}`);
             }
 
             setScannedImages(base64Images);
@@ -52,6 +58,7 @@ export default function NewDeclarationOverlay(props: any) {
                 console.log('selectedFile', selectedFile)
                 const content = await Filesystem.readFile({
                     path: selectedFile.path,
+                    ecoding: 'base64',
                 });
                 base64Images.push(content);
             }
