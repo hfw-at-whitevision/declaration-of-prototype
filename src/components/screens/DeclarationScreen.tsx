@@ -134,7 +134,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                     <Button
                         secondary
                         padding='small'
-                        onClick={() => router.push('/')}
+                        onClick={() => router.push('/declarations')}
                         className="!rounded-full"
                     >
                         <BsArrowLeft className="w-4 h-4"/>
@@ -312,9 +312,13 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                                 disabled={isSaving}
                             >
                                 {isSaving &&
-                                    <LoadingSpinner className="w-5 h-5"/>
+                                    <span className="absolute inset-0 flex items-center justify-center">
+                                        <LoadingSpinner className="w-5 h-5"/>
+                                    </span>
                                 }
-                                Opslaan
+                                <span className={`!transition-none ${isSaving ? 'opacity-0' : ''}`}>
+                                    Opslaan
+                                </span>
                             </Button>
 
                             <Button

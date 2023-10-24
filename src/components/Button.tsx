@@ -10,23 +10,32 @@ interface Props {
     className?: string;
     onClick?: (e: any) => void;
     disabled?: boolean;
+    rounded?: string;
+    icon?: React.ReactNode;
 }
 
-export default function Button({
-   primary = false,
-   secondary = false,
-   tertiary = false,
-   children,
-   padding = 'large',
-   fullWidth = false,
-   className = '',
-   ...props
-}: Props) {
+export default function Button(
+    {
+        primary = false,
+        secondary = false,
+        tertiary = false,
+        children,
+        padding = 'large',
+        fullWidth = false,
+        rounded = 'medium',
+        className = '',
+        icon = null,
+        ...props
+    }: Props
+) {
     return <motion.button
         whileHover={{scale: 1.01}}
         whileTap={{scale: 0.99, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}
         className={`
-            inline-flex flex-row justify-center items-center font-bold gap-2 rounded-md
+            inline-flex flex-row justify-center items-center font-bold gap-2
+            ${rounded === 'medium' ? 'rounded-md' : ''}
+            ${rounded === 'large' ? 'rounded-lg' : ''}
+            ${rounded === 'full' ? 'rounded-full' : ''}
             ${fullWidth ? 'w-full flex-1' : ''}
             ${padding === 'large' ? 'p-8' : 'p-4 px-8'}
             ${primary ? "bg-amber-400 text-white" : ""}
@@ -36,6 +45,14 @@ export default function Button({
         `}
         {...props}
     >
-        {children}
+        {icon &&
+            <span className="mr-auto">
+                {icon}
+            </span>
+        }
+
+        <span className="flex-1 flex flex-row items-center justify-center text-center gap-2">
+            {children}
+        </span>
     </motion.button>
 }

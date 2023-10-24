@@ -1,6 +1,6 @@
 import { notificationsAtom, showNewDeclarationOverlayAtom, showNotificationsScreenAtom } from "@/store/atoms";
 import { BsPlusLg, BsBell } from "react-icons/bs";
-import NotificationsScreen from "./screens/NotificationsScreen";
+import NotificationsScreen from "../screens/NotificationsScreen";
 import { useAtom } from "jotai";
 import Tabs from "@/components/Tabs";
 
@@ -10,7 +10,7 @@ export const tabs = [
     "ingediend",
 ]
 
-export default function Header() {
+export default function DeclarationsHeader() {
     const [, setShowNotificationsScreen] = useAtom(showNotificationsScreenAtom);
     const [, setShowNewDeclarationOverlay] = useAtom(showNewDeclarationOverlayAtom);
     const [notifications] = useAtom(notificationsAtom);

@@ -41,7 +41,7 @@ export default function DOPApp({Component, pageProps}: AppProps) {
                     id="bg-inset"
                     className="fixed left-0 right-0 bottom-0 h-[360px] bg-gradient-to-b from-zinc/0 to-zinc/25 pointer-events-none z-0"
                 />
-                <div id="content" className="z-[1]">
+                <div id="content" className="z-[1] h-full">
                     <Component {...pageProps} />
                 </div>
             </section>
