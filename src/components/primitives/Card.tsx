@@ -52,7 +52,6 @@ export default function Card(
             layout
             ref={scope}
             whileHover={{scale: 1.01}}
-            whileTap={{scale: 0.99, backgroundColor: 'rgba(0,0,0,0.1)'}}
             className={`flex flex-row items-center gap-4 text-xs w-full`}
             onBlur={() => setSwipedLeft(false)}
             {...allowSwipeLeft && {

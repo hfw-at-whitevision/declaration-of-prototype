@@ -308,7 +308,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                                 padding='small'
                                 fullWidth
                                 onClick={handleSave}
-                                className="shadow-lg"
+                                className="shadow-md"
                                 disabled={isSaving}
                             >
                                 {isSaving &&
@@ -326,7 +326,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                                 padding='small'
                                 fullWidth
                                 onClick={handleSubmit}
-                                className="shadow-lg"
+                                className="shadow-md"
                             >
                                 Indienen
                             </Button>

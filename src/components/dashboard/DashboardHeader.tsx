@@ -1,8 +1,4 @@
-import {notificationsAtom, showNewDeclarationOverlayAtom, showNotificationsScreenAtom} from "@/store/atoms";
-import {BsPlusLg, BsBell} from "react-icons/bs";
 import NotificationsScreen from "../screens/NotificationsScreen";
-import {useAtom} from "jotai";
-import Tabs from "@/components/Tabs";
 import {GiHamburgerMenu} from "react-icons/gi";
 
 export const tabs = [
@@ -12,18 +8,6 @@ export const tabs = [
 ]
 
 export default function DashboardHeader() {
-    const [, setShowNotificationsScreen] = useAtom(showNotificationsScreenAtom);
-    const [, setShowNewDeclarationOverlay] = useAtom(showNewDeclarationOverlayAtom);
-    const [notifications] = useAtom(notificationsAtom);
-
-    const handleNewDeclarationClick = (e: any) => {
-        e.preventDefault();
-        setShowNewDeclarationOverlay(true);
-    }
-
-    const urgentNotifications = notifications
-        ?.filter((notification: any) => notification.type === 'warning' || notification.type === 'success')
-        ?.length;
 
     return <>
         <NotificationsScreen/>

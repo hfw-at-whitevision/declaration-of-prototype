@@ -15,9 +15,12 @@ import {useRouter} from 'next/router';
 import Overlay from "@/components/overlays/Overlay";
 import Button from '@/components/Button';
 import {Haptics} from '@capacitor/haptics';
-import {BsTrash} from "react-icons/bs";
+import {BsPlusLg, BsTrash} from "react-icons/bs";
 import {Toast} from "@capacitor/toast";
 import {Dialog} from "@capacitor/dialog";
+import TabBar from "@/components/TabBar";
+import {BiImport, BiScan} from "react-icons/bi";
+import PlusMenu from "@/components/declarations/PlusMenu";
 
 interface Declaration {
     id?: string;
@@ -79,12 +82,6 @@ export default function Home() {
         console.log('tap success')
         tapEndX = info.point.x;
         const swipedLeft = tapStartX - tapEndX >= 100;
-
-        // if (swipedLeft) {
-        //     console.log('swiped left');
-        //     await handleSwipeLeft(declarationId);
-        //     return;
-        // }
 
         const now = new Date().getTime();
         const pressDuration = now - longPressStartTimestamp;
@@ -168,6 +165,7 @@ export default function Home() {
         <DeclarationsHeader/>
 
         <Content>
+
             <SearchSortBar/>
             {
                 declarations
@@ -209,6 +207,9 @@ export default function Home() {
                 </div>
             }
 
+            <PlusMenu />
+
+
             <pre className="text-xs mt-8 overflow-x-auto hidden">
                 notifications: {JSON.stringify(notifications, null, 2)}
                 <br/>
@@ -223,6 +224,8 @@ export default function Home() {
                 declarations: {JSON.stringify(declarations, null, 2)}
             </pre>
         </Content>
+
+        <TabBar/>
 
         <Overlay/>
     </>

@@ -5,6 +5,8 @@ import Button from "@/components/Button";
 import {BsArrowRight} from "react-icons/bs";
 import {BiImport, BiScan} from "react-icons/bi";
 import {useRouter} from "next/router";
+import {CiBookmarkCheck, CiFileOn, CiReceipt, CiSettings} from "react-icons/ci";
+import TabBar from "@/components/TabBar";
 
 export default function HomePage() {
     const router = useRouter();
@@ -13,7 +15,7 @@ export default function HomePage() {
 
         <Content className="">
 
-            <section className="py-16 flex flex-col">
+            <section className="py-16 flex flex-col text-center">
                 <h1 className="font-bold text-4xl">Welkom Heinz!</h1>
                 <small className="mt-4 opacity-50">heinz@hotmail.com</small>
                 <small className="opacity-50">12345 Bouwbedrijf de Steen</small>
@@ -78,24 +80,28 @@ export default function HomePage() {
             <Button
                 rounded="full"
                 padding="small"
-                icon={<BsArrowRight className="w-5 h-5" />}
+                icon={<BsArrowRight className="w-5 h-5"/>}
                 onClick={() => router.push('/declarations')}
             >
                 Bekijk alle documenten
             </Button>
 
             <section className="flex flex-row gap-2 w-full mt-16">
-                <button className="rounded-2xl bg-white shadow-md p-8 text-sm font-bold flex-1 flex flex-col justify-center items-center gap-2">
-                    <BiImport className="w-16 h-16" strokeWidth={0.1} />
+                <button
+                    className="rounded-2xl bg-white shadow-md p-8 text-sm font-bold flex-1 flex flex-col justify-center items-center gap-2">
+                    <BiImport className="w-12 h-12" strokeWidth={0.1}/>
                     Importeer
                 </button>
 
-                <button className="rounded-2xl bg-white shadow-md p-8 text-sm font-bold flex-1 flex flex-col justify-center items-center gap-2">
-                    <BiScan className="w-16 h-16" />
+                <button
+                    className="rounded-2xl bg-white shadow-md p-8 text-sm font-bold flex-1 flex flex-col justify-center items-center gap-2">
+                    <BiScan className="w-12 h-12"/>
                     Scannen
                 </button>
             </section>
 
         </Content>
+
+        <TabBar />
     </>
 }
