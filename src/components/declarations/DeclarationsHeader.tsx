@@ -1,8 +1,8 @@
 import { notificationsAtom, showNewDeclarationOverlayAtom, showNotificationsScreenAtom } from "@/store/atoms";
-import { BsPlusLg, BsBell } from "react-icons/bs";
-import NotificationsScreen from "./screens/NotificationsScreen";
+import { BsBell } from "react-icons/bs";
+import NotificationsScreen from "../screens/NotificationsScreen";
 import { useAtom } from "jotai";
-import Tabs from "@/components/Tabs";
+import TabBar from "@/components/TabBar";
 
 export const tabs = [
     "concept",
@@ -10,7 +10,7 @@ export const tabs = [
     "ingediend",
 ]
 
-export default function Header() {
+export default function DeclarationsHeader() {
     const [, setShowNotificationsScreen] = useAtom(showNotificationsScreenAtom);
     const [, setShowNewDeclarationOverlay] = useAtom(showNewDeclarationOverlayAtom);
     const [notifications] = useAtom(notificationsAtom);
@@ -24,22 +24,26 @@ export default function Header() {
         ?.filter((notification: any) => notification.type === 'warning' || notification.type === 'success')
         ?.length;
 
+    const handleFileImportClick = () => {
+        fileInputRef.current.click();
+    }
+
     return <>
         <NotificationsScreen />
 
-        <header className="flex sticky top-0 flex-col bg-amber-400 p-4 gap-2 z-10">
+        <header className="flex sticky top-0 flex-col bg-amber-400 p-4 py-8 pt-16 gap-4 z-10">
             <div className="flex flex-row justify-between items-center">
                 <h1 className="text-white font-extrabold text-xl">
-                    Bonnen
+                    Uitgaven
                 </h1>
 
                 <div className="flex flex-row gap-2 text-white">
-                    <button
-                        className="bg-black/5 rounded-full p-2"
-                        onClick={handleNewDeclarationClick}
-                    >
-                        <BsPlusLg className="w-5 h-5" />
-                    </button>
+                    {/*<button*/}
+                    {/*    className="bg-black/5 rounded-full p-2"*/}
+                    {/*    onClick={handleNewDeclarationClick}*/}
+                    {/*>*/}
+                    {/*    <BsPlusLg className="w-5 h-5" />*/}
+                    {/*</button>*/}
 
                     <button
                         className="bg-black/5 rounded-full p-2 z-20 relative"
@@ -59,7 +63,7 @@ export default function Header() {
                 </div>
             </div>
 
-            <Tabs tabs={tabs} />
+            <TabBar tabs={tabs} />
         </header>
     </>
 }
