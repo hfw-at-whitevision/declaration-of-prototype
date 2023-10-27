@@ -10,7 +10,6 @@
 
 * {
     -webkit-tap-highlight-color: rgba(0,0,0,0);
-    @apply transition-all duration-300 ease-out;
 }
 
 body {

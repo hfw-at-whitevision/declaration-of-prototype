@@ -1,4 +1,4 @@
-import DeclarationScreen from "@/components/screens/DeclarationScreen";
+import SingleDeclaration from "@/components/declarations/SingleDeclaration";
 import { getDeclaration } from "@/firebase";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -17,5 +17,5 @@ export default function DeclarationScreenPage() {
     }, [id]);
 
     if (id && !declaration) return <Loading />
-    return <DeclarationScreen declaration={declaration}/>
+    return <SingleDeclaration declaration={declaration}/>
 }

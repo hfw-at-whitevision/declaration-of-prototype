@@ -1,63 +1,36 @@
-import {CiBookmarkCheck, CiFileOn, CiHome, CiReceipt, CiSettings} from "react-icons/ci";
-import {useRouter} from "next/router";
-import Link from "next/link";
+import {useAtom} from "jotai";
+import {currentTabIndexAtom} from "@/store/atoms";
+import {motion} from 'framer-motion';
 
-const tabs = [
-    {
-        icon: CiHome,
-        label: 'Dashboard',
-        path: '/'
-    },
-    {
-        icon: CiFileOn,
-        label: 'Documenten',
-        // path: '/documents',
-    },
-    {
-        icon: CiReceipt,
-        label: 'Declaraties',
-        path: '/declarations'
-    },
-    // {
-    //     icon: CiBookmarkCheck,
-    //     label: 'Goedkeuren',
-    //     path: '/approve'
-    // },
-    {
-        icon: CiSettings,
-        label: 'Instellingen',
-        // path: '/settings'
-    }
-]
+export default function TabBar({tabs}: any) {
+    const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
 
-export default function TabBar() {
-    const router = useRouter();
-    return <>
-        <div id="tab-bar-spacer" className="h-20"/>
-        <section
-            className="fixed bottom-0 left-0 right-0 bg-white h-20 border-t border-gray-200 flex items-center justify-between gap-8 px-8 text-[10px]"
-        >
-            {tabs.map((tab, index) => {
-                const isActiveTab = router.pathname === tab.path;
-                return (
-                    <Link
-                        key={index}
-                        className={`
-                            flex flex-1 flex-col items-center gap-1 p-2 rounded-lg
-                            ${isActiveTab ? 'bg-black/5 font-bold' : ''}
-                        `}
-                        href={tab.path ?? ''}
-                    >
-                        <tab.icon
-                            className="w-8 h-8"
-                            strokeWidth={
-                                isActiveTab ? 0.5 : 0.1
-                            }
+    return <nav
+        className="bg-black/5 p-[2px] flex flex-row gap-2 justify-between rounded-full"
+    >
+        {
+            tabs.map((tab: any, tabIndex: number) => (
+                <button
+                    key={`tab-${tabIndex}`}
+                    className="flex-1 p-2 text-xs text-center cursor-pointer capitalize rounded-full relative"
+                    onClick={() => setCurrentTabIndex(tabIndex)}
+                >
+                    <span className={`z-[2] relative ${currentTabIndex === tabIndex ? 'font-bold' : ''}`}>
+                        {tab}
+                    </span>
+                    {currentTabIndex === tabIndex &&
+                        <motion.span
+                            layoutId="bubble"
+                            className="absolute inset-0 z-[1] bg-white rounded-full"
+                            transition={{
+                                type: 'spring',
+                                bounce: 0.2,
+                                duration: 0.4,
+                            }}
                         />
-                        {tab.label}
-                    </Link>
-                )
-            })}
-        </section>
-    </>
+                    }
+                </button>
+            ))
+        }
+    </nav>
 }

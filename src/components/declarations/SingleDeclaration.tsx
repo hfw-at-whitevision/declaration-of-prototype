@@ -11,8 +11,9 @@ import {
 import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
 import {LoadingSpinner} from "@/components/Loading";
+import SingleDeclarationHeader from "@/components/declarations/SingleDeclarationHeader";
 
-export default function DeclarationScreen({declaration: inputDeclaration}: any) {
+export default function SingleDeclaration({declaration: inputDeclaration}: any) {
     const [declaration, setDeclaration] = useState(inputDeclaration);
     const [scannedImages, setScannedImages] = useAtom(scannedImagesAtom);
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
@@ -130,28 +131,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
         <Content>
             <div className="mt-8 grid gap-2 text-xs">
 
-                <div className="w-full justify-between items-center flex">
-                    <Button
-                        secondary
-                        padding='small'
-                        onClick={() => router.push('/declarations')}
-                        className="!rounded-full"
-                    >
-                        <BsArrowLeft className="w-4 h-4"/>
-                        Terug
-                    </Button>
-
-                    <Button
-                        primary
-                        padding='small'
-                        className={`
-                        ${status === 'ingediend' ? '!bg-green-600' : undefined}
-                        ${status === 'afgekeurd' ? '!bg-red-600' : undefined}
-                        h-full !rounded-full
-                    `}>
-                        {status}
-                    </Button>
-                </div>
+                <SingleDeclarationHeader declaration={declaration}/>
 
                 <div className="bg-white p-4 space-y-2 rounded-md">
                     <button
@@ -202,106 +182,70 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                             key={image}
                             src={image}
                             className="w-full h-[100px] p-2 object-contain rounded-md border-2 border-amber-400"
+                            fetchPriority="high"
                         />
                     ))}
                 </div>
 
-                <button
-                    disabled={!allowEdit}
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
-                    onClick={() => setInputModal({
-                        ...inputModal,
-                        show: true,
-                        title: 'Voer een omschrijving in:',
-                        type: 'text',
-                        defaultValue: description,
-                        onConfirm: (value: string) => setDescription(value),
-                    })}
-                >
-                    <InputLabel label={'Omschrijving'} value={description}/>
-                </button>
+                <CardInput
+                    allowEdit={allowEdit}
+                    value={description}
+                    onConfirm={(value: string) => setDescription(value)}
+                    label="Omschrijving"
+                    title='Voer een omschrijving in:'
+                />
 
-                <button
-                    disabled={!allowEdit}
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
-                    onClick={() => setInputModal({
-                        ...inputModal,
-                        show: true,
-                        title: 'Voer een categorie in:',
-                        type: 'select',
-                        options: ['voeding', 'kleding', 'transport', 'accomodatie', 'overig'],
-                        defaultValue: category,
-                        onConfirm: (value: number) => setCategory(value),
-                    })}
-                >
-                    <InputLabel label={'Categorie'} value={category}/>
-                </button>
+                <CardInput
+                    allowEdit={allowEdit}
+                    value={category}
+                    onConfirm={(value: string) => setCategory(value)}
+                    label="Categorie"
+                    title='Voer een categorie in:'
+                    type='select'
+                    options={['voeding', 'kleding', 'transport', 'accomodatie', 'overig']}
+                />
 
-                <button
-                    disabled={!allowEdit}
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
-                    onClick={() => setInputModal({
-                        ...inputModal,
-                        show: true,
-                        title: 'Voer een bedrag in:',
-                        type: 'number',
-                        defaultValue: amount,
-                        onConfirm: (value: number) => setAmount(value),
-                    })}
-                >
-                    <InputLabel label={'Bedrag'} value={amount}/>
-                </button>
+                <CardInput
+                    allowEdit={allowEdit}
+                    value={amount}
+                    onConfirm={(value: number) => setAmount(value)}
+                    label="Bedrag"
+                    title='Voer een bedrag in:'
+                    type='number'
+                />
 
-                <button
-                    disabled={!allowEdit}
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
-                    onClick={() => setInputModal({
-                        ...inputModal,
-                        show: true,
-                        title: 'Voer een valuta in:',
-                        type: 'select',
-                        options: ['EUR', 'USD', 'GBP'],
-                        defaultValue: currency,
-                        onConfirm: (value: string) => setCurrency(value),
-                    })}
-                >
-                    <InputLabel label={'Valuta'} value={currency}/>
-                </button>
+                <CardInput
+                    allowEdit={allowEdit}
+                    value={currency}
+                    onConfirm={(value: string) => setCurrency(value)}
+                    label="Valuta"
+                    title='Voer een valuta in:'
+                    type='select'
+                    options={['EUR', 'USD', 'GBP']}
+                />
 
-                <button
-                    disabled={!allowEdit}
-                    className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
-                    onClick={() => setInputModal({
-                        ...inputModal,
-                        show: true,
-                        title: 'Voer een BTW percentage in:',
-                        type: 'select',
-                        options: ['0%', '9%', '21%'],
-                        defaultValue: vat,
-                        onConfirm: (value: number) => setVat(value),
-                    })}
-                >
-                    <InputLabel label={'BTW percentage'} value={vat}/>
-                </button>
+                <CardInput
+                    allowEdit={allowEdit}
+                    value={vat}
+                    onConfirm={(value: number) => setVat(value)}
+                    label="BTW percentage"
+                    title='Voer een BTW percentage in:'
+                    type='select'
+                    options={['0%', '9%', '21%']}
+                />
 
-                <button
-                    disabled={!allowEdit}
-                    className="bg-white py-6 text-sm rounded-md p-4 relative cursor-pointer text-left"
-                    onClick={() => setInputModal({
-                        ...inputModal,
-                        show: true,
-                        title: 'Voer een betaalmethode in:',
-                        type: 'select',
-                        options: ['cash', 'pin', 'creditcard'],
-                        defaultValue: paymentMethod,
-                        onConfirm: (value: string) => setPaymentMethod(value),
-                    })}
-                >
-                    <InputLabel label={'Betaalmethode'} value={paymentMethod}/>
-                </button>
+                <CardInput
+                    allowEdit={allowEdit}
+                    value={paymentMethod}
+                    onConfirm={(value: string) => setPaymentMethod(value)}
+                    label="Betaalmethode"
+                    title='Voer een betaalmethode in:'
+                    type='select'
+                    options={['cash', 'pin', 'creditcard']}
+                />
 
                 {allowEdit
-                    ? <>
+                    && <>
                         <div className="flex flex-row justify-between items-center gap-2">
                             <Button
                                 secondary
@@ -341,7 +285,7 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
                             Verwijderen
                         </Button>
                     </>
-                    : null}
+                }
             </div>
 
             <pre className="break-all overflow-x-auto hidden">
@@ -351,15 +295,41 @@ export default function DeclarationScreen({declaration: inputDeclaration}: any) 
     )
 }
 
-const InputLabel = (props: any) => {
-    return <>
-        <span className={
-            props?.value
+const CardInput = (
+    {
+        allowEdit,
+        value,
+        onConfirm,
+        type = 'text',
+        label,
+        title,
+        options,
+    }
+) => {
+    const [inputModal, setInputModal] = useAtom(inputModalAtom);
+    return (
+        <button
+            disabled={!allowEdit}
+            className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
+            onClick={() => setInputModal({
+                ...inputModal,
+                show: true,
+                title: title ?? label,
+                type: type,
+                defaultValue: value,
+                onConfirm,
+                options,
+            })}
+        >
+
+            <span className={(value)
                 ? 'absolute top-1 text-[10px] opacity-50'
                 : 'opacity-50'
-        }>
-            {props.label}
-        </span>
-        {props.value}
-    </>
+            }>
+                {label}
+            </span>
+            {value}
+
+        </button>
+    )
 }

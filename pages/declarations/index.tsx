@@ -18,7 +18,7 @@ import {Haptics} from '@capacitor/haptics';
 import {BsPlusLg, BsTrash} from "react-icons/bs";
 import {Toast} from "@capacitor/toast";
 import {Dialog} from "@capacitor/dialog";
-import TabBar from "@/components/TabBar";
+import TabNavigation from "@/components/TabNavigation";
 import {BiImport, BiScan} from "react-icons/bi";
 import PlusMenu from "@/components/declarations/PlusMenu";
 
@@ -172,7 +172,6 @@ export default function Home() {
                     .filter((declaration: any) => declaration?.status === tabs[currentTabIndex])
                     .filter((declaration: any) => declaration?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map((declaration: any, index: number) => (
-
                         <DeclarationCard
                             key={`${JSON.stringify(declaration)}-${index}`}
                             declaration={declaration}
@@ -185,30 +184,8 @@ export default function Home() {
                             onTap={async (event, info) => await handleTap(info, declaration.id)}
                             onTapCancel={handleTapCancel}
                         />
-
                     ))
             }
-
-            {selectedDeclarations?.length > 0
-                && <div className="fixed bottom-4 left-4 right-4 flex flex-row items-center justify-center gap-2">
-                    <Button
-                        primary
-                        className="flex-1 h-16 rounded-lg !bg-black shadow-lg text-sm"
-                    >
-                        Geselecteerde {selectedDeclarations.length} bonnen samenvoegen
-                    </Button>
-                    <Button
-                        primary
-                        className="h-16 rounded-lg !bg-red-600 shadow-lg text-sm"
-                        onClick={handleDeleteSelectedDeclarations}
-                    >
-                        <BsTrash className="w-6 h-6 text-white"/>
-                    </Button>
-                </div>
-            }
-
-            <PlusMenu />
-
 
             <pre className="text-xs mt-8 overflow-x-auto hidden">
                 notifications: {JSON.stringify(notifications, null, 2)}
@@ -225,7 +202,27 @@ export default function Home() {
             </pre>
         </Content>
 
-        <TabBar/>
+        <PlusMenu />
+
+        {selectedDeclarations?.length > 0
+            && <div className="fixed bottom-4 left-4 right-4 flex flex-row items-center justify-center gap-2">
+                <Button
+                    primary
+                    className="flex-1 h-16 rounded-lg !bg-black shadow-lg text-sm"
+                >
+                    Geselecteerde {selectedDeclarations.length} bonnen samenvoegen
+                </Button>
+                <Button
+                    primary
+                    className="h-16 rounded-lg !bg-red-600 shadow-lg text-sm"
+                    onClick={handleDeleteSelectedDeclarations}
+                >
+                    <BsTrash className="w-6 h-6 text-white"/>
+                </Button>
+            </div>
+        }
+
+        <TabNavigation/>
 
         <Overlay/>
     </>

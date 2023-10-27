@@ -87,7 +87,7 @@ export default function Card(
             >
                 {borderLeft &&
                     <div
-                        className={`card-border-left absolute left-0 top-0 bottom-0 w-[4px] bg-${borderColor as string ?? 'amber-400'}`}/>
+                        className={`card-border-left absolute left-0 top-0 bottom-0 w-[4px] ${borderColor ?? 'bg-amber-400'}`}/>
                 }
 
                 {children}
