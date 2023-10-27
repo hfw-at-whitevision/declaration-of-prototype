@@ -9,6 +9,7 @@ import useSplashScreen from "@/hooks/useSplashscreen";
 import useSwipeBack from "@/hooks/useSwipeBack";
 import usePushNotifications from "@/hooks/usePushNotifications";
 import useNativeStatusBar from "@/hooks/useNativeStatusBar";
+import useApp from "@/hooks/useApp";
 
 const inter = Inter({subsets: ["latin"]});
 
@@ -19,6 +20,7 @@ export default function DOPApp({Component, pageProps}: AppProps) {
     useSwipeBack();
     // usePushNotifications();
     useNativeStatusBar();
+    useApp();
 
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
 
