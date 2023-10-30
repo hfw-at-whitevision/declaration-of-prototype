@@ -7,15 +7,13 @@ export default function AppUrlListener() {
 
     useEffect(() => {
         App.addListener('appUrlOpen', (event) => {
-            console.log('appUrlOpen event: ', event);
+            console.log('appUrlOpen', event);
             const slug = event.url.split('.app').pop();
             if (slug) {
                 router.push(slug);
             }
-            // If no match, do nothing - let regular routing
-            // logic take over
         });
     }, []);
 
-    return null;
+    return <></>;
 }

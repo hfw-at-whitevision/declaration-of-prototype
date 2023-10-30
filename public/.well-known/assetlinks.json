@@ -1,5 +1,14 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target" : { "namespace": "android_app", "package_name": "com.declarationofprototype.app",
-    "sha256_cert_fingerprints": ["9C:D4:AB:CE:7B:78:A2:3B:03:9D:BB:7B:CF:A4:C5:A0:12:F0:FE:9A:79:A0:8E:11:DC:33:F3:0E:B9:5E:BF:51"] }
-}]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.declarationofprototype.app",
+      "sha256_cert_fingerprints": [
+        "9C:D4:AB:CE:7B:78:A2:3B:03:9D:BB:7B:CF:A4:C5:A0:12:F0:FE:9A:79:A0:8E:11:DC:33:F3:0E:B9:5E:BF:51"
+      ]
+    }
+  }
+]

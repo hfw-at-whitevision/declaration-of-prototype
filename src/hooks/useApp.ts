@@ -7,8 +7,8 @@ const registerListeners = () => {
     //     console.log('useApp: App state changed. Is active?', isActive);
     // });
 
-    App.addListener('appUrlOpen', data => {
-        console.log('useApp: App opened with URL:', data);
+    App.addListener('appUrlOpen', (data) => {
+        console.log('useApp (appUrlOpen): App opened with URL: ', data);
     });
 
     // App.addListener('appRestoredResult', data => {
@@ -29,9 +29,9 @@ export default function useApp() {
         registerListeners();
     }, []);
 
-    useEffect(() => {
-        checkAppLaunchUrl();
-    }, [router.pathname, router.asPath]);
+    // useEffect(() => {
+    //     checkAppLaunchUrl();
+    // }, [router.pathname, router.asPath]);
 
     return {
         checkAppLaunchUrl,
