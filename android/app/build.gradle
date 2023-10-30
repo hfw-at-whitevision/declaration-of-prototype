@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('C:\\Users\\Ho-FengWong\\Documents\\Keystores\\HUBL.keystore')
+            storePassword 'Exposureart1992!'
+            keyAlias 'HUBL'
+            keyPassword 'Exposureart1992!'
+        }
+    }
     namespace "com.declarationofprototype.app"
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
