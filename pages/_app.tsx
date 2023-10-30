@@ -10,6 +10,7 @@ import useSwipeBack from "@/hooks/useSwipeBack";
 import usePushNotifications from "@/hooks/usePushNotifications";
 import useNativeStatusBar from "@/hooks/useNativeStatusBar";
 import useApp from "@/hooks/useApp";
+import AppUrlListener from "@/components/AppUrlListener";
 
 const inter = Inter({subsets: ["latin"]});
 
@@ -47,6 +48,8 @@ export default function DOPApp({Component, pageProps}: AppProps) {
                 options={inputModal?.options}
                 onConfirm={inputModal?.onConfirm}
             />
+
+            <AppUrlListener />
         </div>
     );
 }

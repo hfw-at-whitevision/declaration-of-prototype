@@ -6,13 +6,16 @@ export default function AppUrlListener() {
     const router = useRouter();
 
     useEffect(() => {
-        App.addListener('appUrlOpen', async (event) => {
+        App.addListener('appUrlOpen', (event) => {
+            console.log('appUrlOpen event: ', event);
             const slug = event.url.split('.app').pop();
             if (slug) {
-                await router.push(slug);
+                router.push(slug);
             }
             // If no match, do nothing - let regular routing
             // logic take over
         });
-    })
+    }, []);
+
+    return null;
 }
