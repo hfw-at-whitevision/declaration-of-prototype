@@ -17,7 +17,7 @@ const inter = Inter({subsets: ["latin"]});
 process.browser ? defineCustomElements(window) : null;
 
 export default function DOPApp({Component, pageProps}: AppProps) {
-    useSplashScreen();
+    // useSplashScreen();
     useSwipeBack();
     // usePushNotifications();
     useNativeStatusBar();

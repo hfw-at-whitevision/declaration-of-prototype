@@ -79,7 +79,7 @@ export default function Card(
             <a
                 className={`
                     w-full p-4 gap-2 rounded-md bg-white focus:bg-black/5
-                    cursor-pointer ring-blue-500 shadow-xl shadow-gray-500/5
+                    cursor-pointer ring-blue-500
                     overflow-hidden relative flex justify-between text-left
                     ${selected ? 'ring-2 shadow-md' : ''}
                     ${className}
