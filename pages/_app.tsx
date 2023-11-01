@@ -11,6 +11,7 @@ import usePushNotifications from "@/hooks/usePushNotifications";
 import useNativeStatusBar from "@/hooks/useNativeStatusBar";
 import useApp from "@/hooks/useApp";
 import AppUrlListener from "@/components/AppUrlListener";
+import BackgroundInset from "@/components/primitives/BackgroundInset";
 
 const inter = Inter({subsets: ["latin"]});
 
@@ -31,10 +32,7 @@ export default function DOPApp({Component, pageProps}: AppProps) {
         >
             <section
                 className="w-full flex flex-col relative bg-gray-100 border-black overflow-y-auto bg-no-repeat bg-bottom bg-[url('/bg-dots.png')] bg-[length:100%]">
-                <div
-                    id="bg-inset"
-                    className="fixed left-0 right-0 bottom-0 h-[360px] bg-gradient-to-b from-zinc/0 to-zinc/25 pointer-events-none z-0"
-                />
+                <BackgroundInset className="z-40" />
                 <div id="content" className="z-[1] h-full">
                     <Component {...pageProps} />
                 </div>

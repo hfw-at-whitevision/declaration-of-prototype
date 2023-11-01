@@ -1,5 +1,4 @@
 import {useRouter} from "next/router";
-import {BsArrowLeft} from "react-icons/bs";
 import Button from "../Button";
 import Content from "../Content";
 import {useEffect, useState} from "react";
@@ -252,7 +251,6 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                                 padding='small'
                                 fullWidth
                                 onClick={handleSave}
-                                className="shadow-md"
                                 disabled={isSaving}
                             >
                                 {isSaving &&
@@ -270,7 +268,6 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                                 padding='small'
                                 fullWidth
                                 onClick={handleSubmit}
-                                className="shadow-md"
                             >
                                 Indienen
                             </Button>
