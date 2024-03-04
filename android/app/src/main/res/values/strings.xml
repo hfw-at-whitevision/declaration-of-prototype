@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Hubl</string>
+    <string name="title_activity_main">Hubl</string>
+    <string name="package_name">nl.whitevision.whitevisiondeclaraties</string>
+    <string name="custom_url_scheme">nl.whitevision.whitevisiondeclaraties</string>
+</resources>
