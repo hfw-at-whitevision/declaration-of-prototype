@@ -20,21 +20,21 @@ export default function AuthenticatePage() {
                             Welkom
                         </h2>
 
-                        <span>
+                    <span>
                         Fijn dat je aan de slag gaat met ded nieuwe WhiteVision smartphone app.
                     </span>
 
-                        <span>
+                    <span>
                         In deze korte tutorial leggen we je in een aantal stappen uit wat je kunt doen met deze handige app.
                     </span>
 
-                        <img
-                            src="/images/intro-slide-1.png"
-                            className="w-full w-[40%] max-w-[300px] mr-[10%] my-16"
-                            alt="Aan de slag"
-                        />
+                    <img
+                        src="/images/intro-slide-1.png"
+                        className="w-full w-[40%] max-w-[300px] mr-[10%] my-16"
+                        alt="Aan de slag"
+                    />
 
-                        <span className="text-xs">
+                    <span className="text-xs">
                         Swipe naar rechts om naar de volgende stap te gaan of swipe naar links om een stap terug te gaan.
                     </span>
                     </section>

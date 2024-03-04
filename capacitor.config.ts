@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.declarationofprototype.app',
-  appName: 'declaration-of-prototype',
+  appId: 'nl.whitevision.whitevisionapp',
+  appName: 'Hubl',
   webDir: 'out',
   server: {
     androidScheme: 'https'

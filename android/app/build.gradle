@@ -3,16 +3,16 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         debug {
-            storeFile file('C:\\Users\\Ho-FengWong\\Documents\\Keystores\\HUBL.keystore')
-            storePassword 'Exposureart1992!'
+            storeFile file('C:\\Users\\Ho-FengWong\\Documents\\Keystores\\whitevision.keystore')
+            storePassword 'WhiteVision2024'
             keyAlias 'HUBL'
-            keyPassword 'Exposureart1992!'
+            keyPassword 'WhiteVision2024'
         }
     }
-    namespace "com.declarationofprototype.app"
+    namespace "nl.whitevision.whitevisionapp"
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.declarationofprototype.app"
+        applicationId "nl.whitevision.whitevisionapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
