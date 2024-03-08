@@ -1,14 +1,15 @@
-import { notificationsAtom, showNewDeclarationOverlayAtom, showNotificationsScreenAtom } from "@/store/atoms";
+import {
+    currentTabIndexAtom,
+    notificationsAtom,
+    showNewDeclarationOverlayAtom,
+    showNotificationsScreenAtom
+} from "@/store/atoms";
 import { BsBell } from "react-icons/bs";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import { useAtom } from "jotai";
 import TabBar from "@/components/TabBar";
-
-export const tabs = [
-    "concept",
-    "afgekeurd",
-    "ingediend",
-]
+import {useEffect, useState} from "react";
+import {tabs} from "@/constants/defaults";
 
 export default function DeclarationsHeader() {
     const [, setShowNotificationsScreen] = useAtom(showNotificationsScreenAtom);
@@ -28,13 +29,28 @@ export default function DeclarationsHeader() {
         fileInputRef.current.click();
     }
 
+    const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
+
+    const [title, setTitle] = useState('Mijn bonnen');
+
+    useEffect(() => {
+        switch (currentTabIndex) {
+            case 0:
+                setTitle('Mijn bonnen');
+                break;
+            case 1:
+                setTitle('Mijn declaraties');
+                break;
+        }
+    }, [currentTabIndex]);
+
     return <>
         <NotificationsScreen />
 
         <header className="flex sticky top-0 flex-col bg-amber-400 p-4 py-8 pt-16 gap-4 z-10">
             <div className="flex flex-row justify-between items-center">
                 <h1 className="text-white font-extrabold text-xl">
-                    Uitgaven
+                    {title}
                 </h1>
 
                 <div className="flex flex-row gap-2 text-white">

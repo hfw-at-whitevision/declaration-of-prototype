@@ -4,6 +4,8 @@ import {useState} from "react";
 
 interface CardProps {
     // onClick?: () => void;
+    padding?: number;
+    backgroundColor?: string;
     onSwipeLeft?: any;
     allowSwipeLeft?: boolean;
     selected?: boolean;
@@ -12,6 +14,7 @@ interface CardProps {
     className?: string;
     borderLeft?: boolean;
     borderColor?: string;
+    borderRadius?: string;
 
     [x: string]: any;
 }
@@ -20,13 +23,16 @@ export default function Card(
     {
         // onClick,
         onSwipeLeft,
+        padding = 4,
         allowSwipeLeft,
         className,
         selected,
         deselectFn,
         children,
+        backgroundColor = 'bg-white',
         borderLeft,
         borderColor,
+        borderRadius = 'rounded-md',
         ...props
     }: CardProps = {}
 ) {
@@ -78,7 +84,7 @@ export default function Card(
 
             <a
                 className={`
-                    w-full p-4 gap-2 rounded-md bg-white focus:bg-black/5
+                    w-full p-${padding} gap-2 ${borderRadius} ${backgroundColor} focus:bg-black/5
                     cursor-pointer ring-blue-500
                     overflow-hidden relative flex justify-between text-left
                     ${selected ? 'ring-2 shadow-md' : ''}
@@ -94,7 +100,7 @@ export default function Card(
             </a>
 
             {swipedLeft &&
-                <span className="flex bg-red-600 rounded-md w-16 text-white h-full items-center justify-center p-2">
+                <span className={`flex bg-red-600 ${borderRadius} w-16 text-white h-full items-center justify-center p-2`}>
                     <BsTrash className="text-white w-4 h-4"/>
                 </span>
             }

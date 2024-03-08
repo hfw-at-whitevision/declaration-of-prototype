@@ -1,12 +1,10 @@
 import Card from "@/components/primitives/Card";
 
-
-
-export default function DeclarationCard({
-    selected,
-    declaration,
-    ...props
-}: any) {
+export default function ExpenseCard({
+                                            selected,
+                                            expense,
+                                            ...props
+                                        }: any) {
     return (
         <Card
             className={`grid grid-cols-2 justify-between`}
@@ -14,19 +12,19 @@ export default function DeclarationCard({
             {...props}
         >
             <span className="flex-1 font-bold text-left">
-                {declaration?.title}
+                {expense?.title}
             </span>
 
             <span className="text-right">
-                €{declaration?.amount}
+                {expense?.totalAmount ?? '0'} totaal
             </span>
 
             <span className="flex-1 text-left">
-                {declaration?.status}
+                {expense?.category}
             </span>
 
             <span className="text-right">
-                {declaration?.date}
+                {expense?.date}
             </span>
         </Card>
     )

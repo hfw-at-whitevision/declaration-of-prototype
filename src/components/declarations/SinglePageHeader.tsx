@@ -2,9 +2,8 @@ import Button from "@/components/Button";
 import {BsArrowLeft} from "react-icons/bs";
 import {useRouter} from "next/router";
 
-export default function SingleDeclarationHeader({declaration}) {
+export default function SingleDeclarationHeader({status = 'concept'}) {
     const router = useRouter();
-    const status = declaration?.status ?? 'concept';
     return <div className="w-full justify-between items-center flex">
         <Button
             secondary

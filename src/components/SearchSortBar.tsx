@@ -28,7 +28,7 @@ export default function SearchSortBar() {
                 <input
                     type="text"
                     className="w-full bg-transparent outline-none text-sm"
-                    placeholder="Zoek op naam"
+                    placeholder="Zoeken..."
                     onChange={handleOnInputChange}
                 />
             </div>

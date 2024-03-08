@@ -2,6 +2,8 @@ import {inputModalAtom} from "@/store/atoms"
 import {useAtom} from "jotai"
 import {useEffect, useRef, useState} from "react";
 import {motion} from "framer-motion";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface InputModalProps {
     show: boolean;
@@ -21,15 +23,17 @@ export default function InputModal({show, title, options, defaultValue, onConfir
         setInputModal({
             show: false,
         });
-        inputRef.current.value = '';
+        if(type !== 'date') inputRef.current.value = null;
     }
 
     const handleInputChange = (e: any) => {
-        setInputModalValue(inputRef.current.value);
+        if (type === 'date') setInputModalValue(e);
+        else setInputModalValue(inputRef.current.value);
     }
 
     const handleSave = () => {
-        onConfirm(inputRef.current.value);
+        if (type === 'date') onConfirm(inputModalValue?.toLocaleDateString('nl-NL'));
+        else onConfirm(inputRef.current.value);
         closeModal();
     }
 
@@ -39,8 +43,8 @@ export default function InputModal({show, title, options, defaultValue, onConfir
 
     useEffect(() => {
         if (!show) return;
-        if (type !== 'select') inputRef.current?.select();
-        inputRef.current?.focus();
+        if (type !== 'select' && type !== 'date') inputRef.current?.select();
+        if (type !== 'date') inputRef.current?.focus();
     }, [show]);
 
     useEffect(() => {
@@ -86,14 +90,21 @@ export default function InputModal({show, title, options, defaultValue, onConfir
                                     </option>
                                 ))}
                             </select>
-                            : <input
-                                className="w-full outline-none ring-2 rounded-md p-2 ring-amber-400"
-                                onChange={handleInputChange ?? null}
-                                ref={inputRef}
-                                autoFocus
-                                defaultValue={defaultValue}
-                                type={type}
-                            />
+                            : type === 'date'
+                                ? <DatePicker
+                                    ref={(oldRef) => oldRef = inputRef}
+                                    onChange={handleInputChange ?? null}
+                                    selected={defaultValue ? defaultValue : inputModalValue ?? null}
+                                    placeholderText="Selecteer een datum"
+                                />
+                                : <input
+                                    className="w-full outline-none ring-2 rounded-md p-2 ring-amber-400"
+                                    onChange={handleInputChange ?? null}
+                                    ref={inputRef}
+                                    autoFocus
+                                    defaultValue={defaultValue}
+                                    type={type}
+                                />
                     }
                 </div>
 

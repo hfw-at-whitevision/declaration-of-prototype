@@ -2,90 +2,53 @@ import {useRouter} from "next/router";
 import Button from "../Button";
 import Content from "../Content";
 import {useEffect, useState} from "react";
-import {createDeclaration, deleteDeclaration, getDeclarationAttachments, updateDeclaration} from "@/firebase";
+import {createDeclaration, deleteDeclaration, getExpense, getExpenseAttachments, updateDeclaration} from "@/firebase";
 import {
     inputModalAtom,
-    scannedImagesAtom,
 } from "@/store/atoms";
 import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
 import {LoadingSpinner} from "@/components/Loading";
-import SingleDeclarationHeader from "@/components/declarations/SingleDeclarationHeader";
+import SinglePageHeader from "@/components/declarations/SinglePageHeader";
+import ExpenseAccordion from "@/components/declarations/ExpenseAccordion";
 
 export default function SingleDeclaration({declaration: inputDeclaration}: any) {
     const [declaration, setDeclaration] = useState(inputDeclaration);
-    const [scannedImages, setScannedImages] = useAtom(scannedImagesAtom);
-    const [inputModal, setInputModal] = useAtom(inputModalAtom);
+    const [expenses, setExpenses] = useState(inputDeclaration?.expenses);
+    const expenseIds = expenses?.length > 0 ? expenses?.map((expense: any) => expense?.id) : [];
     const declarationId = useRouter()?.query?.id ?? null;
     const status = declaration?.status ?? 'concept';
     const router = useRouter();
-    const allowEdit =
-        status !== 'goedgekeurd'
-        && status !== 'ingediend';
+    const allowEdit = !declarationId;
 
-    const [name, setName] = useState(declaration?.name);
-    const [description, setDescription] = useState(declaration?.description);
-    const [amount, setAmount] = useState(declaration?.amount);
-    const [currency, setCurrency] = useState(declaration?.currency);
+    const [title, setTitle] = useState(declaration?.title);
+    const [description, setDescription] = useState(inputDeclaration?.description);
+    const [totalAmount, setTotalAmount] = useState(declaration?.totalAmount);
+    const [date, setDate] = useState(declaration?.date);
     const [category, setCategory] = useState(declaration?.category);
-    const [vat, setVat] = useState(declaration?.vat);
-    const [paymentMethod, setPaymentMethod] = useState(declaration?.paymentMethod);
-    const [attachments, setAttachments] = useState(declaration?.attachments);
 
     const serializeDeclaration = (props?: any) => ({
-        ...declarationId
-            ? {
-                // edit declaration
-                id: declarationId,
-                attachments: declaration?.attachments,
-            }
-            : {
-                // new declaration
-                attachments: declaration?.attachments,
-            },
-        ...name && {name},
+        ...declarationId && {id: declarationId},
+        ...title && {title},
         ...description && {description},
-        ...amount && {amount},
-        ...currency && {currency},
+        ...totalAmount && {totalAmount: totalAmount},
         ...category && {category},
-        ...vat && {vat},
-        ...paymentMethod && {paymentMethod},
+        expenses: expenseIds,
         status: props?.status ?? status,
+        date: props?.date ?? date,
     });
-
-    const [isSaving, setIsSaving] = useState(false);
-    const handleSave = async (e: any) => {
-        e.preventDefault();
-        setIsSaving(true);
-
-        // update
-        if (declarationId) {
-            const res = await updateDeclaration(declarationId, serializeDeclaration());
-        }
-        // create
-        else {
-            const res = await createDeclaration(serializeDeclaration());
-        }
-        // setConfirmationOverlayTitle('Bon opgeslagen.');
-        // setShowConfirmationOverlay(true);
-        await Toast.show({
-            text: 'Declaratie opgeslagen.',
-        });
-
-        setIsSaving(false);
-        await router.push('/');
-    }
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
 
         if (declarationId) {
             await updateDeclaration(declarationId, serializeDeclaration({
-                status: 'ingediend',
+                status: '100',
             }));
         } else {
             await createDeclaration(serializeDeclaration({
-                status: 'ingediend',
+                status: '100',
+                date: new Date().toLocaleDateString(),
             }));
         }
         // setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
@@ -93,63 +56,25 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
         await Toast.show({
             text: 'Declaratie succesvol ingediend.'
         });
-        setScannedImages([]);
-        await router.push('/');
+        await router.push('/declarations');
     }
-
-    const handleDelete = async (e: any) => {
-        e.preventDefault();
-        await deleteDeclaration(declarationId);
-        await Toast.show({
-            text: 'Declaratie verwijderd.',
-        });
-        await router.push('/');
-    }
-
-    useEffect(() => {
-        if (!scannedImages?.length || !router.isReady) return;
-        setDeclaration((oldDeclaration: any) => ({
-            ...oldDeclaration,
-            attachments: scannedImages,
-        }));
-
-        return () => {
-            setScannedImages([]);
-        }
-    }, [router.pathname, router.asPath, scannedImages, router.isReady]);
-
-    useEffect(() => {
-        if (!declarationId) return;
-        getDeclarationAttachments(declarationId, declaration?.attachments)
-            .then((attachments: any) => {
-                setScannedImages(attachments);
-            });
-    }, [declarationId]);
 
     return (
         <Content>
             <div className="mt-8 grid gap-2 text-xs">
 
-                <SingleDeclarationHeader declaration={declaration}/>
+                <SinglePageHeader status={declaration?.status}/>
 
-                <div className="bg-white p-4 space-y-2 rounded-md">
-                    <button
-                        disabled={!allowEdit}
-                        className="text-xl font-extrabold focus:outline-2 outline-amber-400 break-all w-full h-auto overflow-hidden cursor-pointer text-left"
-                        onClick={() => setInputModal({
-                            show: true,
-                            title: 'Voer een naam in:',
-                            type: 'text',
-                            defaultValue: name,
-                            onConfirm: (value: string) => setName(value),
-                        })}
+                <div className="my-4 space-y-2 rounded-md">
+                    <label
+                        className="text-xl font-extrabold focus:outline-2 outline-amber-400 break-all w-full h-auto overflow-hidden text-left"
                     >
-                        {name ?? <span className="opacity-25">Nieuwe uitgave</span>}
-                    </button>
+                        {title ?? <span className="opacity-25">Declaratie</span>}
+                    </label>
 
                     <div className="flex flex-row justify-between items-center text-lg">
                         <span className="flex flex-row">
-                            {amount} {currency}
+                            €{totalAmount}
                         </span>
 
                         <span>
@@ -157,34 +82,25 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                     </div>
 
                     <div className="flex flex-row justify-between items-center text-xs opacity-50">
-                        <span>
-                            DECL-18992/565
-                        </span>
+                        {!!declarationId &&
+                            <span>
+                                DECL-{declarationId}
+                            </span>
+                        }
 
                         <span>
-                            08-06-1992
+                            {date}
                         </span>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-md p-4 grid gap-2 grid-cols-3 relative pt-5">
-                    <span className={
-                        declaration?.attachments?.length
-                            ? 'absolute top-1 left-4 text-[10px] opacity-50'
-                            : 'Bijlagen'
-                    }>
-                        Bijlagen
-                    </span>
-
-                    {declaration?.attachments?.map((image: any) => (
-                        <img
-                            key={image}
-                            src={image}
-                            className="w-full h-[100px] p-2 object-contain rounded-md border-2 border-amber-400"
-                            fetchPriority="high"
-                        />
-                    ))}
-                </div>
+                <CardInput
+                    allowEdit={allowEdit}
+                    value={title}
+                    onConfirm={(value: string) => setTitle(value)}
+                    label="Titel"
+                    title='Voer een titel in:'
+                />
 
                 <CardInput
                     allowEdit={allowEdit}
@@ -196,73 +112,47 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
 
                 <CardInput
                     allowEdit={allowEdit}
-                    value={category}
-                    onConfirm={(value: string) => setCategory(value)}
-                    label="Categorie"
-                    title='Voer een categorie in:'
-                    type='select'
-                    options={['voeding', 'kleding', 'transport', 'accomodatie', 'overig']}
-                />
-
-                <CardInput
-                    allowEdit={allowEdit}
-                    value={amount}
-                    onConfirm={(value: number) => setAmount(value)}
-                    label="Bedrag"
+                    value={totalAmount}
+                    onConfirm={(value: number) => setTotalAmount(value)}
+                    label="Totaalbedrag"
                     title='Voer een bedrag in:'
                     type='number'
                 />
 
+                {!allowEdit &&
                 <CardInput
                     allowEdit={allowEdit}
-                    value={currency}
-                    onConfirm={(value: string) => setCurrency(value)}
-                    label="Valuta"
-                    title='Voer een valuta in:'
-                    type='select'
-                    options={['EUR', 'USD', 'GBP']}
+                    value={date}
+                    onConfirm={(value) => setDate(value)}
+                    label="Datum"
+                    title='Datum van uitgave:'
+                    type='date'
                 />
+                }
 
-                <CardInput
-                    allowEdit={allowEdit}
-                    value={vat}
-                    onConfirm={(value: number) => setVat(value)}
-                    label="BTW percentage"
-                    title='Voer een BTW percentage in:'
-                    type='select'
-                    options={['0%', '9%', '21%']}
-                />
+                {/*<div className="bg-white rounded-md p-4 grid gap-2 grid-cols-3 relative pt-5">*/}
+                <div className="bg-white rounded-md p-4 grid gap-2 grid-cols-1 relative pt-5 w-full">
+                    <span className={
+                        declaration?.expenses?.length
+                            ? 'absolute top-1 left-4 text-[10px] opacity-50'
+                            : 'Bonnen'
+                    }>
+                        Bonnen
+                    </span>
 
-                <CardInput
-                    allowEdit={allowEdit}
-                    value={paymentMethod}
-                    onConfirm={(value: string) => setPaymentMethod(value)}
-                    label="Betaalmethode"
-                    title='Voer een betaalmethode in:'
-                    type='select'
-                    options={['cash', 'pin', 'creditcard']}
-                />
+                    <section className="grid grid-cols-1 gap-2 w-full p-0">
 
+                        {expenses?.length > 0 && expenses?.map((expense: any) => (
+                            <ExpenseAccordion key={expense?.id} expense={expense}/>
+                        ))}
+
+                    </section>
+                </div>
+
+                {/* action buttons */}
                 {allowEdit
-                    && <>
-                        <div className="flex flex-row justify-between items-center gap-2">
-                            <Button
-                                secondary
-                                padding='small'
-                                fullWidth
-                                onClick={handleSave}
-                                disabled={isSaving}
-                            >
-                                {isSaving &&
-                                    <span className="absolute inset-0 flex items-center justify-center">
-                                        <LoadingSpinner className="w-5 h-5"/>
-                                    </span>
-                                }
-                                <span className={`!transition-none ${isSaving ? 'opacity-0' : ''}`}>
-                                    Opslaan
-                                </span>
-                            </Button>
-
+                    && <div className="flex flex-row justify-between items-center gap-2">
+                        {!declarationId &&
                             <Button
                                 primary
                                 padding='small'
@@ -271,17 +161,8 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                             >
                                 Indienen
                             </Button>
-                        </div>
-
-                        <Button
-                            tertiary
-                            padding='small'
-                            fullWidth
-                            onClick={handleDelete}
-                        >
-                            Verwijderen
-                        </Button>
-                    </>
+                        }
+                    </div>
                 }
             </div>
 

@@ -6,21 +6,23 @@ import {
     showOverlayAtom,
 } from '@/store/atoms'
 import React, {useEffect, useState} from 'react';
-import {deleteDeclaration, getDeclarations} from '@/firebase';
+import {deleteDeclaration, getDeclarations, getExpenses} from '@/firebase';
 import DeclarationCard from '@/components/declarations/DeclarationCard';
 import SearchSortBar from '@/components/SearchSortBar';
-import DeclarationsHeader, {tabs} from '@/components/declarations/DeclarationsHeader';
+import DeclarationsHeader from '@/components/declarations/DeclarationsHeader';
 import Content from '@/components/Content';
 import {useRouter} from 'next/router';
 import Overlay from "@/components/overlays/Overlay";
 import Button from '@/components/Button';
 import {Haptics} from '@capacitor/haptics';
-import {BsPlusLg, BsTrash} from "react-icons/bs";
+import {BsArrowLeft, BsArrowRight, BsPlusLg, BsTrash} from "react-icons/bs";
 import {Toast} from "@capacitor/toast";
 import {Dialog} from "@capacitor/dialog";
 import TabNavigation from "@/components/TabNavigation";
 import {BiImport, BiScan} from "react-icons/bi";
 import PlusMenu from "@/components/declarations/PlusMenu";
+import {tabs} from '@/constants/defaults';
+import ExpenseCard from "@/components/declarations/ExpenseCard";
 
 interface Declaration {
     id?: string;
@@ -43,27 +45,37 @@ export default function Home() {
     let tapEndX: any = null;
 
     const router = useRouter();
-    const [declarations, setDeclarations] = useAtom(declarationsAtom);
+    const [items, setItems] = useAtom(declarationsAtom);
     const [currentTabIndex] = useAtom(currentTabIndexAtom);
     const [searchQuery] = useAtom(searchQueryAtom);
-    const [selectedDeclarations, setSelectedDeclarations] = useState<Array<string>>([]);
+    const [selectedExpenseIds, setSelectedExpenseIds] = useState<Array<string>>([]);
     const [, setShowOverlay] = useAtom(showOverlayAtom);
     const [notifications] = useAtom(notificationsAtom);
+    const isSelectingExpenses = selectedExpenseIds.length > 0;
 
-    const handleSelectDeclaration = (declarationId: any) => {
+    const handleSelectExpense = (expenseId: string) => {
         // remove
-        if (selectedDeclarations.includes(declarationId))
-            setSelectedDeclarations(selectedDeclarations.filter((selectedDeclarationId) => selectedDeclarationId !== declarationId));
+        if (selectedExpenseIds.includes(expenseId))
+            setSelectedExpenseIds(selectedExpenseIds.filter((selectedExpenseId) => selectedExpenseId !== expenseId));
         // add
         else
-            setSelectedDeclarations([...selectedDeclarations, declarationId]);
+            setSelectedExpenseIds([...selectedExpenseIds, expenseId]);
     }
 
-    const handleClickDeclaration = (id: any) => {
+    const handleOpenDeclaration = (id: any) => {
         router.push('/declaration?id=' + id);
     }
 
-    const handleTapStart = async (declaration: Declaration, info) => {
+    const handleOpenExpense = (id: any) => {
+        router.push('/expense?id=' + id);
+    }
+
+    const handleTapStart = async (expense: any, info) => {
+        if (isSelectingExpenses) {
+            handleSelectExpense(expense?.id);
+            return;
+        }
+
         console.log('tap start');
         tapStartX = info.point.x;
         console.log('tapStartX', tapStartX);
@@ -74,11 +86,11 @@ export default function Home() {
             await Haptics.vibrate({
                 duration: 40,
             });
-            handleSelectDeclaration(declaration.id);
+            handleSelectExpense(expense.id);
         }, 500);
     }
 
-    const handleTap = async (info, declarationId: string) => {
+    const handleTap = async (info, itemId: string) => {
         console.log('tap success')
         tapEndX = info.point.x;
         const swipedLeft = tapStartX - tapEndX >= 100;
@@ -90,17 +102,18 @@ export default function Home() {
         longPressStartTimestamp = null;
 
         if (pressDuration < 500) {
-            // check if there are selected declarations
-            if (selectedDeclarations?.length) {
+            // check if we are selecting expenses
+            if (isSelectingExpenses) {
                 // (de-)select declaration
-                if (selectedDeclarations.includes(declarationId)) {
-                    handleSelectDeclaration(declarationId);
+                if (selectedExpenseIds.includes(itemId)) {
+                    handleSelectExpense(itemId);
                 }
                 return;
             }
             // else open the declaration
             else if (!swipedLeft) {
-                handleClickDeclaration(declarationId);
+                if (currentTabIndex === 0) handleOpenExpense(itemId);
+                else handleOpenDeclaration(itemId);
             }
         }
     }
@@ -116,7 +129,7 @@ export default function Home() {
     const handleDeleteSelectedDeclarations = async (e) => {
         e.preventDefault();
         const deletePromises = [];
-        for (const declarationId of selectedDeclarations) {
+        for (const declarationId of selectedExpenseIds) {
             deletePromises.push(deleteDeclaration(declarationId));
         }
         const res = await Promise.all(deletePromises);
@@ -127,8 +140,8 @@ export default function Home() {
             await Toast.show({
                 text: 'Geselecteerde declaraties verwijderd.',
             });
-            setDeclarations(oldDeclarations => oldDeclarations.filter((oldDeclaration: any) => !selectedDeclarations.includes(oldDeclaration.id)));
-            setSelectedDeclarations([]);
+            setItems(oldDeclarations => oldDeclarations.filter((oldDeclaration: any) => !selectedExpenseIds.includes(oldDeclaration.id)));
+            setSelectedExpenseIds([]);
         }
     }
 
@@ -148,18 +161,31 @@ export default function Home() {
         return value;
     }
 
+    const handleCreateDeclaration = async () => {
+        if (!selectedExpenseIds.length) return;
+        const serializedSelectedExpenseIds: any = selectedExpenseIds.join(',');
+        router.push('/declaration?createFromExpenses=' + serializedSelectedExpenseIds);
+    }
+
     useEffect(() => {
-        getDeclarations().then((declarations) => {
-            setDeclarations(declarations);
-        });
-    }, []);
+        switch (currentTabIndex) {
+            case 0:
+                getExpenses().then((expenses) => setItems(expenses));
+                break;
+            case 1:
+                getDeclarations().then((declarations) => setItems(declarations));
+                break;
+        }
+    }, [currentTabIndex]);
 
     useEffect(() => {
         setShowOverlay(false);
-        setSelectedDeclarations([]);
+        setSelectedExpenseIds([]);
         if (longPressTimer) clearTimeout(longPressTimer);
         longPressStartTimestamp = null;
     }, [router.query, router.asPath, router.pathname, router.query]);
+
+
 
     return <>
         <DeclarationsHeader/>
@@ -168,49 +194,61 @@ export default function Home() {
 
             <SearchSortBar/>
             {
-                declarations
-                    .filter((declaration: any) => declaration?.status === tabs[currentTabIndex])
-                    .filter((declaration: any) => declaration?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((declaration: any, index: number) => (
-                        <DeclarationCard
-                            key={`${JSON.stringify(declaration)}-${index}`}
-                            declaration={declaration}
-                            selected={selectedDeclarations.includes(declaration.id)}
-                            deselectFn={() => handleSelectDeclaration(declaration.id)}
-                            onSwipeLeft={async () => await handleSwipeLeft(declaration.id)}
-                            allowSwipeLeft={true}
+                items
+                    // .filter((declaration: any) => declaration?.status === tabs[currentTabIndex])
+                    // .filter((declaration: any) => declaration?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((item: any, index: number) => {
+                        if (currentTabIndex === 1) return (
+                            <DeclarationCard
+                                key={`${JSON.stringify(item)}-${index}`}
+                                declaration={item}
+                                selected={selectedExpenseIds.includes(item.id)}
+                                deselectFn={() => handleSelectExpense(item.id)}
+                                onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                                allowSwipeLeft={true}
 
-                            onTapStart={async (event, info) => await handleTapStart(declaration, info)}
-                            onTap={async (event, info) => await handleTap(info, declaration.id)}
-                            onTapCancel={handleTapCancel}
-                        />
-                    ))
+                                onTapStart={async (event, info) => await handleTapStart(item, info)}
+                                onTap={async (event, info) => await handleTap(info, item.id)}
+                                onTapCancel={handleTapCancel}
+                            />
+                        );
+                        else return (
+                            <ExpenseCard
+                                key={`${JSON.stringify(item)}-${index}`}
+                                expense={item}
+                                selected={selectedExpenseIds.includes(item.id)}
+                                deselectFn={() => handleSelectExpense(item.id)}
+                                onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                                allowSwipeLeft={true}
+
+                                onTapStart={async (event, info) => await handleTapStart(item, info)}
+                                onTap={async (event, info) => await handleTap(info, item.id)}
+                                onTapCancel={handleTapCancel}
+                            />
+                        )
+                    })
             }
 
             <pre className="text-xs mt-8 overflow-x-auto hidden">
                 notifications: {JSON.stringify(notifications, null, 2)}
                 <br/>
-                currentTab: {tabs[currentTabIndex]}
-                <br/>
-                currentTabIndex: {JSON.stringify(currentTabIndex, null, 2)}
-                <br/>
                 tabs: {JSON.stringify(tabs, null, 2)}
                 <br/>
                 searchQuery: {searchQuery}
                 <br/>
-                declarations: {JSON.stringify(declarations, null, 2)}
+                declarations: {JSON.stringify(items, null, 2)}
             </pre>
         </Content>
 
-        <PlusMenu />
+        <PlusMenu/>
 
-        {selectedDeclarations?.length > 0
+        {selectedExpenseIds?.length > 0
             && <div className="fixed bottom-4 left-4 right-4 flex flex-row items-center justify-center gap-2">
                 <Button
                     primary
                     className="flex-1 h-16 rounded-lg !bg-black shadow-lg text-sm"
                 >
-                    Geselecteerde {selectedDeclarations.length} bonnen samenvoegen
+                    Geselecteerde {selectedExpenseIds.length} bonnen samenvoegen
                 </Button>
                 <Button
                     primary
@@ -218,6 +256,20 @@ export default function Home() {
                     onClick={handleDeleteSelectedDeclarations}
                 >
                     <BsTrash className="w-6 h-6 text-white"/>
+                </Button>
+            </div>
+        }
+
+        {isSelectingExpenses &&
+            <div className="absolute bottom-24 right-4 left-4 z-50">
+                <Button
+                    primary
+                    padding='small'
+                    className="!rounded-full !bg-black"
+                    onClick={handleCreateDeclaration}
+                >
+                    <BsArrowRight className="w-4 h-4"/>
+                    Creëer declaratie
                 </Button>
             </div>
         }

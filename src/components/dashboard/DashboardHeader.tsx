@@ -1,12 +1,6 @@
 import NotificationsScreen from "../screens/NotificationsScreen";
 import {GiHamburgerMenu} from "react-icons/gi";
 
-export const tabs = [
-    "concept",
-    "afgekeurd",
-    "ingediend",
-]
-
 export default function DashboardHeader() {
 
     return <>

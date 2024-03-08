@@ -1,4 +1,4 @@
-import {CiFileOn, CiHome, CiReceipt, CiSettings} from "react-icons/ci";
+import {CiFileOn, CiHome, CiReceipt, CiSettings, CiSquareCheck} from "react-icons/ci";
 import {useRouter} from "next/router";
 import {motion} from "framer-motion";
 
@@ -9,8 +9,8 @@ const tabs = [
         path: '/'
     },
     {
-        icon: CiFileOn,
-        label: 'Facturen',
+        icon: CiSquareCheck,
+        label: 'Goedkeuren',
         // path: '/documents',
     },
     {
@@ -44,7 +44,7 @@ export default function TabNavigation() {
                     className={`
                         flex flex-1 flex-col items-center gap-1 p-2 rounded-lg relative
                         transition-all duration-500
-                        ${isActiveTab(tab) ? 'font-bold text-blue-600' : ''}
+                        ${isActiveTab(tab) ? 'font-bold text-black' : ''}
                     `}
                     onClick={() => tab?.path ? router.push(tab.path) : null}
                 >

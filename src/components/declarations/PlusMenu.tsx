@@ -35,7 +35,7 @@ export default function PlusMenu() {
             }
 
             setScannedImages(base64Images);
-            await router.push('/declaration');
+            await router.push('/expense');
         }
     }
 
@@ -69,7 +69,7 @@ export default function PlusMenu() {
         }
 
         await setScannedImages(base64Images);
-        await router.push('/declaration');
+        await router.push('/expense');
     }
 
     const handleToggleMenu = (value) => {

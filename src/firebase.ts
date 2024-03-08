@@ -36,40 +36,23 @@ export const getDeclarations = async () => {
     return declarations;
 }
 export const getDeclaration = async (id: any) => {
+    if (!id) return;
+    console.log('fetching declaration with id ' + id);
     const docRef = doc(db, "declarations", id);
     const docSnap = await getDoc(docRef);
-
-    const attachments = [];
-    for (let i = 0; i < docSnap.data()?.attachments; i++) {
-        const fileRef = ref(storage, `${id}/${i}`);
-        const url = await getDownloadURL(fileRef);
-        attachments.push(url);
-    }
 
     return {
         ...docSnap.data(),
         id: docSnap.id,
-        attachments,
     };
 }
 export const createDeclaration = async (declaration: any) => {
-    console.log('creating new declaration', declaration);
-
+    console.log('posting new declaration to FireBase', declaration);
     const docRef = await addDoc(collection(db, "declarations"), {
         ...declaration,
-        attachments: declaration?.attachments?.length,
     });
     const newId = docRef.id;
-
-    // upload attachments
-    const promises: any = [];
-    for (let i = 0; i < declaration?.attachments?.length; i++) {
-        const attachment = declaration?.attachments[i];
-        const fileRef = ref(storage, `${newId}/${i}`);
-        const uploadTask = uploadString(fileRef, attachment, 'data_url');
-        promises.push(uploadTask);
-    }
-    await Promise.all(promises);
+    return newId;
 }
 export const deleteDeclaration = async (id: any) => {
     await deleteDoc(doc(db, "declarations", id));
@@ -90,15 +73,100 @@ export const updateDeclaration = async (id: any, declaration: any) => {
 }
 
 // *********************************************************************************
+// expenses
+// *********************************************************************************
+const expensesCollection = collection(db, "expenses");
+export const getExpenses = async () => {
+    const querySnapshot = await getDocs(expensesCollection);
+    const expenses: any = [];
+    querySnapshot.forEach((doc) => {
+        expenses.push({ ...doc.data(), id: doc.id });
+    });
+    console.log('expenses', expenses);
+    return expenses;
+}
+
+export const getExpense = async (id: any) => {
+    if (!id) return;
+    console.log('fetching expense with id ' + id);
+    const docRef = doc(db, "expenses", id);
+    const docSnap = await getDoc(docRef);
+    const expense = docSnap.data();
+
+    console.log('fetched expense', expense);
+
+    const attachments = [];
+    for (const attachmentRef of expense?.attachments) {
+        const fileRef = ref(storage, attachmentRef);
+        const url = await getDownloadURL(fileRef);
+        attachments.push(url);
+    }
+    const response = {
+        ...expense,
+        id: docSnap.id,
+        attachments,
+    }
+    console.log('parsed expense', response);
+    return response;
+}
+
+export const createExpense = async (inputExpense: any) => {
+    console.log('creating new expense', inputExpense);
+
+    const docRef = await addDoc(collection(db, "expenses"), {
+        ...inputExpense,
+        attachments: inputExpense?.attachments?.length,
+    });
+    const newId = docRef.id;
+
+    // upload attachments
+    const attachments = [];
+    const promises: any = [];
+    for (let i = 0; i < inputExpense?.attachments?.length; i++) {
+        const attachment = inputExpense?.attachments[i];
+        const fileRef = ref(storage, `${newId}/${i}`);
+        const uploadTask = uploadString(fileRef, attachment, 'data_url');
+        attachments.push(`${newId}/${i}`);
+        promises.push(uploadTask);
+    }
+    await Promise.all(promises);
+
+    // update the expense with the attachments
+    await updateDoc(doc(db, "expenses", newId), {
+        ...inputExpense,
+        attachments,
+    });
+    return newId;
+}
+export const deleteExpense = async (id: any) => {
+    await deleteDoc(doc(db, "expenses", id));
+}
+export const updateExpense = async (id: any, expense: any) => {
+    // upload attachments
+    // const promises: any = [];
+    // for (let i = 0; i < declaration?.attachments?.length; i++) {
+    //     const fileRef = ref(storage, `${id}/${i}`);
+    //     const uploadTask = uploadString(fileRef, declaration?.attachments[i], 'data_url');
+    //     promises.push(uploadTask);
+    // }
+    // await Promise.all(promises);
+    await updateDoc(doc(db, "expenses", id), {
+        ...expense,
+        attachments: expense?.attachments,
+    });
+}
+// *********************************************************************************
 // attachments
 // *********************************************************************************
-export const getDeclarationAttachments = async (id: any, numberOfAttachments: number) => {
+export const getExpenseAttachments = async (attachmentRefs: any) => {
+    console.log('fetching attachments', attachmentRefs);
     const attachments: any = [];
-    for (let i = 0; i < numberOfAttachments; i++) {
-        const fileRef = ref(storage, `${id}/${i}`);
+    for (let i = 0; i < attachmentRefs?.length; i++) {
+        const fileRef = ref(storage, attachmentRefs[i]);
         const url = await getDownloadURL(fileRef);
         attachments?.push(url);
     }
+    console.log('fetched attachments', attachments);
     return attachments;
 }
 
