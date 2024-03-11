@@ -23,6 +23,7 @@ import DeclarationCard from "@/components/declarations/DeclarationCard";
 import DeclarationAccordion from "@/components/declarations/DeclarationAccordion";
 import {useDeclaration} from "@/hooks/useDeclaration";
 import {Dialog} from "@capacitor/dialog";
+import ClaimedInDeclarationCard from "@/components/expenses/ClaimedInDeclaration";
 
 export default function SingleExpense({expense: inputExpense}: any) {
     const [expense, setExpense] = useState(inputExpense);
@@ -266,14 +267,9 @@ export default function SingleExpense({expense: inputExpense}: any) {
                             Ingediend in declaraties
                         </span>
 
-                        {expense?.claimedIn?.map((declarationId: any, i: any) => {
-                            const {data: declaration} = useDeclaration({declarationId});
-                            return <DeclarationCard
-                                key={declarationId + i}
-                                declaration={declaration}
-                                onClick={() => router.push(`/declaration?id=${declarationId}`)}
-                            />
-                        })}
+                        {expense?.claimedIn?.map((declarationId: any, i: any) =>
+                            <ClaimedInDeclarationCard declarationId={declarationId} key={declarationId + i} />
+                        )}
                     </section>
                 }
 
