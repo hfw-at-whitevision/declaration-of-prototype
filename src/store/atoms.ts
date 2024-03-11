@@ -37,3 +37,6 @@ export const inputModalAtom = atom(
             onConfirm: props?.onConfirm,
         });
     });
+
+export const IsSelectingItemsAtom = atom(false);
+export const selectedItemIdsAtom = atom([]);

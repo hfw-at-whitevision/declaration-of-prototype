@@ -1,9 +1,16 @@
 import {useAtom} from "jotai";
 import {currentTabIndexAtom} from "@/store/atoms";
 import {motion} from 'framer-motion';
+import {useRouter} from "next/router";
 
 export default function TabBar({tabs}: any) {
     const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
+    const router = useRouter();
+
+    const handleClick = (inputTabIndex) => {
+        setCurrentTabIndex(inputTabIndex);
+        router.push(`/declarations?tabIndex=${inputTabIndex}`);
+    }
 
     return <nav
         className="bg-black/5 p-[2px] flex flex-row gap-2 justify-between rounded-full"
@@ -13,7 +20,7 @@ export default function TabBar({tabs}: any) {
                 <button
                     key={`tab-${tabIndex}`}
                     className="flex-1 p-2 text-xs text-center cursor-pointer capitalize rounded-full relative"
-                    onClick={() => setCurrentTabIndex(tabIndex)}
+                    onClick={() => handleClick(tabIndex)}
                 >
                     <span className={`z-[2] relative ${currentTabIndex === tabIndex ? 'font-bold' : ''}`}>
                         {tab}

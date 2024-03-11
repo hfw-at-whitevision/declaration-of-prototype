@@ -1,4 +1,4 @@
-import {BsFillCheckSquareFill, BsTrash} from "react-icons/bs";
+import {BsFillCheckSquareFill, BsSquare, BsTrash} from "react-icons/bs";
 import {motion, useAnimate} from 'framer-motion';
 import {useState} from "react";
 
@@ -10,10 +10,12 @@ interface CardProps {
     allowSwipeLeft?: boolean;
     selected?: boolean;
     deselectFn?: () => void;
+    selectFn?: () => void;
     children?: any;
     className?: string;
     borderLeft?: boolean;
     borderColor?: string;
+    isSelectingItems?: boolean;
     borderRadius?: string;
 
     [x: string]: any;
@@ -28,6 +30,8 @@ export default function Card(
         className,
         selected,
         deselectFn,
+        selectFn,
+        isSelectingItems = false,
         children,
         backgroundColor = 'bg-white',
         borderLeft,
@@ -75,6 +79,13 @@ export default function Card(
             }}
             {...props}
         >
+            {isSelectingItems && !selected
+                && <BsSquare
+                    className="w-8 h-8 text-blue-500"
+                    onClick={() => selectFn && selectFn()}
+                />
+            }
+
             {selected
                 && <BsFillCheckSquareFill
                     className="w-8 h-8 text-blue-500"

@@ -19,3 +19,7 @@ body {
 .react-datepicker__input-container input {
     @apply w-full outline-none ring-2 rounded-md p-2 ring-amber-400;
 }
+
+.pswp__img {
+    object-fit: contain !important;
+}

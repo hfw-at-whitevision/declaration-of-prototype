@@ -12,10 +12,13 @@ import useNativeStatusBar from "@/hooks/useNativeStatusBar";
 import useApp from "@/hooks/useApp";
 import AppUrlListener from "@/components/AppUrlListener";
 import BackgroundInset from "@/components/primitives/BackgroundInset";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 
 const inter = Inter({subsets: ["latin"]});
 
 process.browser ? defineCustomElements(window) : null;
+
+export const queryClient = new QueryClient();
 
 export default function DOPApp({Component, pageProps}: AppProps) {
     // useSplashScreen();
@@ -27,6 +30,7 @@ export default function DOPApp({Component, pageProps}: AppProps) {
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
 
     return (
+        <QueryClientProvider client={queryClient}>
         <div
             className={`w-full h-screen overflow-y-auto flex justify-center ${inter.className}`}
         >
@@ -49,5 +53,6 @@ export default function DOPApp({Component, pageProps}: AppProps) {
 
             <AppUrlListener />
         </div>
+        </QueryClientProvider>
     );
 }

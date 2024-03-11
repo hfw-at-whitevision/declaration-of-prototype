@@ -1,28 +1,28 @@
-import {useAtom} from 'jotai'
+import {useAtom, useAtomValue} from 'jotai'
 import {
     currentTabIndexAtom,
-    declarationsAtom, notificationsAtom,
-    searchQueryAtom,
+    declarationsAtom, IsSelectingItemsAtom, notificationsAtom,
+    searchQueryAtom, selectedItemIdsAtom,
     showOverlayAtom,
 } from '@/store/atoms'
 import React, {useEffect, useState} from 'react';
 import {deleteDeclaration, getDeclarations, getExpenses} from '@/firebase';
 import DeclarationCard from '@/components/declarations/DeclarationCard';
 import SearchSortBar from '@/components/SearchSortBar';
-import DeclarationsHeader from '@/components/declarations/DeclarationsHeader';
+import DeclarationsPageHeader from '@/components/declarations/DeclarationsPageHeader';
 import Content from '@/components/Content';
 import {useRouter} from 'next/router';
 import Overlay from "@/components/overlays/Overlay";
 import Button from '@/components/Button';
 import {Haptics} from '@capacitor/haptics';
-import {BsArrowLeft, BsArrowRight, BsPlusLg, BsTrash} from "react-icons/bs";
+import {BsArrowLeft, BsArrowRight, BsCheck2All, BsChevronDown, BsPlusLg, BsTrash} from "react-icons/bs";
 import {Toast} from "@capacitor/toast";
 import {Dialog} from "@capacitor/dialog";
 import TabNavigation from "@/components/TabNavigation";
 import {BiImport, BiScan} from "react-icons/bi";
 import PlusMenu from "@/components/declarations/PlusMenu";
 import {tabs} from '@/constants/defaults';
-import ExpenseCard from "@/components/declarations/ExpenseCard";
+import ExpenseCard from "@/components/expenses/ExpenseCard";
 
 interface Declaration {
     id?: string;
@@ -44,22 +44,40 @@ export default function Home() {
     let tapStartX: any = null;
     let tapEndX: any = null;
 
+    const [searchQuery] = useAtom(searchQueryAtom);
     const router = useRouter();
     const [items, setItems] = useAtom(declarationsAtom);
-    const [currentTabIndex] = useAtom(currentTabIndexAtom);
-    const [searchQuery] = useAtom(searchQueryAtom);
-    const [selectedExpenseIds, setSelectedExpenseIds] = useState<Array<string>>([]);
+    const claimedExpenses = items
+        ?.filter((item: any) => item?.claimedIn?.length)
+        ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()));
+    const unclaimedExpenses = items
+        ?.filter((item: any) => !item?.claimedIn || !item?.claimedIn?.length)
+        ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()));
+    const declarations = items;
+    const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
+    const [selectedItemIds, setSelectedItemIds] = useAtom(selectedItemIdsAtom);
     const [, setShowOverlay] = useAtom(showOverlayAtom);
     const [notifications] = useAtom(notificationsAtom);
-    const isSelectingExpenses = selectedExpenseIds.length > 0;
+    const [isSelectingItems, setIsSelectingItems] = useAtom(IsSelectingItemsAtom);
+    const isSelectingExpenses = selectedItemIds.length > 0 || isSelectingItems;
+    // allow section mode only for expenses
+    const allowSelectionMode = currentTabIndex === 0;
+    const [showClaimedExpenses, setShowClaimedExpenses] = useState(false);
+    const [showUnclaimedExpenses, setShowUnclaimedExpenses] = useState(true);
+
+    const {tabIndex: tab} = router?.query || {};
+    useEffect(() => {
+        if (!tab) return;
+        setCurrentTabIndex(Number(tab));
+    }, [tab]);
 
     const handleSelectExpense = (expenseId: string) => {
         // remove
-        if (selectedExpenseIds.includes(expenseId))
-            setSelectedExpenseIds(selectedExpenseIds.filter((selectedExpenseId) => selectedExpenseId !== expenseId));
+        if (selectedItemIds.includes(expenseId))
+            setSelectedItemIds(selectedItemIds.filter((selectedExpenseId) => selectedExpenseId !== expenseId));
         // add
         else
-            setSelectedExpenseIds([...selectedExpenseIds, expenseId]);
+            setSelectedItemIds([...selectedItemIds, expenseId]);
     }
 
     const handleOpenDeclaration = (id: any) => {
@@ -70,9 +88,15 @@ export default function Home() {
         router.push('/expense?id=' + id);
     }
 
-    const handleTapStart = async (expense: any, info) => {
+    const handleTapStart = async (item: any, info) => {
         if (isSelectingExpenses) {
-            handleSelectExpense(expense?.id);
+            handleSelectExpense(item?.id);
+            return;
+        }
+
+        if (!allowSelectionMode) {
+            if (currentTabIndex === 0) handleOpenExpense(item.id);
+            else handleOpenDeclaration(item.id);
             return;
         }
 
@@ -86,7 +110,7 @@ export default function Home() {
             await Haptics.vibrate({
                 duration: 40,
             });
-            handleSelectExpense(expense.id);
+            handleSelectExpense(item.id);
         }, 500);
     }
 
@@ -105,7 +129,7 @@ export default function Home() {
             // check if we are selecting expenses
             if (isSelectingExpenses) {
                 // (de-)select declaration
-                if (selectedExpenseIds.includes(itemId)) {
+                if (selectedItemIds.includes(itemId)) {
                     handleSelectExpense(itemId);
                 }
                 return;
@@ -129,7 +153,7 @@ export default function Home() {
     const handleDeleteSelectedDeclarations = async (e) => {
         e.preventDefault();
         const deletePromises = [];
-        for (const declarationId of selectedExpenseIds) {
+        for (const declarationId of selectedItemIds) {
             deletePromises.push(deleteDeclaration(declarationId));
         }
         const res = await Promise.all(deletePromises);
@@ -140,8 +164,8 @@ export default function Home() {
             await Toast.show({
                 text: 'Geselecteerde declaraties verwijderd.',
             });
-            setItems(oldDeclarations => oldDeclarations.filter((oldDeclaration: any) => !selectedExpenseIds.includes(oldDeclaration.id)));
-            setSelectedExpenseIds([]);
+            setItems(oldDeclarations => oldDeclarations.filter((oldDeclaration: any) => !selectedItemIds.includes(oldDeclaration.id)));
+            setSelectedItemIds([]);
         }
     }
 
@@ -162,9 +186,16 @@ export default function Home() {
     }
 
     const handleCreateDeclaration = async () => {
-        if (!selectedExpenseIds.length) return;
-        const serializedSelectedExpenseIds: any = selectedExpenseIds.join(',');
-        router.push('/declaration?createFromExpenses=' + serializedSelectedExpenseIds);
+        if (!selectedItemIds.length) return;
+        const serializedSelectedExpenseIds: any = selectedItemIds.join(',');
+        setIsSelectingItems(false);
+        setSelectedItemIds([]);
+        await router.push('/declaration?createFromExpenses=' + serializedSelectedExpenseIds);
+    }
+
+    const handleCancelCreateDeclaration = () => {
+        setSelectedItemIds([]);
+        setIsSelectingItems(false);
     }
 
     useEffect(() => {
@@ -180,53 +211,101 @@ export default function Home() {
 
     useEffect(() => {
         setShowOverlay(false);
-        setSelectedExpenseIds([]);
+        setSelectedItemIds([]);
         if (longPressTimer) clearTimeout(longPressTimer);
         longPressStartTimestamp = null;
     }, [router.query, router.asPath, router.pathname, router.query]);
 
-
-
     return <>
-        <DeclarationsHeader/>
+        <DeclarationsPageHeader/>
 
         <Content>
 
             <SearchSortBar/>
+
+            {(currentTabIndex === 0)
+                && <GroupHeader
+                    onClick={() => setShowUnclaimedExpenses(!showUnclaimedExpenses)}
+                    className="mt-4"
+                    title={`Nog in te dienen (${unclaimedExpenses?.length})`}
+                />
+            }
             {
-                items
-                    // .filter((declaration: any) => declaration?.status === tabs[currentTabIndex])
-                    // .filter((declaration: any) => declaration?.name?.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((item: any, index: number) => {
-                        if (currentTabIndex === 1) return (
-                            <DeclarationCard
-                                key={`${JSON.stringify(item)}-${index}`}
-                                declaration={item}
-                                selected={selectedExpenseIds.includes(item.id)}
-                                deselectFn={() => handleSelectExpense(item.id)}
-                                onSwipeLeft={async () => await handleSwipeLeft(item.id)}
-                                allowSwipeLeft={true}
+                (unclaimedExpenses?.length === 0 && showUnclaimedExpenses) &&
+                <div
+                    className="p-8 opacity-50 border border-dashed border-gray-400 bg-transparent flex items-center justify-center text-xs rounded-md">
+                    Importeer of scan een bon om te beginnen
+                </div>
+            }
+            {
+                (currentTabIndex === (0) && showUnclaimedExpenses)
+                && unclaimedExpenses?.map((item: any, index: number) => (
+                    <ExpenseCard
+                        key={`${JSON.stringify(item)}-${index}`}
+                        expense={item}
+                        selected={selectedItemIds.includes(item.id)}
+                        selectFn={() => handleSelectExpense(item.id)}
+                        deselectFn={() => handleSelectExpense(item.id)}
+                        onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                        allowSwipeLeft={true}
+                        isSelectingItems={isSelectingExpenses}
+                        onTapStart={async (event, info) => await handleTapStart(item, info)}
+                        onTap={async (event, info) => await handleTap(info, item.id)}
+                        onTapCancel={handleTapCancel}
+                    />
+                ))
+            }
 
-                                onTapStart={async (event, info) => await handleTapStart(item, info)}
-                                onTap={async (event, info) => await handleTap(info, item.id)}
-                                onTapCancel={handleTapCancel}
-                            />
-                        );
-                        else return (
-                            <ExpenseCard
-                                key={`${JSON.stringify(item)}-${index}`}
-                                expense={item}
-                                selected={selectedExpenseIds.includes(item.id)}
-                                deselectFn={() => handleSelectExpense(item.id)}
-                                onSwipeLeft={async () => await handleSwipeLeft(item.id)}
-                                allowSwipeLeft={true}
+            {(currentTabIndex === 0 && claimedExpenses?.length > 0)
+                && <GroupHeader
+                    onClick={() => setShowClaimedExpenses(!showClaimedExpenses)}
+                    className="mt-4"
+                    title={`Reeds ingediend (${claimedExpenses?.length})`}
+                />
+            }
 
-                                onTapStart={async (event, info) => await handleTapStart(item, info)}
-                                onTap={async (event, info) => await handleTap(info, item.id)}
-                                onTapCancel={handleTapCancel}
-                            />
-                        )
-                    })
+            {(currentTabIndex === 0)
+                && <section
+                    className={`
+                    grid gap-2 grid-cols-1 transition-all duration-500 ease-in-out
+                    ${showClaimedExpenses ? 'h-auto' : 'h-0 overflow-hidden'}
+                    `}
+                >
+                    {claimedExpenses?.map((item: any, index: number) => (
+                        <ExpenseCard
+                            className="opacity-40"
+                            key={`${JSON.stringify(item)}-${index}`}
+                            expense={item}
+                            selected={selectedItemIds.includes(item.id)}
+                            selectFn={() => handleSelectExpense(item.id)}
+                            deselectFn={() => handleSelectExpense(item.id)}
+                            onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                            allowSwipeLeft={true}
+                            isSelectingItems={isSelectingExpenses}
+                            onTapStart={async (event, info) => await handleTapStart(item, info)}
+                            onTap={async (event, info) => await handleTap(info, item.id)}
+                            onTapCancel={handleTapCancel}
+                        />
+                    ))}
+                </section>
+            }
+
+            {
+                (currentTabIndex === 1)
+                && declarations?.map((item: any, index: number) => (
+                    <DeclarationCard
+                        key={`${JSON.stringify(item)}-${index}`}
+                        declaration={item}
+                        selected={selectedItemIds.includes(item.id)}
+                        deselectFn={() => handleSelectExpense(item.id)}
+                        onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                        allowSwipeLeft={true}
+                        isSelectingItems={false}
+                        onTapStart={async (event, info) => await handleTapStart(item, info)}
+                        onTap={async (event, info) => await handleTap(info, item.id)}
+                        onTapCancel={handleTapCancel}
+                    />
+                ))
             }
 
             <pre className="text-xs mt-8 overflow-x-auto hidden">
@@ -240,15 +319,17 @@ export default function Home() {
             </pre>
         </Content>
 
-        <PlusMenu/>
+        {!isSelectingExpenses &&
+            <PlusMenu/>
+        }
 
-        {selectedExpenseIds?.length > 0
+        {selectedItemIds?.length > 0
             && <div className="fixed bottom-4 left-4 right-4 flex flex-row items-center justify-center gap-2">
                 <Button
                     primary
                     className="flex-1 h-16 rounded-lg !bg-black shadow-lg text-sm"
                 >
-                    Geselecteerde {selectedExpenseIds.length} bonnen samenvoegen
+                    Geselecteerde {selectedItemIds.length} bonnen samenvoegen
                 </Button>
                 <Button
                     primary
@@ -261,15 +342,24 @@ export default function Home() {
         }
 
         {isSelectingExpenses &&
-            <div className="absolute bottom-24 right-4 left-4 z-50">
+            <div className="absolute bottom-24 right-4 left-4 z-50 flex flex-row gap-2">
                 <Button
                     primary
+                    disabled={selectedItemIds.length === 0}
                     padding='small'
-                    className="!rounded-full !bg-black"
+                    className={`!rounded-full text-sm !bg-black w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
                     onClick={handleCreateDeclaration}
                 >
                     <BsArrowRight className="w-4 h-4"/>
-                    Creëer declaratie
+                    Creëer declaratie {selectedItemIds.length > 0 && `(${selectedItemIds.length})`}
+                </Button>
+                <Button
+                    primary
+                    padding='small'
+                    className="!rounded-full text-sm !bg-red-600 w-full"
+                    onClick={handleCancelCreateDeclaration}
+                >
+                    Annuleren
                 </Button>
             </div>
         }
@@ -279,3 +369,16 @@ export default function Home() {
         <Overlay/>
     </>
 }
+
+const GroupHeader = ({title, className = '', onClick = undefined, open = true, ...props}) => (
+    <button
+        onClick={onClick}
+        className={className + " p-4 text-black bg-gray-200 flex justify-between items-center flex-row text-sm font-bold cursor-pointer rounded-full"}
+        {...props}
+    >
+        <span></span>
+        {title}
+        <BsChevronDown
+            className={`w-4 h-4 font-black transition-all duration-300 ${!open ? 'rotate-180' : ''}`}/>
+    </button>
+)

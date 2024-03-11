@@ -1,9 +1,9 @@
 import SingleDeclaration from "@/components/declarations/SingleDeclaration";
-import { getExpense } from "@/firebase";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import {getExpense} from "@/firebase";
+import {useRouter} from "next/router";
+import {useEffect, useState} from "react";
 import Loading from "@/components/Loading";
-import SingleExpense from "@/components/declarations/SingleExpense";
+import SingleExpense from "@/components/expenses/SingleExpense";
 
 export default function SingleExpensePage() {
     const router = useRouter();
@@ -13,12 +13,20 @@ export default function SingleExpensePage() {
 
     useEffect(() => {
         if (!router.isReady) return;
-        getExpense(id).then((item: any) => {
-            setExpense(item);
-            setIsLoading(false);
+        setIsLoading(true);
+
+        // if we are creating a new expense
+        if (!id) setExpense({
+            totalAmount: 0.00,
         });
+        // opening an existing expense
+        else getExpense(id).then((item: any) => {
+            setExpense(item);
+        });
+
+        setIsLoading(false);
     }, [id, router.isReady]);
 
-    if (isLoading) return <Loading />
+    if (isLoading || !expense) return <Loading/>
     return <SingleExpense expense={expense}/>
 }

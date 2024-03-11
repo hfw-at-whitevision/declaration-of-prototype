@@ -1,8 +1,12 @@
 import {useRouter} from "next/router";
 import Button from "../Button";
 import Content from "../Content";
-import {useEffect, useState} from "react";
-import {createDeclaration, deleteDeclaration, getExpense, getExpenseAttachments, updateDeclaration} from "@/firebase";
+import {useState} from "react";
+import {
+    createDeclaration,
+    updateDeclaration,
+    updateExpense
+} from "@/firebase";
 import {
     inputModalAtom,
 } from "@/store/atoms";
@@ -10,7 +14,8 @@ import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
 import {LoadingSpinner} from "@/components/Loading";
 import SinglePageHeader from "@/components/declarations/SinglePageHeader";
-import ExpenseAccordion from "@/components/declarations/ExpenseAccordion";
+import ExpenseAccordion from "@/components/expenses/ExpenseAccordion";
+import {Dialog} from "@capacitor/dialog";
 
 export default function SingleDeclaration({declaration: inputDeclaration}: any) {
     const [declaration, setDeclaration] = useState(inputDeclaration);
@@ -20,6 +25,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
     const status = declaration?.status ?? 'concept';
     const router = useRouter();
     const allowEdit = !declarationId;
+    const containsClaimedExpenses = expenses?.some((expense: any) => expense?.claimedIn?.length > 0);
 
     const [title, setTitle] = useState(declaration?.title);
     const [description, setDescription] = useState(inputDeclaration?.description);
@@ -41,22 +47,51 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
 
+        // check for claimed expenses
+        if (containsClaimedExpenses) {
+            const {value} = await Dialog.confirm({
+                title: 'Waarschuwing',
+                message: 'Deze declaratie bevat bonnen die al gedeclareerd zijn. Weet je zeker dat je deze declaratie in wilt dienen?',
+            });
+            if (!value) return;
+        }
+
+        // update declaration
         if (declarationId) {
             await updateDeclaration(declarationId, serializeDeclaration({
                 status: '100',
             }));
-        } else {
-            await createDeclaration(serializeDeclaration({
+        }
+        // posting a new declaration
+        else {
+            const declarationId = await createDeclaration(serializeDeclaration({
                 status: '100',
                 date: new Date().toLocaleDateString(),
             }));
+            await handleUpdateExpenses({
+                claimedInDeclarationId: declarationId,
+            });
         }
         // setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
         // setShowConfirmationOverlay(true);
         await Toast.show({
             text: 'Declaratie succesvol ingediend.'
         });
-        await router.push('/declarations');
+        await router.push('/declarations?tabIndex=1');
+    }
+
+    const handleUpdateExpenses = async ({claimedInDeclarationId}) => {
+        const promises = [];
+        for (const expense of expenses) {
+            const claimedIn = expense?.claimedIn || [];
+            promises.push(updateExpense(expense.id, {
+                ...expense,
+                claimedIn: expense?.claimedIn?.length > 0
+                    ? [claimedInDeclarationId, ...expense?.claimedIn]
+                    : [claimedInDeclarationId],
+            }));
+        }
+        await Promise.all(promises);
     }
 
     return (
@@ -120,24 +155,31 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                 />
 
                 {!allowEdit &&
-                <CardInput
-                    allowEdit={allowEdit}
-                    value={date}
-                    onConfirm={(value) => setDate(value)}
-                    label="Datum"
-                    title='Datum van uitgave:'
-                    type='date'
-                />
+                    <CardInput
+                        allowEdit={allowEdit}
+                        value={date}
+                        onConfirm={(value) => setDate(value)}
+                        label="Datum"
+                        title='Datum van uitgave:'
+                        type='date'
+                    />
                 }
 
                 {/*<div className="bg-white rounded-md p-4 grid gap-2 grid-cols-3 relative pt-5">*/}
                 <div className="bg-white rounded-md p-4 grid gap-2 grid-cols-1 relative pt-5 w-full">
                     <span className={
                         declaration?.expenses?.length
-                            ? 'absolute top-1 left-4 text-[10px] opacity-50'
-                            : 'Bonnen'
+                            ? 'absolute top-1 left-4 text-[10px] flex flex-row'
+                            : ''
                     }>
                         Bonnen
+
+                        {declaration?.expenses?.length > 0 &&
+                            <span
+                                className="bg-red-500 text-white text-[8px] rounded-full flex items-center justify-center w-3 h-3 ml-1">
+                                {expenses?.length}
+                            </span>
+                        }
                     </span>
 
                     <section className="grid grid-cols-1 gap-2 w-full p-0">

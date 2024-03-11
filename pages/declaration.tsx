@@ -1,5 +1,5 @@
 import SingleDeclaration from "@/components/declarations/SingleDeclaration";
-import {getDeclaration, getExpense, getExpenseAttachments} from "@/firebase";
+import {getDeclaration, getExpense} from "@/firebase";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";

@@ -1,7 +1,7 @@
 import {useRouter} from "next/router";
 import Button from "../Button";
 import Content from "../Content";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
     createDeclaration, createExpense,
     deleteDeclaration, deleteExpense,
@@ -17,6 +17,12 @@ import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
 import {LoadingSpinner} from "@/components/Loading";
 import SinglePageHeader from "@/components/declarations/SinglePageHeader";
+import {Gallery, Item} from 'react-photoswipe-gallery'
+import ExpenseAttachmentThumbnail from "@/components/expenses/ExpenseAttachmentThumbnail";
+import DeclarationCard from "@/components/declarations/DeclarationCard";
+import DeclarationAccordion from "@/components/declarations/DeclarationAccordion";
+import {useDeclaration} from "@/hooks/useDeclaration";
+import {Dialog} from "@capacitor/dialog";
 
 export default function SingleExpense({expense: inputExpense}: any) {
     const [expense, setExpense] = useState(inputExpense);
@@ -26,6 +32,7 @@ export default function SingleExpense({expense: inputExpense}: any) {
     const status = 'Bon';
     const router = useRouter();
     const allowEdit = true;
+    const alreadyClaimed = expense?.claimedIn?.length > 0;
 
     const [title, setTitle] = useState(expense?.title ?? 'Nieuwe bon');
     const [description, setDescription] = useState(expense?.description);
@@ -100,6 +107,14 @@ export default function SingleExpense({expense: inputExpense}: any) {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+
+        if (alreadyClaimed) {
+            const {value} = await Dialog.confirm({
+                title: 'Reeds ingediend',
+                message: 'Deze bon is reeds ingediend in een declaratie. Weet je zeker dat je deze bon opnieuw wilt indienen?',
+            });
+            if (!value) return;
+        }
 
         await createDeclarationFromExpense();
         // setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
@@ -218,36 +233,6 @@ export default function SingleExpense({expense: inputExpense}: any) {
                     type='date'
                 />
 
-                {/*<CardInput*/}
-                {/*    allowEdit={allowEdit}*/}
-                {/*    value={currency}*/}
-                {/*    onConfirm={(value: string) => setCurrency(value)}*/}
-                {/*    label="Valuta"*/}
-                {/*    title='Voer een valuta in:'*/}
-                {/*    type='select'*/}
-                {/*    options={['EUR', 'USD', 'GBP']}*/}
-                {/*/>*/}
-
-                {/*<CardInput*/}
-                {/*    allowEdit={allowEdit}*/}
-                {/*    value={vat}*/}
-                {/*    onConfirm={(value: number) => setVat(value)}*/}
-                {/*    label="BTW percentage"*/}
-                {/*    title='Voer een BTW percentage in:'*/}
-                {/*    type='select'*/}
-                {/*    options={['0%', '9%', '21%']}*/}
-                {/*/>*/}
-
-                {/*<CardInput*/}
-                {/*    allowEdit={allowEdit}*/}
-                {/*    value={paymentMethod}*/}
-                {/*    onConfirm={(value: string) => setPaymentMethod(value)}*/}
-                {/*    label="Betaalmethode"*/}
-                {/*    title='Voer een betaalmethode in:'*/}
-                {/*    type='select'*/}
-                {/*    options={['cash', 'pin', 'creditcard']}*/}
-                {/*/>*/}
-
                 <div className="bg-white rounded-md p-4 grid gap-2 grid-cols-3 relative pt-5">
                     <span className={
                         expense?.attachments?.length
@@ -257,15 +242,40 @@ export default function SingleExpense({expense: inputExpense}: any) {
                         Bijlagen
                     </span>
 
-                    {expense?.attachments?.map((image: any) => (
-                        <img
-                            key={image}
-                            src={image}
-                            className="w-full h-[100px] p-2 object-contain rounded-md border-2 border-amber-400"
-                            fetchPriority="high"
-                        />
-                    ))}
+                    <Gallery options={{
+                        hideAnimationDuration: 0,
+                        showAnimationDuration: 0,
+                        showHideAnimationType: 'none',
+                        zoomAnimationDuration: 0,
+                        maxWidthToAnimate: 1,
+                    }}>
+                        {expense?.attachments?.map((attachment: any, i: any) => (
+                            <ExpenseAttachmentThumbnail key={attachment + i} imageUrl={attachment}/>
+                        ))}
+                    </Gallery>
                 </div>
+
+                {/* reeds ingediend in declaraties */}
+                {alreadyClaimed
+                    && <section className="rounded-md grid gap-2 grid-cols-1 relative pt-5 w-full">
+                        <span className={
+                            alreadyClaimed
+                                ? 'absolute top-1 left-4 text-[10px] opacity-50'
+                                : ''
+                        }>
+                            Ingediend in declaraties
+                        </span>
+
+                        {expense?.claimedIn?.map((declarationId: any, i: any) => {
+                            const {data: declaration} = useDeclaration({declarationId});
+                            return <DeclarationCard
+                                key={declarationId + i}
+                                declaration={declaration}
+                                onClick={() => router.push(`/declaration?id=${declarationId}`)}
+                            />
+                        })}
+                    </section>
+                }
 
                 {/* action buttons */}
                 {allowEdit
@@ -344,9 +354,10 @@ const CardInput = (
             })}
         >
 
-            <span className={(value)
-                ? 'absolute top-1 text-[10px] opacity-50'
-                : 'opacity-50'
+            <span className={
+                (typeof value !== 'undefined')
+                    ? 'absolute top-1 text-[10px] opacity-50'
+                    : 'opacity-50'
             }>
                 {label}
             </span>

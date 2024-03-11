@@ -1,12 +1,13 @@
-import { declarationsAtom, searchQueryAtom } from "@/store/atoms";
-import { BsSearch, BsSortUp } from "react-icons/bs";
-import { useAtom } from 'jotai'
+import {declarationsAtom, searchQueryAtom} from "@/store/atoms";
+import {BsSearch, BsSortUp, BsXLg} from "react-icons/bs";
+import {useAtom} from 'jotai'
+import {useRef} from "react";
 
 let timer: any = null;
 
 export default function SearchSortBar() {
     const [declarations, setDeclarations] = useAtom(declarationsAtom);
-    const [, setSearchQuery] = useAtom(searchQueryAtom);
+    const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
 
     const handleSortingClick = (e: any) => {
         e.preventDefault();
@@ -19,18 +20,35 @@ export default function SearchSortBar() {
         timer = setTimeout(() => setSearchQuery(value), 250);
     }
 
+    const handleClearSearch = () => {
+        setSearchQuery('');
+        inputRef.current.value = '';
+    }
+
+    const inputRef = useRef(null);
+
     return <>
         <section className="flex flex-row justify-between items-center gap-4">
-            <div className="rounded-md flex flex-row py-2 px-4 relative items-center bg-gray-200 gap-4 w-full">
+            <div className="rounded-md flex flex-row p-1 h-12 relative items-center bg-gray-200 gap-4 w-full">
                 <BsSearch
-                    className="w-4 h-4 text-black/50"
+                    className="w-4 h-4 text-black/50 ml-2"
                 />
                 <input
+                    ref={inputRef}
                     type="text"
                     className="w-full bg-transparent outline-none text-sm"
                     placeholder="Zoeken..."
                     onChange={handleOnInputChange}
                 />
+                {searchQuery?.length > 0 &&
+                    <button
+                        className="bg-white/50 h-full p-2 flex flex-row items-center justify-center text-xs rounded-md font-bold"
+                        onClick={handleClearSearch}
+                    >
+                        <BsXLg className="w-2 h-2 mr-1 text-black/50"/>
+                        Wissen
+                    </button>
+                }
             </div>
 
             <BsSortUp

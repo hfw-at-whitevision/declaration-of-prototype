@@ -1,10 +1,10 @@
 import {BiImport, BiScan} from "react-icons/bi";
-import {BsPlusLg} from "react-icons/bs";
+import {BsFileEarmark, BsFileEarmarkPlus, BsPlusLg} from "react-icons/bs";
 import React, {useRef, useState} from "react";
 import {motion} from "framer-motion";
 import {useRouter} from "next/router";
-import {useAtom} from "jotai/index";
-import {scannedImagesAtom} from "@/store/atoms";
+import {useAtom} from "jotai";
+import {currentTabIndexAtom, IsSelectingItemsAtom, scannedImagesAtom} from "@/store/atoms";
 import {Capacitor} from "@capacitor/core";
 import {DocumentScanner, ResponseType} from "capacitor-document-scanner";
 import {Filesystem} from "@capacitor/filesystem";
@@ -15,6 +15,8 @@ export default function PlusMenu() {
     const [scannedImages, setScannedImages]: any = useAtom(scannedImagesAtom);
     const fileInputRef: any = useRef(null);
     const [selectedFiles, setSelectedFiles]: any = useState([]);
+    const [, setIsSelectingItems] = useAtom(IsSelectingItemsAtom);
+    const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
 
     const handleCameraClick = async (e: any) => {
         e.preventDefault();
@@ -41,6 +43,13 @@ export default function PlusMenu() {
 
     const handleFileImportClick = () => {
         fileInputRef.current.click();
+    }
+
+    const handleCreateDeclaration = async () => {
+        setShowMenu(false);
+        await router.push('/declarations');
+        setCurrentTabIndex(0);
+        setIsSelectingItems(true);
     }
 
     const handleFileInputChange = async (e: any) => {
@@ -103,7 +112,7 @@ export default function PlusMenu() {
                 transition={{ duration: 0.4, delay: 0.2 }}
                 className={`px-4 py-2 font-bold`}
             >
-                Nieuwe declaratie
+                Nieuw
             </motion.h2>
             <motion.button
                 animate={showMenu ? { x: 0, opacity: 1 } : { x: 100, opacity: 0 }}
@@ -112,7 +121,7 @@ export default function PlusMenu() {
                 onClick={handleFileImportClick}
             >
                 <BiImport className="w-5 h-5" strokeWidth={0.1}/>
-                Importeren
+                Importeer bon
 
                 <input
                     type="file"
@@ -130,7 +139,16 @@ export default function PlusMenu() {
                 onClick={handleCameraClick}
             >
                 <BiScan className="w-5 h-5" strokeWidth={0.1}/>
-                Scannen
+                Scan bon
+            </motion.button>
+            <motion.button
+                animate={showMenu ? { x: 0, opacity: 1 } : { x: 100, opacity: 0 }}
+                transition={{ duration: 0.2, delay: 0.4 }}
+                className="p-4 text-right flex flex-row items-center gap-2 hover:bg-gray-100 z-50"
+                onClick={handleCreateDeclaration}
+            >
+                <BsFileEarmarkPlus className="w-5 h-5" strokeWidth={0.1}/>
+                Creëer declaratie
             </motion.button>
         </motion.nav>
 

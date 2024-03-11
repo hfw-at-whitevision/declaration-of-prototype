@@ -1,13 +1,14 @@
 import Card from "@/components/primitives/Card";
 
 export default function ExpenseCard({
-                                            selected,
-                                            expense,
-                                            ...props
-                                        }: any) {
+                                        selected,
+                                        expense,
+                                        className = '',
+                                        ...props
+                                    }: any) {
     return (
         <Card
-            className={`grid grid-cols-2 justify-between`}
+            className={`grid grid-cols-2 justify-between ${className}`}
             selected={selected}
             {...props}
         >
@@ -16,11 +17,11 @@ export default function ExpenseCard({
             </span>
 
             <span className="text-right">
-                {expense?.totalAmount ?? '0'} totaal
+                {expense?.totalAmount?.toString() ?? '0.00'}
             </span>
 
             <span className="flex-1 text-left">
-                {expense?.category}
+                {expense?.category ?? 'Geen categorie'}
             </span>
 
             <span className="text-right">
