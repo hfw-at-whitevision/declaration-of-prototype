@@ -91,7 +91,7 @@ export default function PlusMenu() {
         closed: {opacity: 0, y: "100%", pointerEvents: 'none'},
     }
 
-    return <div className="fixed right-4 bottom-24 flex flex-col items-end">
+    return <div className={`fixed right-4 bottom-24 flex flex-col items-end`}>
         <motion.nav
             layout
             animate={showMenu ? 'open' : 'closed'}
@@ -99,7 +99,7 @@ export default function PlusMenu() {
             initial="closed"
             className={`
                 bg-white shadow-md rounded-md mb-4 grid divide-y divide-black/5 w-[240px] overflow-hidden
-                transition-all
+                transition-all ${showMenu ? 'pointer-events-auto' : 'pointer-events-none'}
             `}
         >
             <div

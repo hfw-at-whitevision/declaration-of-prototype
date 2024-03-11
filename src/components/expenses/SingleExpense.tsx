@@ -32,8 +32,8 @@ export default function SingleExpense({expense: inputExpense}: any) {
     const expenseId = useRouter()?.query?.id ?? null;
     const status = 'Bon';
     const router = useRouter();
-    const allowEdit = true;
-    const alreadyClaimed = expense?.claimedIn?.length > 0;
+    const isAlreadyClaimed = expense?.claimedIn?.length > 0;
+    let allowEdit = !isAlreadyClaimed ? true : false;
 
     const [title, setTitle] = useState(expense?.title ?? 'Nieuwe bon');
     const [description, setDescription] = useState(expense?.description);
@@ -109,7 +109,7 @@ export default function SingleExpense({expense: inputExpense}: any) {
     const handleSubmit = async (e: any) => {
         e.preventDefault();
 
-        if (alreadyClaimed) {
+        if (isAlreadyClaimed) {
             const {value} = await Dialog.confirm({
                 title: 'Reeds ingediend',
                 message: 'Deze bon is reeds ingediend in een declaratie. Weet je zeker dat je deze bon opnieuw wilt indienen?',
@@ -190,6 +190,23 @@ export default function SingleExpense({expense: inputExpense}: any) {
                     </div>
                 </div>
 
+                {/* reeds ingediend in declaraties */}
+                {isAlreadyClaimed
+                    && <section className="rounded-md grid gap-2 grid-cols-1 relative pt-4 w-full mt-0 mb-8">
+                        <span className={
+                            isAlreadyClaimed
+                                ? 'absolute top-0 left-0 text-[10px] opacity-50'
+                                : ''
+                        }>
+                            Ingediend in declaraties:
+                        </span>
+
+                        {expense?.claimedIn?.map((declarationId: any, i: any) =>
+                            <ClaimedInDeclarationCard declarationId={declarationId} key={declarationId + i}/>
+                        )}
+                    </section>
+                }
+
                 <CardInput
                     allowEdit={allowEdit}
                     value={title}
@@ -256,63 +273,46 @@ export default function SingleExpense({expense: inputExpense}: any) {
                     </Gallery>
                 </div>
 
-                {/* reeds ingediend in declaraties */}
-                {alreadyClaimed
-                    && <section className="rounded-md grid gap-2 grid-cols-1 relative pt-5 w-full">
-                        <span className={
-                            alreadyClaimed
-                                ? 'absolute top-1 left-4 text-[10px] opacity-50'
-                                : ''
-                        }>
-                            Ingediend in declaraties
-                        </span>
-
-                        {expense?.claimedIn?.map((declarationId: any, i: any) =>
-                            <ClaimedInDeclarationCard declarationId={declarationId} key={declarationId + i} />
-                        )}
-                    </section>
-                }
-
                 {/* action buttons */}
-                {allowEdit
-                    && <>
-                        <div className="flex flex-row justify-between items-center gap-2">
-                            <Button
-                                secondary
-                                padding='small'
-                                fullWidth
-                                onClick={handleSave}
-                                disabled={isSaving}
-                            >
-                                {isSaving &&
-                                    <span className="absolute inset-0 flex items-center justify-center">
-                                        <LoadingSpinner className="w-5 h-5"/>
-                                    </span>
-                                }
-                                <span className={`!transition-none ${isSaving ? 'opacity-0' : ''}`}>
-                                    Opslaan
-                                </span>
-                            </Button>
-
-                            <Button
-                                primary
-                                padding='small'
-                                fullWidth
-                                onClick={handleSubmit}
-                            >
-                                Indienen
-                            </Button>
-                        </div>
-
-                        <Button
-                            tertiary
+                <div className="flex flex-row justify-between items-center gap-2">
+                    {allowEdit
+                        && <Button
+                            secondary
                             padding='small'
                             fullWidth
-                            onClick={handleDelete}
+                            onClick={handleSave}
+                            disabled={isSaving}
                         >
-                            Verwijderen
+                            {isSaving &&
+                                <span className="absolute inset-0 flex items-center justify-center">
+                                        <LoadingSpinner className="w-5 h-5"/>
+                                    </span>
+                            }
+                            <span className={`!transition-none ${isSaving ? 'opacity-0' : ''}`}>
+                                    Opslaan
+                                </span>
                         </Button>
-                    </>
+                    }
+
+                    <Button
+                        primary
+                        padding='small'
+                        fullWidth
+                        onClick={handleSubmit}
+                    >
+                        {isAlreadyClaimed ? 'Opnieuw indienen' : 'Indienen'}
+                    </Button>
+                </div>
+
+                {allowEdit
+                    && <Button
+                        tertiary
+                        padding='small'
+                        fullWidth
+                        onClick={handleDelete}
+                    >
+                        Verwijderen
+                    </Button>
                 }
             </div>
 

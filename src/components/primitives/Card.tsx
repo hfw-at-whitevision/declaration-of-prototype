@@ -62,7 +62,7 @@ export default function Card(
             layout
             ref={scope}
             whileHover={{scale: 1.01}}
-            className={`flex flex-row items-center gap-4 text-xs w-full`}
+            className={`flex flex-row items-center gap-4 text-xs w-full cursor-pointer`}
             onBlur={() => setSwipedLeft(false)}
             {...allowSwipeLeft && {
                 drag: 'x',
@@ -77,6 +77,7 @@ export default function Card(
                     right: 0,
                 },
             }}
+
             {...props}
         >
             {isSelectingItems && !selected

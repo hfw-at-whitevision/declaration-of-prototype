@@ -42,7 +42,9 @@ export default function Home() {
     let longPressStartTimestamp: any = null;
     let longPressTimer: any = null;
     let tapStartX: any = null;
+    let tapStartY: any = null;
     let tapEndX: any = null;
+    let tapEndY: any = null;
 
     const [searchQuery] = useAtom(searchQueryAtom);
     const router = useRouter();
@@ -72,6 +74,7 @@ export default function Home() {
     }, [tab]);
 
     const handleSelectExpense = (expenseId: string) => {
+        console.log(`(de-)selected expense ${expenseId}`);
         // remove
         if (selectedItemIds.includes(expenseId))
             setSelectedItemIds(selectedItemIds.filter((selectedExpenseId) => selectedExpenseId !== expenseId));
@@ -89,20 +92,23 @@ export default function Home() {
     }
 
     const handleTapStart = async (item: any, info) => {
-        if (isSelectingExpenses) {
-            handleSelectExpense(item?.id);
-            return;
-        }
+        tapStartX = info.point.x;
+        tapStartY = info.point.y;
+        console.log('tap start', tapStartX, tapStartY);
 
+        // if we are in selection mode
+        // if (isSelectingExpenses) {
+        //     await handleTap(info, item?.id);
+        //     return;
+        // }
+
+        // if we are not in selection mode, open item directly
         if (!allowSelectionMode) {
             if (currentTabIndex === 0) handleOpenExpense(item.id);
             else handleOpenDeclaration(item.id);
             return;
         }
 
-        console.log('tap start');
-        tapStartX = info.point.x;
-        console.log('tapStartX', tapStartX);
         longPressStartTimestamp = new Date().getTime();
 
         if (longPressTimer) clearTimeout(longPressTimer);
@@ -111,43 +117,65 @@ export default function Home() {
                 duration: 40,
             });
             handleSelectExpense(item.id);
+            resetTap();
         }, 500);
     }
 
-    const handleTap = async (info, itemId: string) => {
-        console.log('tap success')
+    const handleTapEnd = async (info, itemId: string) => {
         tapEndX = info.point.x;
-        const swipedLeft = tapStartX - tapEndX >= 100;
+        tapEndY = info.point.y;
 
+        console.log('tap end', tapEndX, tapEndY);
+
+        const swipedLeft = tapStartX - tapEndX >= 100;
         const now = new Date().getTime();
         const pressDuration = now - longPressStartTimestamp;
+        resetTap();
 
-        clearTimeout(longPressTimer);
-        longPressStartTimestamp = null;
+        // cancel out swipes horizontally or vertically
+        // if (Math.abs(tapStartX - info.point.x) > 5 || Math.abs(tapStartY - info.point.y) > 5) {
+        //     console.log('tap cancelled');
+        //     resetTap();
+        //     return;
+        // }
+
+        // if successfully CLICKED (NOT swiping)
+        console.log('tap success');
 
         if (pressDuration < 500) {
             // check if we are selecting expenses
             if (isSelectingExpenses) {
                 // (de-)select declaration
-                if (selectedItemIds.includes(itemId)) {
-                    handleSelectExpense(itemId);
-                }
+                console.log('tap success (selecting expenses)');
+                handleSelectExpense(itemId);
                 return;
             }
             // else open the declaration
             else if (!swipedLeft) {
+                console.log('tap success (opening item)');
                 if (currentTabIndex === 0) handleOpenExpense(itemId);
                 else handleOpenDeclaration(itemId);
+                return;
             }
         }
+        else {
+            console.log('tap success (long press item)');
+            return;
+        }
+    }
+
+    const resetTap = () => {
+        tapStartX = null;
+        tapStartY = null;
+        tapEndX = null;
+        tapEndY = null;
+        clearTimeout(longPressTimer);
+        longPressStartTimestamp = null;
     }
 
     const handleTapCancel = (event, info) => {
         console.log('tap cancel');
-        tapStartX = null;
-        tapEndX = null;
-        clearTimeout(longPressTimer);
-        longPressStartTimestamp = null;
+        resetTap();
     }
 
     const handleDeleteSelectedDeclarations = async (e) => {
@@ -225,13 +253,14 @@ export default function Home() {
 
             {(currentTabIndex === 0)
                 && <GroupHeader
+                    open={showUnclaimedExpenses}
                     onClick={() => setShowUnclaimedExpenses(!showUnclaimedExpenses)}
                     className="mt-4"
                     title={`Nog in te dienen (${unclaimedExpenses?.length})`}
                 />
             }
             {
-                (unclaimedExpenses?.length === 0 && showUnclaimedExpenses) &&
+                (items?.length === 0 && showUnclaimedExpenses) &&
                 <div
                     className="p-8 opacity-50 border border-dashed border-gray-400 bg-transparent flex items-center justify-center text-xs rounded-md">
                     Importeer of scan een bon om te beginnen
@@ -250,7 +279,7 @@ export default function Home() {
                         allowSwipeLeft={true}
                         isSelectingItems={isSelectingExpenses}
                         onTapStart={async (event, info) => await handleTapStart(item, info)}
-                        onTap={async (event, info) => await handleTap(info, item.id)}
+                        onTap={async (event, info) => await handleTapEnd(info, item.id)}
                         onTapCancel={handleTapCancel}
                     />
                 ))
@@ -258,6 +287,7 @@ export default function Home() {
 
             {(currentTabIndex === 0 && claimedExpenses?.length > 0)
                 && <GroupHeader
+                    open={showClaimedExpenses}
                     onClick={() => setShowClaimedExpenses(!showClaimedExpenses)}
                     className="mt-4"
                     title={`Reeds ingediend (${claimedExpenses?.length})`}
@@ -271,19 +301,19 @@ export default function Home() {
                     ${showClaimedExpenses ? 'h-auto' : 'h-0 overflow-hidden'}
                     `}
                 >
-                    {claimedExpenses?.map((item: any, index: number) => (
+                    {claimedExpenses?.map((expense: any, index: number) => (
                         <ExpenseCard
                             className="opacity-40"
-                            key={`${JSON.stringify(item)}-${index}`}
-                            expense={item}
-                            selected={selectedItemIds.includes(item.id)}
-                            selectFn={() => handleSelectExpense(item.id)}
-                            deselectFn={() => handleSelectExpense(item.id)}
-                            onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                            key={`${JSON.stringify(expense)}-${index}`}
+                            expense={expense}
+                            selected={selectedItemIds.includes(expense.id)}
+                            selectFn={() => handleSelectExpense(expense.id)}
+                            deselectFn={() => handleSelectExpense(expense.id)}
+                            onSwipeLeft={async () => await handleSwipeLeft(expense.id)}
                             allowSwipeLeft={true}
                             isSelectingItems={isSelectingExpenses}
-                            onTapStart={async (event, info) => await handleTapStart(item, info)}
-                            onTap={async (event, info) => await handleTap(info, item.id)}
+                            onTapStart={async (event, info) => await handleTapStart(expense, info)}
+                            onTap={async (event, info) => await handleTapEnd(info, expense.id)}
                             onTapCancel={handleTapCancel}
                         />
                     ))}
@@ -302,7 +332,7 @@ export default function Home() {
                         allowSwipeLeft={true}
                         isSelectingItems={false}
                         onTapStart={async (event, info) => await handleTapStart(item, info)}
-                        onTap={async (event, info) => await handleTap(info, item.id)}
+                        onTap={async (event, info) => await handleTapEnd(info, item.id)}
                         onTapCancel={handleTapCancel}
                     />
                 ))
@@ -342,7 +372,7 @@ export default function Home() {
         }
 
         {isSelectingExpenses &&
-            <div className="absolute bottom-24 right-4 left-4 z-50 flex flex-row gap-2">
+            <div className="fixed bottom-24 right-4 left-4 z-50 flex flex-row gap-2">
                 <Button
                     primary
                     disabled={selectedItemIds.length === 0}
@@ -350,7 +380,7 @@ export default function Home() {
                     className={`!rounded-full text-sm !bg-black w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
                     onClick={handleCreateDeclaration}
                 >
-                    <BsArrowRight className="w-4 h-4"/>
+                    <BsArrowRight className="w-3 h-3"/>
                     Creëer declaratie {selectedItemIds.length > 0 && `(${selectedItemIds.length})`}
                 </Button>
                 <Button
