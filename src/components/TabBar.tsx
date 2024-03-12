@@ -1,10 +1,12 @@
 import {useAtom} from "jotai";
-import {currentTabIndexAtom} from "@/store/atoms";
+import {currentTabIndexAtom, primaryColorAtom} from "@/store/atoms";
 import {motion} from 'framer-motion';
 import {useRouter} from "next/router";
 
 export default function TabBar({tabs}: any) {
     const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
+    const [primaryColor] = useAtom(primaryColorAtom);
+    const color = primaryColor.split('-')[1];
     const router = useRouter();
 
     const handleClick = (inputTabIndex) => {
@@ -13,22 +15,22 @@ export default function TabBar({tabs}: any) {
     }
 
     return <nav
-        className="bg-black/5 p-[2px] flex flex-row gap-2 justify-between rounded-full"
+        className="bg-white p-[2px] flex flex-row gap-2 justify-between rounded-full"
     >
         {
             tabs.map((tab: any, tabIndex: number) => (
                 <button
                     key={`tab-${tabIndex}`}
-                    className="flex-1 p-2 text-xs text-center cursor-pointer capitalize rounded-full relative"
+                    className="flex-1 p-4 text-xs text-center cursor-pointer capitalize rounded-full relative"
                     onClick={() => handleClick(tabIndex)}
                 >
-                    <span className={`z-[2] relative ${currentTabIndex === tabIndex ? 'font-bold' : ''}`}>
+                    <span className={`z-[2] relative ${currentTabIndex === tabIndex ? 'font-bold text-white' : `text-${color}-500`}`}>
                         {tab}
                     </span>
                     {currentTabIndex === tabIndex &&
                         <motion.span
                             layoutId="bubble"
-                            className="absolute inset-0 z-[1] bg-white rounded-full"
+                            className={ primaryColor + " absolute inset-0 z-[1] rounded-full"}
                             transition={{
                                 type: 'spring',
                                 bounce: 0.2,

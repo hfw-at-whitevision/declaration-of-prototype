@@ -1,14 +1,14 @@
 import {useRouter} from "next/router";
 import Button from "../Button";
 import Content from "../Content";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {
     createDeclaration,
     updateDeclaration,
     updateExpense
 } from "@/firebase";
 import {
-    inputModalAtom,
+    inputModalAtom, primaryColorAtom,
 } from "@/store/atoms";
 import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
@@ -16,6 +16,7 @@ import {LoadingSpinner} from "@/components/Loading";
 import SinglePageHeader from "@/components/declarations/SinglePageHeader";
 import ExpenseAccordion from "@/components/expenses/ExpenseAccordion";
 import {Dialog} from "@capacitor/dialog";
+import DisplayHeading from "@/components/layout/DisplayHeading";
 
 export default function SingleDeclaration({declaration: inputDeclaration}: any) {
     const [declaration, setDeclaration] = useState(inputDeclaration);
@@ -32,6 +33,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
     const [totalAmount, setTotalAmount] = useState(declaration?.totalAmount);
     const [date, setDate] = useState(declaration?.date);
     const [category, setCategory] = useState(declaration?.category);
+    const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
 
     const serializeDeclaration = (props?: any) => ({
         ...declarationId && {id: declarationId},
@@ -94,6 +96,14 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
         await Promise.all(promises);
     }
 
+    useEffect(() => {
+        setPrimaryColor('bg-gray-100');
+
+        return () => {
+            setPrimaryColor('bg-amber-400');
+        }
+    }, []);
+
     return (
         <Content>
             <div className="mt-8 grid gap-2 text-xs">
@@ -101,11 +111,11 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                 <SinglePageHeader status={declaration?.status}/>
 
                 <div className="my-4 space-y-2 rounded-md">
-                    <label
-                        className="text-xl font-extrabold focus:outline-2 outline-amber-400 break-all w-full h-auto overflow-hidden text-left"
+                    <DisplayHeading
+                        className="text-xl font-black focus:outline-2 outline-amber-400 break-all w-full h-auto overflow-hidden text-left"
                     >
                         {title ?? <span className="opacity-25">Declaratie</span>}
-                    </label>
+                    </DisplayHeading>
 
                     <div className="flex flex-row justify-between items-center text-lg">
                         <span className="flex flex-row">
@@ -185,7 +195,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                     <section className="grid grid-cols-1 gap-2 w-full p-0">
 
                         {expenses?.length > 0 && expenses?.map((expense: any) => (
-                            <ExpenseAccordion key={expense?.id} expense={expense}/>
+                            <ExpenseAccordion key={expense?.id} expense={expense} showStatus={allowEdit} />
                         ))}
 
                     </section>

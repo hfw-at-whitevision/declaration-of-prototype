@@ -10,7 +10,7 @@ import {
     updateExpense
 } from "@/firebase";
 import {
-    inputModalAtom,
+    inputModalAtom, primaryColorAtom,
     scannedImagesAtom,
 } from "@/store/atoms";
 import {useAtom} from "jotai";
@@ -29,6 +29,7 @@ export default function SingleExpense({expense: inputExpense}: any) {
     const [expense, setExpense] = useState(inputExpense);
     const [scannedImages, setScannedImages] = useAtom(scannedImagesAtom);
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
+    const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
     const expenseId = useRouter()?.query?.id ?? null;
     const status = 'Bon';
     const router = useRouter();
@@ -157,6 +158,14 @@ export default function SingleExpense({expense: inputExpense}: any) {
             });
     }, [expenseId]);
 
+    useEffect(() => {
+        setPrimaryColor('bg-gray-100');
+
+        return () => {
+            setPrimaryColor('bg-amber-400');
+        }
+    }, []);
+
     return (
         <Content>
             <div className="mt-8 grid gap-2 text-xs">
@@ -198,7 +207,7 @@ export default function SingleExpense({expense: inputExpense}: any) {
                                 ? 'absolute top-0 left-0 text-[10px] opacity-50'
                                 : ''
                         }>
-                            Ingediend in declaraties:
+                            Ingediend in de volgende declaraties:
                         </span>
 
                         {expense?.claimedIn?.map((declarationId: any, i: any) =>
@@ -277,6 +286,7 @@ export default function SingleExpense({expense: inputExpense}: any) {
                 <div className="flex flex-row justify-between items-center gap-2">
                     {allowEdit
                         && <Button
+                            rounded="full"
                             secondary
                             padding='small'
                             fullWidth
@@ -296,6 +306,7 @@ export default function SingleExpense({expense: inputExpense}: any) {
 
                     <Button
                         primary
+                        rounded="full"
                         padding='small'
                         fullWidth
                         onClick={handleSubmit}

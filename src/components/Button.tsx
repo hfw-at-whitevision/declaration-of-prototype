@@ -11,6 +11,7 @@ interface Props {
     onClick?: (e: any) => void;
     disabled?: boolean;
     rounded?: string;
+    outline?: boolean;
     icon?: React.ReactNode;
 }
 
@@ -19,6 +20,7 @@ export default function Button(
         primary = false,
         secondary = false,
         tertiary = false,
+        outline = false,
         children,
         padding = 'large',
         fullWidth = false,
@@ -41,6 +43,7 @@ export default function Button(
             ${primary ? "bg-amber-400 text-white" : ""}
             ${!primary && !tertiary ? "bg-gray-200 text-black" : ""}
             ${tertiary ? "bg-transparent text-black" : ""}
+            ${outline && primary ? 'border-2 border-amber-400 border-solid !text-amber-400 !bg-transparent' : ''}
             ${className}
         `}
         {...props}

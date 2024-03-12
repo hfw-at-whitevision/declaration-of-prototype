@@ -6,6 +6,7 @@ import WaitingForApprovalList from "@/components/dashboard/WaitingForApprovalLis
 import RejectionsList from "@/components/dashboard/RejectionsList";
 import ActionsGrid from "@/components/dashboard/ActionsGrid";
 import {useRouter} from "next/router";
+import DisplayHeading from "@/components/layout/DisplayHeading";
 
 export default function HomePage() {
     const isApprover = process.env.NEXT_PUBLIC_IS_APPROVER === 'true';
@@ -20,15 +21,15 @@ export default function HomePage() {
 
         <Content className="">
 
-            <section className="py-16 flex flex-col text-center">
-                <h1 className="font-extrabold text-4xl">Welkom {name ?? 'onbekende'}!</h1>
+            <section className="py-8 flex flex-col text-center">
+                <DisplayHeading className="font-extrabold text-4xl">Welkom {name ?? 'onbekende'}!</DisplayHeading>
                 <small className="mt-4 opacity-50">{email ?? 'anoniempje'}</small>
                 <small className="opacity-50">{company ?? 'anoniem bedrijf'}</small>
             </section>
-            {isApprover
-                ? <WaitingForApprovalList/>
-                : <RejectionsList className="mt-8"/>
-            }
+            {/*{isApprover*/}
+            {/*    ? <WaitingForApprovalList/>*/}
+            {/*    : <RejectionsList className="mt-8"/>*/}
+            {/*}*/}
 
             <ActionsGrid/>
 

@@ -91,7 +91,7 @@ export default function PlusMenu() {
         closed: {opacity: 0, y: "100%", pointerEvents: 'none'},
     }
 
-    return <div className={`fixed right-4 bottom-24 flex flex-col items-end`}>
+    return <>
         <motion.nav
             layout
             animate={showMenu ? 'open' : 'closed'}
@@ -99,7 +99,8 @@ export default function PlusMenu() {
             initial="closed"
             className={`
                 bg-white shadow-md rounded-md mb-4 grid divide-y divide-black/5 w-[240px] overflow-hidden
-                transition-all ${showMenu ? 'pointer-events-auto' : 'pointer-events-none'}
+                transition-all ${showMenu ? 'pointer-events-auto z-50' : 'pointer-events-none z-[-1]'}
+                fixed right-4 bottom-40 flex flex-col items-end
             `}
         >
             <div
@@ -163,10 +164,10 @@ export default function PlusMenu() {
                     rotate: 0,
                 }
             }
-            className="w-16 h-16 bg-white shadow-md rounded-full flex items-center justify-center z-50"
+            className="w-16 h-16 bg-white shadow-md rounded-full flex items-center justify-center z-50 fixed bottom-24 right-4"
             onClick={handleToggleMenu}
         >
             <BsPlusLg className="w-8 h-8 opacity-75"/>
         </motion.button>
-    </div>
+        </>
 }

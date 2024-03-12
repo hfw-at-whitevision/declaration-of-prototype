@@ -1,7 +1,7 @@
 import {useAtom, useAtomValue} from 'jotai'
 import {
     currentTabIndexAtom,
-    declarationsAtom, IsSelectingItemsAtom, notificationsAtom,
+    declarationsAtom, IsSelectingItemsAtom, notificationsAtom, primaryColorAtom,
     searchQueryAtom, selectedItemIdsAtom,
     showOverlayAtom,
 } from '@/store/atoms'
@@ -15,7 +15,16 @@ import {useRouter} from 'next/router';
 import Overlay from "@/components/overlays/Overlay";
 import Button from '@/components/Button';
 import {Haptics} from '@capacitor/haptics';
-import {BsArrowLeft, BsArrowRight, BsCheck2All, BsChevronDown, BsPlusLg, BsTrash} from "react-icons/bs";
+import {
+    BsArrowLeft,
+    BsArrowRight,
+    BsCheck2All,
+    BsCheckLg,
+    BsChevronDown,
+    BsHourglassTop,
+    BsPlusLg,
+    BsTrash, BsXLg
+} from "react-icons/bs";
 import {Toast} from "@capacitor/toast";
 import {Dialog} from "@capacitor/dialog";
 import TabNavigation from "@/components/TabNavigation";
@@ -23,6 +32,8 @@ import {BiImport, BiScan} from "react-icons/bi";
 import PlusMenu from "@/components/declarations/PlusMenu";
 import {tabs} from '@/constants/defaults';
 import ExpenseCard from "@/components/expenses/ExpenseCard";
+import {displayFont} from "@/components/layout/DisplayHeading";
+import {FaChevronDown} from "react-icons/fa";
 
 interface Declaration {
     id?: string;
@@ -49,13 +60,17 @@ export default function Home() {
     const [searchQuery] = useAtom(searchQueryAtom);
     const router = useRouter();
     const [items, setItems] = useAtom(declarationsAtom);
+    const [declarationStatusFilters, setDeclarationStatusFilters] = useState([]);
     const claimedExpenses = items
         ?.filter((item: any) => item?.claimedIn?.length)
         ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()));
     const unclaimedExpenses = items
         ?.filter((item: any) => !item?.claimedIn || !item?.claimedIn?.length)
         ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()));
-    const declarations = items;
+    const declarations = items
+        ?.filter((item: any) => declarationStatusFilters?.length ? declarationStatusFilters.includes(item?.status) : true)
+        ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()))
+        ?.sort((a: any, b: any) => new Date(b?.date) - new Date(a?.date));
     const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
     const [selectedItemIds, setSelectedItemIds] = useAtom(selectedItemIdsAtom);
     const [, setShowOverlay] = useAtom(showOverlayAtom);
@@ -103,11 +118,11 @@ export default function Home() {
         // }
 
         // if we are not in selection mode, open item directly
-        if (!allowSelectionMode) {
-            if (currentTabIndex === 0) handleOpenExpense(item.id);
-            else handleOpenDeclaration(item.id);
-            return;
-        }
+        // if (!allowSelectionMode) {
+        //     if (currentTabIndex === 0) handleOpenExpense(item.id);
+        //     else handleOpenDeclaration(item.id);
+        //     return;
+        // }
 
         longPressStartTimestamp = new Date().getTime();
 
@@ -157,8 +172,7 @@ export default function Home() {
                 else handleOpenDeclaration(itemId);
                 return;
             }
-        }
-        else {
+        } else {
             console.log('tap success (long press item)');
             return;
         }
@@ -244,19 +258,27 @@ export default function Home() {
         longPressStartTimestamp = null;
     }, [router.query, router.asPath, router.pathname, router.query]);
 
+    const handleClickStatusFilter = (status: string) => {
+        if (declarationStatusFilters?.includes(status))
+            setDeclarationStatusFilters(declarationStatusFilters.filter((filter) => filter !== status));
+        else
+            setDeclarationStatusFilters(declarationStatusFilters?.length ? [...declarationStatusFilters, status] : [status]);
+    }
+
     return <>
         <DeclarationsPageHeader/>
 
-        <Content>
+        <Content className="bg-white m-4 rounded-2xl">
 
             <SearchSortBar/>
 
             {(currentTabIndex === 0)
                 && <GroupHeader
                     open={showUnclaimedExpenses}
-                    onClick={() => setShowUnclaimedExpenses(!showUnclaimedExpenses)}
                     className="mt-4"
-                    title={`Nog in te dienen (${unclaimedExpenses?.length})`}
+                    onClick={() => setShowUnclaimedExpenses(!showUnclaimedExpenses)}
+                    title={`Nog in te dienen`}
+                    itemsCount={unclaimedExpenses?.length}
                 />
             }
             {
@@ -266,44 +288,47 @@ export default function Home() {
                     Importeer of scan een bon om te beginnen
                 </div>
             }
-            {
-                (currentTabIndex === (0) && showUnclaimedExpenses)
-                && unclaimedExpenses?.map((item: any, index: number) => (
-                    <ExpenseCard
-                        key={`${JSON.stringify(item)}-${index}`}
-                        expense={item}
-                        selected={selectedItemIds.includes(item.id)}
-                        selectFn={() => handleSelectExpense(item.id)}
-                        deselectFn={() => handleSelectExpense(item.id)}
-                        onSwipeLeft={async () => await handleSwipeLeft(item.id)}
-                        allowSwipeLeft={true}
-                        isSelectingItems={isSelectingExpenses}
-                        onTapStart={async (event, info) => await handleTapStart(item, info)}
-                        onTap={async (event, info) => await handleTapEnd(info, item.id)}
-                        onTapCancel={handleTapCancel}
-                    />
-                ))
-            }
+            <ListSection>
+                {
+                    (currentTabIndex === (0) && showUnclaimedExpenses)
+                    && unclaimedExpenses?.map((item: any, index: number) => (
+                        <ExpenseCard
+                            backgroundColor="bg-gray-50"
+                            key={`${JSON.stringify(item)}-${index}`}
+                            expense={item}
+                            selected={selectedItemIds.includes(item.id)}
+                            selectFn={() => handleSelectExpense(item.id)}
+                            deselectFn={() => handleSelectExpense(item.id)}
+                            onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                            allowSwipeLeft={true}
+                            isSelectingItems={isSelectingExpenses}
+                            onTapStart={async (event, info) => await handleTapStart(item, info)}
+                            onTap={async (event, info) => await handleTapEnd(info, item.id)}
+                            onTapCancel={handleTapCancel}
+                        />
+                    ))
+                }
+            </ListSection>
 
             {(currentTabIndex === 0 && claimedExpenses?.length > 0)
                 && <GroupHeader
                     open={showClaimedExpenses}
                     onClick={() => setShowClaimedExpenses(!showClaimedExpenses)}
                     className="mt-4"
-                    title={`Reeds ingediend (${claimedExpenses?.length})`}
+                    title={`Reeds ingediend`}
+                    itemsCount={claimedExpenses?.length}
                 />
             }
 
             {(currentTabIndex === 0)
-                && <section
+                && <ListSection
                     className={`
-                    grid gap-2 grid-cols-1 transition-all duration-500 ease-in-out
-                    ${showClaimedExpenses ? 'h-auto' : 'h-0 overflow-hidden'}
+                        ${showClaimedExpenses ? 'h-auto' : 'h-0 overflow-hidden'}
                     `}
                 >
                     {claimedExpenses?.map((expense: any, index: number) => (
                         <ExpenseCard
-                            className="opacity-40"
+                            backgroundColor="bg-gray-50"
                             key={`${JSON.stringify(expense)}-${index}`}
                             expense={expense}
                             selected={selectedItemIds.includes(expense.id)}
@@ -317,62 +342,78 @@ export default function Home() {
                             onTapCancel={handleTapCancel}
                         />
                     ))}
+                </ListSection>
+            }
+
+            {(currentTabIndex === 1) && <>
+                <section className="flex flex-row gap-2 text-white text-xs font-bold">
+                    <button
+                        onClick={() => handleClickStatusFilter("100")}
+                        className={`
+                        flex items-center justify-center p-1 w-16 h-8 bg-amber-400 rounded-full bg-amber-400
+                        ${declarationStatusFilters?.length > 0 && !declarationStatusFilters.includes("100") ? 'opacity-25' : ''}
+                    `}
+                    >
+                        <BsHourglassTop className="w-3 h-3 mr-1"/>
+                        {items?.filter((item: any) => item?.status === '100').length}
+                    </button>
+                    <button
+                        onClick={() => handleClickStatusFilter("300")}
+                        className={`
+                        flex items-center justify-center p-1 w-16 h-8 bg-amber-400 rounded-full bg-green-500
+                        ${declarationStatusFilters?.length > 0 && !declarationStatusFilters.includes("300") ? 'opacity-25' : ''}
+                    `}
+                    >
+                        <BsCheckLg className="w-3 h-3 mr-1"/>
+                        {items?.filter((item: any) => item?.status === '300').length}
+                    </button>
+                    <button onClick={() => handleClickStatusFilter("200")}
+                        className={`
+                        flex items-center justify-center p-1 w-16 h-8 bg-red-500 rounded-full bg-amber-400
+                        ${declarationStatusFilters?.length > 0 && !declarationStatusFilters.includes("200") ? 'opacity-25' : ''}
+                    `}
+                    >
+                        <BsXLg className="w-3 h-3 mr-1"/>
+                        {items?.filter((item: any) => item?.status === '200').length}
+                    </button>
                 </section>
-            }
+                <ListSection>
+                    {declarations
+                        ?.map((item: any, index: number) => (
+                            <DeclarationCard
+                                backgroundColor="bg-gray-50"
+                                key={`${JSON.stringify(item)}-${index}`}
+                                declaration={item}
+                                selected={selectedItemIds.includes(item.id)}
+                                deselectFn={() => handleSelectExpense(item.id)}
+                                onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                                allowSwipeLeft={true}
+                                isSelectingItems={false}
+                                onClick={() => handleOpenDeclaration(item.id)}
+                            />
+                        ))}
+                </ListSection>
+            </>}
 
-            {
-                (currentTabIndex === 1)
-                && declarations?.map((item: any, index: number) => (
-                    <DeclarationCard
-                        key={`${JSON.stringify(item)}-${index}`}
-                        declaration={item}
-                        selected={selectedItemIds.includes(item.id)}
-                        deselectFn={() => handleSelectExpense(item.id)}
-                        onSwipeLeft={async () => await handleSwipeLeft(item.id)}
-                        allowSwipeLeft={true}
-                        isSelectingItems={false}
-                        onTapStart={async (event, info) => await handleTapStart(item, info)}
-                        onTap={async (event, info) => await handleTapEnd(info, item.id)}
-                        onTapCancel={handleTapCancel}
-                    />
-                ))
-            }
-
-            <pre className="text-xs mt-8 overflow-x-auto hidden">
-                notifications: {JSON.stringify(notifications, null, 2)}
-                <br/>
-                tabs: {JSON.stringify(tabs, null, 2)}
-                <br/>
-                searchQuery: {searchQuery}
-                <br/>
-                declarations: {JSON.stringify(items, null, 2)}
-            </pre>
+            {/*<pre className="text-xs mt-8 overflow-x-auto">*/}
+            {/*    notifications: {JSON.stringify(notifications, null, 2)}*/}
+            {/*    <br/>*/}
+            {/*    tabs: {JSON.stringify(tabs, null, 2)}*/}
+            {/*    <br/>*/}
+            {/*    searchQuery: {searchQuery}*/}
+            {/*    <br/>*/}
+            {/*    declarations: {JSON.stringify(items, null, 2)}*/}
+            {/*</pre>*/}
         </Content>
+
+        <div className="h-16 w-full bg-transparent"/>
 
         {!isSelectingExpenses &&
             <PlusMenu/>
         }
 
-        {selectedItemIds?.length > 0
-            && <div className="fixed bottom-4 left-4 right-4 flex flex-row items-center justify-center gap-2">
-                <Button
-                    primary
-                    className="flex-1 h-16 rounded-lg !bg-black shadow-lg text-sm"
-                >
-                    Geselecteerde {selectedItemIds.length} bonnen samenvoegen
-                </Button>
-                <Button
-                    primary
-                    className="h-16 rounded-lg !bg-red-600 shadow-lg text-sm"
-                    onClick={handleDeleteSelectedDeclarations}
-                >
-                    <BsTrash className="w-6 h-6 text-white"/>
-                </Button>
-            </div>
-        }
-
         {isSelectingExpenses &&
-            <div className="fixed bottom-24 right-4 left-4 z-50 flex flex-row gap-2">
+            <div className="fixed bottom-4 right-4 left-4 z-50 grid grid-cols-2 gap-2">
                 <Button
                     primary
                     disabled={selectedItemIds.length === 0}
@@ -380,7 +421,7 @@ export default function Home() {
                     className={`!rounded-full text-sm !bg-black w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
                     onClick={handleCreateDeclaration}
                 >
-                    <BsArrowRight className="w-3 h-3"/>
+                    {/*<BsArrowRight className="w-3 h-3"/>*/}
                     Creëer declaratie {selectedItemIds.length > 0 && `(${selectedItemIds.length})`}
                 </Button>
                 <Button
@@ -394,21 +435,44 @@ export default function Home() {
             </div>
         }
 
-        <TabNavigation/>
+        {!isSelectingExpenses &&
+            <TabNavigation/>
+        }
 
         <Overlay/>
     </>
 }
 
-const GroupHeader = ({title, className = '', onClick = undefined, open = true, ...props}) => (
-    <button
-        onClick={onClick}
-        className={className + " p-4 text-black bg-gray-200 flex justify-between items-center flex-row text-sm font-bold cursor-pointer rounded-full"}
-        {...props}
-    >
-        <span></span>
-        {title}
-        <BsChevronDown
-            className={`w-4 h-4 font-black transition-all duration-300 ${!open ? 'rotate-180' : ''}`}/>
-    </button>
+const GroupHeader = ({title, className = '', itemsCount = 0, onClick = undefined, open = true, ...props}) => {
+    const [primaryColor] = useAtom(primaryColorAtom);
+    return (
+        <button
+            onClick={onClick}
+            {...props}
+            className={`
+                p-4 text-white flex justify-between items-center flex-row text-xs font-bold cursor-pointer rounded-full
+                ${primaryColor} ${className} ${displayFont.className}
+            `}
+        >
+            <span></span>
+
+            <span className="flex flex-row items-center justify-center">
+                {title}
+                <span
+                    className="ml-1 w-4 h-4 bg-white font-black rounded-full text-amber-500 flex items-center justify-center">
+                    {itemsCount}
+                </span>
+            </span>
+
+            <FaChevronDown
+                className={`w-4 h-4 font-black transition-all duration-300 ${!open ? 'rotate-180' : ''}`}
+            />
+        </button>
+    );
+}
+
+const ListSection = ({className, children, ...props}) => (
+    <section className={`grid grid-cols-1 gap-2 divide-y-black/10 ${className}`} {...props}>
+        {children}
+    </section>
 )

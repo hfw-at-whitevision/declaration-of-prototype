@@ -1,6 +1,6 @@
 import {motion} from 'framer-motion';
 
-export default function Content({children, className = ''}: any) {
+export default function Content({children, className = '', ...props}: any) {
     const screenVariants = {
         offscreen: {
             x: '100%',
@@ -11,7 +11,7 @@ export default function Content({children, className = ''}: any) {
     }
     return (
         <motion.div
-            className={`p-4 py-8 grid gap-2 ${className}`}
+            className={`p-4 py-4 grid gap-2 ${className}`}
             variants={screenVariants}
             whileInView="onscreen"
             initial="offscreen"
@@ -24,6 +24,7 @@ export default function Content({children, className = ''}: any) {
                 once: false,
                 amount: 0
             }}
+            {...props}
         >
             {children}
         </motion.div>

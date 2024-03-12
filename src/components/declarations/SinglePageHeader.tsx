@@ -10,13 +10,13 @@ export default function SingleDeclarationHeader({status = '100'}) {
 
     switch (status) {
         case '100':
-            statusColor = 'bg-amber-400';
+            statusColor = '!border-amber-400 !text-amber-400';
             break;
         case '200':
-            statusColor = 'bg-red-500';
+            statusColor = '!border-red-500 !text-red-500';
             break;
         case '300':
-            statusColor = 'bg-green-500';
+            statusColor = '!border-green-500 !text-green-500';
             break;
     }
 
@@ -25,7 +25,8 @@ export default function SingleDeclarationHeader({status = '100'}) {
             secondary
             padding='small'
             onClick={() => router.back()}
-            className="!rounded-full"
+            rounded="full"
+            className="h-12"
         >
             <BsArrowLeft className="w-4 h-4"/>
             Terug
@@ -33,8 +34,10 @@ export default function SingleDeclarationHeader({status = '100'}) {
 
         <Button
             primary
+            outline
             padding='small'
-            className={`${statusColor} h-full !rounded-full`}>
+            rounded="full"
+            className={`${statusColor} h-12 px-8`}>
             {parsedStatus}
         </Button>
     </div>

@@ -1,20 +1,23 @@
 import {CiFileOn, CiHome, CiReceipt, CiSettings, CiSquareCheck} from "react-icons/ci";
 import {useRouter} from "next/router";
 import {motion} from "framer-motion";
+import {useAtom} from "jotai";
+import {primaryColorAtom} from "@/store/atoms";
+import {BsCreditCard2FrontFill, BsFillGearFill, BsFillHouseFill, BsFillPatchCheckFill} from "react-icons/bs";
 
 const tabs = [
     {
-        icon: CiHome,
+        icon: BsFillHouseFill,
         label: 'Dashboard',
         path: '/'
     },
     {
-        icon: CiSquareCheck,
+        icon: BsFillPatchCheckFill,
         label: 'Goedkeuren',
         // path: '/documents',
     },
     {
-        icon: CiReceipt,
+        icon: BsCreditCard2FrontFill,
         label: 'Declaraties',
         path: '/declarations'
     },
@@ -24,7 +27,7 @@ const tabs = [
     //     path: '/approve'
     // },
     {
-        icon: CiSettings,
+        icon: BsFillGearFill,
         label: 'Instellingen',
         // path: '/settings'
     }
@@ -33,18 +36,19 @@ const tabs = [
 export default function TabNavigation() {
     const router = useRouter();
     const isActiveTab = (tab) => router.pathname === tab.path;
+    const primaryColor = useAtom(primaryColorAtom);
     return <>
-        <div id="tab-bar-spacer" className="h-20"/>
+        <div id="tab-bar-spacer" className="h-16"/>
         <section
-            className="fixed bottom-0 left-0 right-0 bg-white h-20 border-t border-gray-200 flex items-center justify-between gap-8 px-2 text-[10px]"
+            className="fixed bg-black bottom-4 left-4 right-4 h-16 border-0 border-gray-200 flex items-center justify-between gap-8 px-4 text-[10px] rounded-full"
         >
             {tabs.map((tab, index) => (
                 <motion.button
                     key={index}
                     className={`
-                        flex flex-1 flex-col items-center gap-1 p-2 rounded-lg relative
+                        flex flex-1 flex-col items-center gap-1 p-2 rounded-full relative
                         transition-all duration-500
-                        ${isActiveTab(tab) ? 'font-bold text-black' : ''}
+                        ${isActiveTab(tab) ? 'font-bold text-black' : 'text-white'}
                     `}
                     onClick={() => tab?.path ? router.push(tab.path) : null}
                 >
@@ -56,14 +60,14 @@ export default function TabNavigation() {
                                 bounce: 0.2,
                                 duration: 0.4,
                             }}
-                            className="absolute inset-0 rounded-lg bg-black/5"
+                            className={`absolute inset-0 bg-white z-0 rounded-full`}
                         />
                     }
                     <tab.icon
-                        className="w-8 h-8"
+                        className="w-6 h-6 z-10"
                         strokeWidth={0.1}
                     />
-                    {tab.label}
+                    {/*{tab.label}*/}
                 </motion.button>
             ))}
         </section>

@@ -2,12 +2,13 @@ import Card from "@/components/primitives/Card";
 import Button from "@/components/Button";
 import {BsArrowRight} from "react-icons/bs";
 import {useRouter} from "next/router";
+import DisplayHeading from "@/components/layout/DisplayHeading";
 
 export default function RejectionsList({className = ''}) {
     return <section className={`flex flex-col gap-2 ${className}`}>
-        <h2 className="font-extrabold text-2xl">
+        <DisplayHeading className="font-extrabold text-2xl">
             Afgekeurd
-        </h2>
+        </DisplayHeading>
 
         <section className="grid gap-2">
             <Card borderLeft={true} borderColor="bg-amber-400">

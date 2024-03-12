@@ -40,3 +40,6 @@ export const inputModalAtom = atom(
 
 export const IsSelectingItemsAtom = atom(false);
 export const selectedItemIdsAtom = atom([]);
+
+// UI
+export const primaryColorAtom = atom('bg-amber-400');

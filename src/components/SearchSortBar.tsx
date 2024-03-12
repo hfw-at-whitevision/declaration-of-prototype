@@ -29,7 +29,7 @@ export default function SearchSortBar() {
 
     return <>
         <section className="flex flex-row justify-between items-center gap-4">
-            <div className="rounded-md flex flex-row p-1 h-12 relative items-center bg-gray-200 gap-4 w-full">
+            <div className="rounded-md flex flex-row p-1 h-12 relative items-center bg-gray-100 gap-4 w-full">
                 <BsSearch
                     className="w-4 h-4 text-black/50 ml-2"
                 />
