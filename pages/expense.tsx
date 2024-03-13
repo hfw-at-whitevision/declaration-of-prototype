@@ -14,13 +14,16 @@ export default function SingleExpensePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [primaryColor, setPrimaryColor]  = useAtom(primaryColorAtom);
 
+    const isCreatingNewExpense = !id;
+
     useEffect(() => {
         if (!router.isReady) return;
         setIsLoading(true);
 
         // if we are creating a new expense
-        if (!id) setExpense({
+        if (isCreatingNewExpense) setExpense({
             totalAmount: 0.00,
+            date: new Date().toDateString(),
         });
         // opening an existing expense
         else getExpense(id).then((item: any) => {

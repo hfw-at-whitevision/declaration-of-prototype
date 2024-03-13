@@ -68,7 +68,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
         else {
             const declarationId = await createDeclaration(serializeDeclaration({
                 status: '100',
-                date: new Date().toLocaleDateString(),
+                date: new Date().toDateString(),
             }));
             await handleUpdateExpenses({
                 claimedInDeclarationId: declarationId,
@@ -76,10 +76,10 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
         }
         // setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
         // setShowConfirmationOverlay(true);
+        await router.push('/declarations?tabIndex=1');
         await Toast.show({
             text: 'Declaratie succesvol ingediend.'
         });
-        await router.push('/declarations?tabIndex=1');
     }
 
     const handleUpdateExpenses = async ({claimedInDeclarationId}) => {
@@ -209,6 +209,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                                 primary
                                 padding='small'
                                 fullWidth
+                                rounded="full"
                                 onClick={handleSubmit}
                             >
                                 Indienen

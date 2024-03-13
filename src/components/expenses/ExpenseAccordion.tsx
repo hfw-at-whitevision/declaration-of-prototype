@@ -36,6 +36,7 @@ export default function ExpenseAccordion({expense, showStatus = true}) {
                     onClick={() => setOpen(!open)}>
                 <ExpenseCard
                     padding={0}
+                    className="pl-2"
                     key={expense?.id}
                     expense={expenseToDisplay}
                     backgroundColor="bg-transparent" borderRadius="rounded-0"
@@ -49,9 +50,9 @@ export default function ExpenseAccordion({expense, showStatus = true}) {
             </button>
 
             {/* content */}
-            <section className={open ? 'flex flex-col' : 'hidden'}>
+            <section className={`${open ? 'flex flex-row items-end justify-between' : 'hidden'} px-2`}>
                 <Gallery>
-                    <div className={`grid gap-2 grid-cols-3 relative pt-4`}>
+                    <div className={`flex flex-row gap-2 relative pt-4`}>
                         {expense?.attachments?.map((image: any) => (
                             <ExpenseAttachmentThumbnail key={image?.id} imageUrl={image}/>
                         ))}
@@ -62,7 +63,6 @@ export default function ExpenseAccordion({expense, showStatus = true}) {
                     secondary
                     padding="small"
                     rounded="full"
-                    className="mt-4 ml-auto"
                     onClick={onClick}
                 >
                     Meer details

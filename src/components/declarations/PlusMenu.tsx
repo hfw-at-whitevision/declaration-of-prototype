@@ -8,6 +8,7 @@ import {currentTabIndexAtom, IsSelectingItemsAtom, scannedImagesAtom} from "@/st
 import {Capacitor} from "@capacitor/core";
 import {DocumentScanner, ResponseType} from "capacitor-document-scanner";
 import {Filesystem} from "@capacitor/filesystem";
+import {Dialog} from "@capacitor/dialog";
 
 export default function PlusMenu() {
     const router = useRouter();
@@ -53,32 +54,39 @@ export default function PlusMenu() {
     }
 
     const handleFileInputChange = async (e: any) => {
-        const selectedFiles = e.target.files;
-        setSelectedFiles(selectedFiles);
-        if (!selectedFiles.length) return;
+        try {
+            const selectedFiles = e?.target?.files;
+            setSelectedFiles(selectedFiles);
+            if (!selectedFiles.length) return;
 
-        const base64Images: any = [];
-        for (const selectedFile of selectedFiles) {
-            if (Capacitor.isNativePlatform()) {
-                console.log('selectedFile', selectedFile)
-                const content = await Filesystem.readFile({
-                    path: selectedFile.path,
-                    ecoding: 'base64',
-                });
-                base64Images.push(content);
-            }
-            else {
-                const reader = new FileReader();
-                await reader.readAsDataURL(selectedFile);
-                reader.onloadend = () => {
-                    const base64Image = reader.result;
-                    base64Images.push(base64Image);
+            const base64Images: any = [];
+            for (const selectedFile of selectedFiles) {
+                if (Capacitor.isNativePlatform()) {
+                    console.log('selectedFile', selectedFile)
+                    const content = await Filesystem.readFile({
+                        path: selectedFile.path,
+                        ecoding: 'base64',
+                    });
+                    base64Images.push(content);
+                } else {
+                    const reader = new FileReader();
+                    await reader.readAsDataURL(selectedFile);
+                    reader.onloadend = () => {
+                        const base64Image = reader.result;
+                        base64Images.push(base64Image);
+                    }
                 }
             }
-        }
 
-        await setScannedImages(base64Images);
-        await router.push('/expense');
+            await setScannedImages(base64Images);
+            await router.push('/expense');
+        }
+        catch (e) {
+            await Dialog.alert({
+                title: 'Fout',
+                message: 'Er is een fout opgetreden bij het importeren van de bonnen: ' + e?.message ?? '-',
+            });
+        }
     }
 
     const handleToggleMenu = (value) => {

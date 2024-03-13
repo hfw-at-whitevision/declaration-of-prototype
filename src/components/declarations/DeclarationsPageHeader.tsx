@@ -22,7 +22,7 @@ export default function DeclarationsPageHeader() {
     const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
     const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
     const backgroundColor = isInSelectionMode
-        ? 'bg-indigo-500'
+        ? 'bg-amber-500'
         : (currentTabIndex === 0)
             ? 'bg-amber-400'
             : 'bg-indigo-500';
@@ -60,7 +60,7 @@ export default function DeclarationsPageHeader() {
     return <>
         <NotificationsScreen />
 
-        <header className={`flex sticky top-0 flex-col transition-all duration-500 ease-in-out bg-transparent p-4 pb-4 pt-16 gap-4 z-10`}>
+        <header className={`flex flex-col transition-all duration-500 ease-in-out bg-transparent p-4 pb-0 pt-16 gap-4 z-10`}>
             <div className="flex flex-row justify-between items-center">
                 <DisplayHeading className="text-white font-extrabold text-4xl tracking-tight">
                     {title}
@@ -91,8 +91,10 @@ export default function DeclarationsPageHeader() {
                     </button>
                 </div>
             </div>
-
-            <TabBar tabs={tabs} />
         </header>
+
+        <section className={`sticky top-0 ${backgroundColor} px-4 py-4 z-10 transition-all duration-500 ease-in-out`}>
+            <TabBar tabs={tabs} />
+        </section>
     </>
 }

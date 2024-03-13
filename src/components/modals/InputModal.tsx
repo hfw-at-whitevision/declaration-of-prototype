@@ -19,6 +19,12 @@ export default function InputModal({show, title, options, defaultValue, onConfir
     const [inputModalValue, setInputModalValue] = useState<any>(null);
     const inputRef: any = useRef(null);
 
+    const selectedDate = !!inputModalValue
+        ? new Date(inputModalValue)
+        : (defaultValue)
+            ? new Date(defaultValue)
+            : new Date();
+
     const closeModal = () => {
         setInputModal({
             show: false,
@@ -27,12 +33,12 @@ export default function InputModal({show, title, options, defaultValue, onConfir
     }
 
     const handleInputChange = (e: any) => {
-        if (type === 'date') setInputModalValue(e);
+        if (type === 'date') setInputModalValue(new Date(e).toDateString());
         else setInputModalValue(inputRef.current.value);
     }
 
     const handleSave = () => {
-        if (type === 'date') onConfirm(inputModalValue?.toLocaleDateString('nl-NL'));
+        if (type === 'date') onConfirm(inputModalValue);
         else onConfirm(inputRef.current.value);
         closeModal();
     }
@@ -48,8 +54,10 @@ export default function InputModal({show, title, options, defaultValue, onConfir
     }, [show]);
 
     useEffect(() => {
+        // if (type === 'date') return;
+        if (!defaultValue || !inputRef || !inputRef?.current) return;
         inputRef.current.value = defaultValue;
-    }, [defaultValue]);
+    }, [defaultValue, inputRef]);
 
     return (
         <div
@@ -93,8 +101,11 @@ export default function InputModal({show, title, options, defaultValue, onConfir
                             : type === 'date'
                                 ? <DatePicker
                                     ref={(oldRef) => oldRef = inputRef}
+                                    showTimeInput={false}
+                                    showTimeSelect={false}
+                                    dateFormat="MM-dd-yyyy"
                                     onChange={handleInputChange ?? null}
-                                    selected={defaultValue ? defaultValue : inputModalValue ?? null}
+                                    selected={inputModalValue ? new Date(inputModalValue) : (defaultValue) ? new Date(defaultValue) : new Date()}
                                     placeholderText="Selecteer een datum"
                                 />
                                 : <input

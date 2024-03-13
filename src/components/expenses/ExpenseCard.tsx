@@ -26,7 +26,7 @@ export default function ExpenseCard({
             </span>
 
             <span className="text-right col-span-3">
-                {expense?.date}
+                {new Date(expense?.date).toLocaleDateString('nl-NL') ?? 'Geen datum'}
             </span>
         </Card>
     )

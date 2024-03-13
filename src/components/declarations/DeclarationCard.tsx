@@ -45,7 +45,7 @@ export default function DeclarationCard({
             </span>
 
             <span className="text-right">
-                {declaration?.date}
+                {new Date(declaration?.date).toLocaleDateString("nl-NL") ?? "Geen datum"}
             </span>
         </Card>
     )

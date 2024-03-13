@@ -272,61 +272,61 @@ export default function Home() {
 
             <SearchSortBar/>
 
-            {(currentTabIndex === 0)
-                && <GroupHeader
+            {(currentTabIndex === 0) && <>
+                <GroupHeader
                     open={showUnclaimedExpenses}
+                    color="amber"
                     className="mt-4"
                     onClick={() => setShowUnclaimedExpenses(!showUnclaimedExpenses)}
                     title={`Nog in te dienen`}
                     itemsCount={unclaimedExpenses?.length}
                 />
-            }
-            {
-                (items?.length === 0 && showUnclaimedExpenses) &&
-                <div
-                    className="p-8 opacity-50 border border-dashed border-gray-400 bg-transparent flex items-center justify-center text-xs rounded-md">
-                    Importeer of scan een bon om te beginnen
-                </div>
-            }
-            <ListSection>
                 {
-                    (currentTabIndex === (0) && showUnclaimedExpenses)
-                    && unclaimedExpenses?.map((item: any, index: number) => (
-                        <ExpenseCard
-                            backgroundColor="bg-gray-50"
-                            key={`${JSON.stringify(item)}-${index}`}
-                            expense={item}
-                            selected={selectedItemIds.includes(item.id)}
-                            selectFn={() => handleSelectExpense(item.id)}
-                            deselectFn={() => handleSelectExpense(item.id)}
-                            onSwipeLeft={async () => await handleSwipeLeft(item.id)}
-                            allowSwipeLeft={true}
-                            isSelectingItems={isSelectingExpenses}
-                            onTapStart={async (event, info) => await handleTapStart(item, info)}
-                            onTap={async (event, info) => await handleTapEnd(info, item.id)}
-                            onTapCancel={handleTapCancel}
-                        />
-                    ))
+                    (items?.length === 0 && showUnclaimedExpenses) &&
+                    <div
+                        className="p-8 opacity-50 border border-dashed border-gray-400 bg-transparent flex items-center justify-center text-xs rounded-md">
+                        Importeer of scan een bon om te beginnen
+                    </div>
                 }
-            </ListSection>
+                <ListSection>
+                    {
+                        (currentTabIndex === (0) && showUnclaimedExpenses)
+                        && unclaimedExpenses?.map((item: any, index: number) => (
+                            <ExpenseCard
+                                backgroundColor="bg-gray-50"
+                                key={`${JSON.stringify(item)}-${index}`}
+                                expense={item}
+                                selected={selectedItemIds.includes(item.id)}
+                                selectFn={() => handleSelectExpense(item.id)}
+                                deselectFn={() => handleSelectExpense(item.id)}
+                                onSwipeLeft={async () => await handleSwipeLeft(item.id)}
+                                allowSwipeLeft={true}
+                                isSelectingItems={isSelectingExpenses}
+                                onTapStart={async (event, info) => await handleTapStart(item, info)}
+                                onTap={async (event, info) => await handleTapEnd(info, item.id)}
+                                onTapCancel={handleTapCancel}
+                            />
+                        ))
+                    }
+                </ListSection>
 
-            {(currentTabIndex === 0 && claimedExpenses?.length > 0)
-                && <GroupHeader
-                    open={showClaimedExpenses}
-                    onClick={() => setShowClaimedExpenses(!showClaimedExpenses)}
-                    className="mt-4"
-                    title={`Reeds ingediend`}
-                    itemsCount={claimedExpenses?.length}
-                />
-            }
+                {(claimedExpenses?.length > 0)
+                    && <GroupHeader
+                        open={showClaimedExpenses}
+                        onClick={() => setShowClaimedExpenses(!showClaimedExpenses)}
+                        color="green"
+                        className="mt-4"
+                        title={`Reeds ingediend`}
+                        itemsCount={claimedExpenses?.length}
+                    />
+                }
 
-            {(currentTabIndex === 0)
-                && <ListSection
+                <ListSection
                     className={`
                         ${showClaimedExpenses ? 'h-auto' : 'h-0 overflow-hidden'}
                     `}
                 >
-                    {claimedExpenses?.map((expense: any, index: number) => (
+                    {claimedExpenses?.map((expense: any, index: number) =>
                         <ExpenseCard
                             backgroundColor="bg-gray-50"
                             key={`${JSON.stringify(expense)}-${index}`}
@@ -341,8 +341,9 @@ export default function Home() {
                             onTap={async (event, info) => await handleTapEnd(info, expense.id)}
                             onTapCancel={handleTapCancel}
                         />
-                    ))}
+                    )}
                 </ListSection>
+            </>
             }
 
             {(currentTabIndex === 1) && <>
@@ -368,7 +369,7 @@ export default function Home() {
                         {items?.filter((item: any) => item?.status === '300').length}
                     </button>
                     <button onClick={() => handleClickStatusFilter("200")}
-                        className={`
+                            className={`
                         flex items-center justify-center p-1 w-16 h-8 bg-red-500 rounded-full bg-amber-400
                         ${declarationStatusFilters?.length > 0 && !declarationStatusFilters.includes("200") ? 'opacity-25' : ''}
                     `}
@@ -418,7 +419,7 @@ export default function Home() {
                     primary
                     disabled={selectedItemIds.length === 0}
                     padding='small'
-                    className={`!rounded-full text-sm !bg-black w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
+                    className={`!rounded-full !font-black text-xs !bg-black w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
                     onClick={handleCreateDeclaration}
                 >
                     {/*<BsArrowRight className="w-3 h-3"/>*/}
@@ -427,7 +428,7 @@ export default function Home() {
                 <Button
                     primary
                     padding='small'
-                    className="!rounded-full text-sm !bg-red-600 w-full"
+                    className="!rounded-full !font-black text-xs !bg-red-600 w-full"
                     onClick={handleCancelCreateDeclaration}
                 >
                     Annuleren
@@ -443,23 +444,24 @@ export default function Home() {
     </>
 }
 
-const GroupHeader = ({title, className = '', itemsCount = 0, onClick = undefined, open = true, ...props}) => {
+const GroupHeader = ({title, color, className = '', itemsCount = 0, onClick = undefined, open = true, ...props}) => {
     const [primaryColor] = useAtom(primaryColorAtom);
+    const backgroundColor = !!color ? `bg-${color}-500` : primaryColor;
+    const balloonTextColor = !!color ? `text-${color}-500` : 'text-white';
     return (
         <button
             onClick={onClick}
             {...props}
             className={`
                 p-4 text-white flex justify-between items-center flex-row text-xs font-bold cursor-pointer rounded-full
-                ${primaryColor} ${className} ${displayFont.className}
+                ${backgroundColor} ${className} ${displayFont.className}
             `}
         >
             <span></span>
 
             <span className="flex flex-row items-center justify-center">
                 {title}
-                <span
-                    className="ml-1 w-4 h-4 bg-white font-black rounded-full text-amber-500 flex items-center justify-center">
+                <span className={`ml-1 w-4 h-4 bg-white font-black rounded-full text-amber-500 flex items-center justify-center ${balloonTextColor}`}>
                     {itemsCount}
                 </span>
             </span>

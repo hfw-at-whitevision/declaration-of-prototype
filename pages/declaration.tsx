@@ -9,10 +9,11 @@ export default function DeclarationScreenPage() {
     const id = router.query?.id ?? null;
     const [declaration, setDeclaration] = useState(null);
     const { createFromExpenses } = router.query;
+    const isCreatingFromExpenses = createFromExpenses?.length > 0;
 
     useEffect(() => {
         // if we are creating a declaration from selected expenses
-        if (createFromExpenses?.length) {
+        if (isCreatingFromExpenses) {
             const expensesArray = createFromExpenses?.toString()?.split(',') ?? [];
             let declarationToCreate = {
                 title: 'Nieuwe declaratie',

@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc } from "firebase/firestore";
-import { getDownloadURL, getStorage, ref, uploadString } from "firebase/storage";
+import {initializeApp} from "firebase/app";
+import {addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc, updateDoc} from "firebase/firestore";
+import {getDownloadURL, getStorage, ref, uploadString} from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -31,7 +31,7 @@ export const getDeclarations = async () => {
     const querySnapshot = await getDocs(declarationsCollection);
     const declarations: any = [];
     querySnapshot.forEach((doc) => {
-        declarations.push({ ...doc.data(), id: doc.id });
+        declarations.push({...doc.data(), id: doc.id});
     });
     return declarations;
 }
@@ -80,7 +80,7 @@ export const getExpenses = async () => {
     const querySnapshot = await getDocs(expensesCollection);
     const expenses: any = [];
     querySnapshot.forEach((doc) => {
-        expenses.push({ ...doc.data(), id: doc.id });
+        expenses.push({...doc.data(), id: doc.id});
     });
     console.log('expenses', expenses);
     return expenses;
@@ -111,32 +111,43 @@ export const getExpense = async (id: any) => {
 }
 
 export const createExpense = async (inputExpense: any) => {
-    console.log('creating new expense', inputExpense);
+    let newExpenseId = null;
+    try {
+        console.log('creating new expense', inputExpense);
 
-    const docRef = await addDoc(collection(db, "expenses"), {
-        ...inputExpense,
-        attachments: inputExpense?.attachments?.length,
-    });
-    const newId = docRef.id;
-
-    // upload attachments
-    const attachments = [];
-    const promises: any = [];
-    for (let i = 0; i < inputExpense?.attachments?.length; i++) {
-        const attachment = inputExpense?.attachments[i];
-        const fileRef = ref(storage, `${newId}/${i}`);
-        const uploadTask = uploadString(fileRef, attachment, 'data_url');
-        attachments.push(`${newId}/${i}`);
-        promises.push(uploadTask);
+        const docRef = await addDoc(collection(db, "expenses"), {
+            ...inputExpense,
+            attachments: inputExpense?.attachments?.length,
+        });
+        newExpenseId = docRef.id;
+    } catch (error) {
+        console.log('error creating expense', error);
     }
-    await Promise.all(promises);
 
-    // update the expense with the attachments
-    await updateDoc(doc(db, "expenses", newId), {
-        ...inputExpense,
-        attachments,
-    });
-    return newId;
+    if (newExpenseId && inputExpense?.attachments?.length > 0) {
+        try {
+            // upload attachments
+            const attachments = [];
+            const promises: any = [];
+            for (let i = 0; i < inputExpense?.attachments?.length; i++) {
+                const attachment = inputExpense?.attachments[i];
+                const fileRef = ref(storage, `${newExpenseId}/${i}`);
+                const uploadTask = uploadString(fileRef, attachment, 'data_url');
+                attachments.push(`${newExpenseId}/${i}`);
+                promises.push(uploadTask);
+            }
+            await Promise.all(promises);
+
+            // update the expense with the attachments
+            await updateDoc(doc(db, "expenses", newExpenseId), {
+                ...inputExpense,
+                attachments,
+            });
+        } catch (error) {
+            console.log('error uploading attachments', error);
+        }
+    }
+    return newExpenseId;
 }
 export const deleteExpense = async (id: any) => {
     await deleteDoc(doc(db, "expenses", id));
@@ -182,7 +193,7 @@ export const getNotifications = async () => {
     const querySnapshot = await getDocs(notificationsCollection);
     const notifications: any = [];
     querySnapshot.forEach((doc) => {
-        notifications.push({ ...doc.data(), id: doc.id });
+        notifications.push({...doc.data(), id: doc.id});
     });
     return notifications;
 }
