@@ -7,14 +7,11 @@ import {
 import {BsBell, BsBellFill} from "react-icons/bs";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import {useAtom, useAtomValue} from "jotai";
-import TabBar from "@/components/TabBar";
 import {useEffect, useState} from "react";
-import {tabs} from "@/constants/defaults";
 import DisplayHeading from "@/components/layout/DisplayHeading";
 
-export default function DeclarationsPageHeader() {
+export default function OverviewHeader({title}: any) {
     const [, setShowNotificationsScreen] = useAtom(showNotificationsScreenAtom);
-    const [, setShowNewDeclarationOverlay] = useAtom(showNewDeclarationOverlayAtom);
     const isSelectingItems = useAtomValue(IsSelectingItemsAtom);
     const selectedItemIds = useAtomValue(selectedItemIdsAtom);
     const isInSelectionMode = selectedItemIds?.length > 0 || isSelectingItems;
@@ -31,31 +28,9 @@ export default function DeclarationsPageHeader() {
         setPrimaryColor(backgroundColor);
     }, [backgroundColor]);
 
-    const handleNewDeclarationClick = (e: any) => {
-        e.preventDefault();
-        setShowNewDeclarationOverlay(true);
-    }
-
     const urgentNotifications = notifications
         ?.filter((notification: any) => notification.type === 'warning' || notification.type === 'success')
         ?.length;
-
-    const handleFileImportClick = () => {
-        fileInputRef.current.click();
-    }
-
-    const [title, setTitle] = useState(<><span className="!font-thin">Mijn</span> bonnen</>);
-
-    useEffect(() => {
-        switch (currentTabIndex) {
-            case 0:
-                setTitle(isInSelectionMode ? <>Selecteer <span className="!font-thin">bonnen</span></> : <><span className="!font-thin">Mijn</span> bonnen</>);
-                break;
-            case 1:
-                setTitle(<><span className="!font-thin">Mijn</span> declaraties</>);
-                break;
-        }
-    }, [currentTabIndex, isInSelectionMode]);
 
     return <>
         <NotificationsScreen />
@@ -76,7 +51,7 @@ export default function DeclarationsPageHeader() {
 
                     <button
                         className="bg-black/5 rounded-full p-4 z-20 relative"
-                        onClick={() => setShowNotificationsScreen(prev => !prev)}
+                        onClick={() => setShowNotificationsScreen((prev: any) => !prev)}
                     >
                         <BsBellFill className="w-6 h-6" />
 
@@ -92,9 +67,5 @@ export default function DeclarationsPageHeader() {
                 </div>
             </div>
         </header>
-
-        <section className={`sticky top-0 ${backgroundColor} px-4 py-4 z-10 transition-all duration-500 ease-in-out`}>
-            <TabBar tabs={tabs} />
-        </section>
     </>
 }

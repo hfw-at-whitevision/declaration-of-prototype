@@ -14,7 +14,7 @@ export default function ActionsGrid() {
     </section>
 }
 
-const ActionCard = ({Icon = undefined, className = '', children, ...props}) => (
+const ActionCard = ({Icon = undefined, className = '', children, ...props}: any) => (
     <button className={`${displayFont.className} font-black bg-white rounded-full p-8 flex flex-row items-center justify-start gap-2 relative h-32 pl-32 text-lg`}>
         <span
             {...props}

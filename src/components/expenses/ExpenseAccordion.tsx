@@ -6,7 +6,7 @@ import ExpenseAttachmentThumbnail from "@/components/expenses/ExpenseAttachmentT
 import Button from "@/components/Button";
 import {useRouter} from "next/router";
 
-export default function ExpenseAccordion({expense, showStatus = true}) {
+export default function ExpenseAccordion({expense, showStatus = true}: any) {
     const [open, setOpen] = useState(false);
     const isAlreadyClaimed = expense?.claimedIn?.length > 0;
     const statusColor = isAlreadyClaimed ? 'bg-red-500' : 'bg-green-500';

@@ -58,7 +58,7 @@ export default function NewDeclarationOverlay(props: any) {
                 console.log('selectedFile', selectedFile)
                 const content = await Filesystem.readFile({
                     path: selectedFile.path,
-                    ecoding: 'base64',
+                    // encoding: 'base64',
                 });
                 base64Images.push(content);
             }

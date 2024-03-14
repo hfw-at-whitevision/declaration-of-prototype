@@ -82,7 +82,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
         });
     }
 
-    const handleUpdateExpenses = async ({claimedInDeclarationId}) => {
+    const handleUpdateExpenses = async ({claimedInDeclarationId}: any) => {
         const promises = [];
         for (const expense of expenses) {
             const claimedIn = expense?.claimedIn || [];
@@ -168,7 +168,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                     <CardInput
                         allowEdit={allowEdit}
                         value={date}
-                        onConfirm={(value) => setDate(value)}
+                        onConfirm={(value: any) => setDate(value)}
                         label="Datum"
                         title='Datum van uitgave:'
                         type='date'
@@ -235,7 +235,7 @@ const CardInput = (
         label,
         title,
         options,
-    }
+    }: any
 ) => {
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
     return (

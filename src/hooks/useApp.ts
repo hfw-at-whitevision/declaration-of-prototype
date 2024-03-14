@@ -17,7 +17,7 @@ const registerListeners = () => {
 }
 
 const checkAppLaunchUrl = async () => {
-    const { url } = await App.getLaunchUrl();
+    const { url }: any = await App.getLaunchUrl();
 
     console.log('App opened with URL: ' + url);
 };

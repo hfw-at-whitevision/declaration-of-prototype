@@ -2,6 +2,7 @@ import {useRouter} from "next/router";
 import Button from "../Button";
 import Content from "../Content";
 import React, {useEffect, useState} from "react";
+import CardInput from '@/components/layout/CardInput';
 import {
     createDeclaration, createExpense,
     deleteDeclaration, deleteExpense,
@@ -254,7 +255,7 @@ export default function SingleExpense({expense: inputExpense}: any) {
                 <CardInput
                     allowEdit={allowEdit}
                     value={date}
-                    onConfirm={(value) => setDate(value)}
+                    onConfirm={(value: any) => setDate(value)}
                     label="Datum"
                     title='Datum van uitgave:'
                     type='date'
@@ -331,45 +332,5 @@ export default function SingleExpense({expense: inputExpense}: any) {
                 {JSON.stringify(expense, null, 2)}
             </pre>
         </Content>
-    )
-}
-
-const CardInput = (
-    {
-        allowEdit,
-        value,
-        onConfirm,
-        type = 'text',
-        label,
-        title,
-        options,
-    }
-) => {
-    const [inputModal, setInputModal] = useAtom(inputModalAtom);
-    return (
-        <button
-            disabled={!allowEdit}
-            className="bg-white py-6 text-sm rounded-md p-4 cursor-pointer relative text-left"
-            onClick={() => setInputModal({
-                ...inputModal,
-                show: true,
-                title: title ?? label,
-                type: type,
-                defaultValue: value,
-                onConfirm,
-                options,
-            })}
-        >
-
-            <span className={
-                (typeof value !== 'undefined')
-                    ? 'absolute top-1 text-[10px] opacity-50'
-                    : 'opacity-50'
-            }>
-                {label}
-            </span>
-            {value}
-
-        </button>
     )
 }

@@ -1,20 +1,20 @@
 import {atom} from "jotai";
 import {atomWithStorage} from "jotai/utils";
 
-export const currentTabIndexAtom = atom(0);
-export const searchQueryAtom = atom('');
-export const declarationsAtom = atomWithStorage('declarations', []);
+export const currentTabIndexAtom = atom<any>(0);
+export const searchQueryAtom = atom<any>('');
+export const declarationsAtom: any = atomWithStorage('declarations', []);
 
-export const showOverlayAtom = atom(false);
-export const showNewDeclarationOverlayAtom = atom(false);
-export const showConfirmationOverlayAtom = atom(false);
-export const confirmationOverlayTitleAtom = atom('');
-export const trulyShowConfirmationOverlayAtom = atom(false);
+export const showOverlayAtom = atom<any>(false);
+export const showNewDeclarationOverlayAtom = atom<any>(false);
+export const showConfirmationOverlayAtom = atom<any>(false);
+export const confirmationOverlayTitleAtom = atom<any>('');
+export const trulyShowConfirmationOverlayAtom = atom<any>(false);
 
-export const notificationsAtom = atom([]);
-export const showNotificationsScreenAtom = atom(false);
+export const notificationsAtom = atom<any>([]);
+export const showNotificationsScreenAtom = atom<any>(false);
 
-export const scannedImagesAtom = atom([]);
+export const scannedImagesAtom = atom<any>([]);
 
 export const inputModalAtom = atom(
     {
@@ -26,7 +26,7 @@ export const inputModalAtom = atom(
         type: '',
         onConfirm: () => {},
     },
-    (get, set, props: any) => {
+    (get: any, set: any, props: any) => {
         set(inputModalAtom, {
             show: props?.show,
             title: props?.title,
@@ -38,8 +38,10 @@ export const inputModalAtom = atom(
         });
     });
 
-export const IsSelectingItemsAtom = atom(false);
-export const selectedItemIdsAtom = atom([]);
+export const IsSelectingItemsAtom = atom<any>(false);
+export const selectedItemIdsAtom = atom<any>([]);
 
 // UI
-export const primaryColorAtom = atom('bg-amber-400');
+export const primaryColorAtom = atom<any>('bg-amber-400');
+
+export const environmentCodeAtom = atom<string>("");

@@ -29,13 +29,13 @@ const tabs = [
     {
         icon: BsFillGearFill,
         label: 'Instellingen',
-        // path: '/settings'
+        path: '/settings'
     }
 ]
 
 export default function TabNavigation() {
     const router = useRouter();
-    const isActiveTab = (tab) => router.pathname === tab.path;
+    const isActiveTab = (tab: any) => router.pathname === tab.path;
     const primaryColor = useAtom(primaryColorAtom);
     return <>
         <div id="tab-bar-spacer" className="h-16"/>

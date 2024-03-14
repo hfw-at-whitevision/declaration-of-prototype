@@ -6,7 +6,7 @@ import {useRef} from "react";
 let timer: any = null;
 
 export default function SearchSortBar() {
-    const [declarations, setDeclarations] = useAtom(declarationsAtom);
+    const [declarations, setDeclarations]: any = useAtom(declarationsAtom);
     const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
 
     const handleSortingClick = (e: any) => {

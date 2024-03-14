@@ -9,7 +9,7 @@ export default function TabBar({tabs}: any) {
     const color = primaryColor.split('-')[1];
     const router = useRouter();
 
-    const handleClick = (inputTabIndex) => {
+    const handleClick = (inputTabIndex: any) => {
         setCurrentTabIndex(inputTabIndex);
         router.push(`/declarations?tabIndex=${inputTabIndex}`);
     }

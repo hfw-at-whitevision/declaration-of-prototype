@@ -7,9 +7,9 @@ import Loading from "@/components/Loading";
 export default function DeclarationScreenPage() {
     const router = useRouter();
     const id = router.query?.id ?? null;
-    const [declaration, setDeclaration] = useState(null);
+    const [declaration, setDeclaration]: any = useState(null);
     const { createFromExpenses } = router.query;
-    const isCreatingFromExpenses = createFromExpenses?.length > 0;
+    const isCreatingFromExpenses = (createFromExpenses) ? createFromExpenses?.length > 0 : true;
 
     useEffect(() => {
         // if we are creating a declaration from selected expenses

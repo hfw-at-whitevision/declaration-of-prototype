@@ -65,7 +65,7 @@ export default function PlusMenu() {
                     console.log('selectedFile', selectedFile)
                     const content = await Filesystem.readFile({
                         path: selectedFile.path,
-                        ecoding: 'base64',
+                        // encoding: 'base64',
                     });
                     base64Images.push(content);
                 } else {
@@ -81,7 +81,7 @@ export default function PlusMenu() {
             await setScannedImages(base64Images);
             await router.push('/expense');
         }
-        catch (e) {
+        catch (e: any) {
             await Dialog.alert({
                 title: 'Fout',
                 message: 'Er is een fout opgetreden bij het importeren van de bonnen: ' + e?.message ?? '-',
@@ -89,12 +89,12 @@ export default function PlusMenu() {
         }
     }
 
-    const handleToggleMenu = (value) => {
+    const handleToggleMenu = (value: any) => {
         if (typeof value === 'boolean') return setShowMenu(value);
         else setShowMenu(!showMenu);
     }
 
-    const menuVariants = {
+    const menuVariants: any = {
         open: {opacity: 1, y: 0, pointerEvents: 'auto'},
         closed: {opacity: 0, y: "100%", pointerEvents: 'none'},
     }

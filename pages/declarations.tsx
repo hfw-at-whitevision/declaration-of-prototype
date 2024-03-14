@@ -2,14 +2,14 @@ import {useAtom, useAtomValue} from 'jotai'
 import {
     currentTabIndexAtom,
     declarationsAtom, IsSelectingItemsAtom, notificationsAtom, primaryColorAtom,
-    searchQueryAtom, selectedItemIdsAtom,
+    searchQueryAtom, selectedItemIdsAtom, showNewDeclarationOverlayAtom, showNotificationsScreenAtom,
     showOverlayAtom,
 } from '@/store/atoms'
 import React, {useEffect, useState} from 'react';
 import {deleteDeclaration, getDeclarations, getExpenses} from '@/firebase';
 import DeclarationCard from '@/components/declarations/DeclarationCard';
 import SearchSortBar from '@/components/SearchSortBar';
-import DeclarationsPageHeader from '@/components/declarations/DeclarationsPageHeader';
+import OverviewHeader from '@/components/layout/OverviewHeader';
 import Content from '@/components/Content';
 import {useRouter} from 'next/router';
 import Overlay from "@/components/overlays/Overlay";
@@ -34,20 +34,7 @@ import {tabs} from '@/constants/defaults';
 import ExpenseCard from "@/components/expenses/ExpenseCard";
 import {displayFont} from "@/components/layout/DisplayHeading";
 import {FaChevronDown} from "react-icons/fa";
-
-interface Declaration {
-    id?: string;
-    name?: string;
-    amount?: number;
-    status?: string;
-    attachments?: Array<string>;
-    date?: string;
-    description?: string;
-    type?: string;
-    user?: string;
-    created?: string;
-    updated?: string;
-}
+import DeclarationsTabBar from "@/components/declarations/DeclarationsTabBar";
 
 export default function Home() {
     let longPressStartTimestamp: any = null;
@@ -57,28 +44,36 @@ export default function Home() {
     let tapEndX: any = null;
     let tapEndY: any = null;
 
+    const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
+    const [selectedItemIds, setSelectedItemIds] = useAtom(selectedItemIdsAtom);
+    const [, setShowOverlay] = useAtom(showOverlayAtom);
+    const [isSelectingItems, setIsSelectingItems] = useAtom(IsSelectingItemsAtom);
+    const isSelectingExpenses = selectedItemIds.length > 0 || isSelectingItems;
+    const isInSelectionMode = selectedItemIds?.length > 0 || isSelectingItems;
+    const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
+    const backgroundColor = isInSelectionMode
+        ? 'bg-amber-500'
+        : (currentTabIndex === 0)
+            ? 'bg-amber-400'
+            : 'bg-indigo-500';
+
+    useEffect(() => {
+        setPrimaryColor(backgroundColor);
+    }, [backgroundColor]);
     const [searchQuery] = useAtom(searchQueryAtom);
     const router = useRouter();
-    const [items, setItems] = useAtom(declarationsAtom);
-    const [declarationStatusFilters, setDeclarationStatusFilters] = useState([]);
+    const [items, setItems]: any = useAtom(declarationsAtom);
+    const [declarationStatusFilters, setDeclarationStatusFilters]: any = useState([]);
     const claimedExpenses = items
         ?.filter((item: any) => item?.claimedIn?.length)
         ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()));
     const unclaimedExpenses = items
         ?.filter((item: any) => !item?.claimedIn || !item?.claimedIn?.length)
         ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()));
-    const declarations = items
+    const declarations: any = items
         ?.filter((item: any) => declarationStatusFilters?.length ? declarationStatusFilters.includes(item?.status) : true)
         ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()))
-        ?.sort((a: any, b: any) => new Date(b?.date) - new Date(a?.date));
-    const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
-    const [selectedItemIds, setSelectedItemIds] = useAtom(selectedItemIdsAtom);
-    const [, setShowOverlay] = useAtom(showOverlayAtom);
-    const [notifications] = useAtom(notificationsAtom);
-    const [isSelectingItems, setIsSelectingItems] = useAtom(IsSelectingItemsAtom);
-    const isSelectingExpenses = selectedItemIds.length > 0 || isSelectingItems;
-    // allow section mode only for expenses
-    const allowSelectionMode = currentTabIndex === 0;
+        ?.sort((a: any, b: any) => new Date(b?.date).getTime() - new Date(a?.date).getTime());    // allow section mode only for expenses
     const [showClaimedExpenses, setShowClaimedExpenses] = useState(false);
     const [showUnclaimedExpenses, setShowUnclaimedExpenses] = useState(true);
 
@@ -92,7 +87,7 @@ export default function Home() {
         console.log(`(de-)selected expense ${expenseId}`);
         // remove
         if (selectedItemIds.includes(expenseId))
-            setSelectedItemIds(selectedItemIds.filter((selectedExpenseId) => selectedExpenseId !== expenseId));
+            setSelectedItemIds(selectedItemIds.filter((selectedExpenseId: any) => selectedExpenseId !== expenseId));
         // add
         else
             setSelectedItemIds([...selectedItemIds, expenseId]);
@@ -106,7 +101,7 @@ export default function Home() {
         router.push('/expense?id=' + id);
     }
 
-    const handleTapStart = async (item: any, info) => {
+    const handleTapStart = async (item: any, info: any) => {
         tapStartX = info.point.x;
         tapStartY = info.point.y;
         console.log('tap start', tapStartX, tapStartY);
@@ -136,7 +131,7 @@ export default function Home() {
         }, 500);
     }
 
-    const handleTapEnd = async (info, itemId: string) => {
+    const handleTapEnd = async (info: any, itemId: string) => {
         tapEndX = info.point.x;
         tapEndY = info.point.y;
 
@@ -187,28 +182,9 @@ export default function Home() {
         longPressStartTimestamp = null;
     }
 
-    const handleTapCancel = (event, info) => {
+    const handleTapCancel = (event: any, info: any) => {
         console.log('tap cancel');
         resetTap();
-    }
-
-    const handleDeleteSelectedDeclarations = async (e) => {
-        e.preventDefault();
-        const deletePromises = [];
-        for (const declarationId of selectedItemIds) {
-            deletePromises.push(deleteDeclaration(declarationId));
-        }
-        const res = await Promise.all(deletePromises);
-        if (!res) await Toast.show({
-            text: 'Error.',
-        });
-        else {
-            await Toast.show({
-                text: 'Geselecteerde declaraties verwijderd.',
-            });
-            setItems(oldDeclarations => oldDeclarations.filter((oldDeclaration: any) => !selectedItemIds.includes(oldDeclaration.id)));
-            setSelectedItemIds([]);
-        }
     }
 
     const handleSwipeLeft = async (declarationId: string) => {
@@ -260,13 +236,28 @@ export default function Home() {
 
     const handleClickStatusFilter = (status: string) => {
         if (declarationStatusFilters?.includes(status))
-            setDeclarationStatusFilters(declarationStatusFilters.filter((filter) => filter !== status));
+            setDeclarationStatusFilters(declarationStatusFilters.filter((filter: any) => filter !== status));
         else
             setDeclarationStatusFilters(declarationStatusFilters?.length ? [...declarationStatusFilters, status] : [status]);
     }
 
+    const [title, setTitle]: any = useState(<><span className="!font-thin">Mijn</span> bonnen</>);
+
+    useEffect(() => {
+        switch (currentTabIndex) {
+            case 0:
+                setTitle(isInSelectionMode ? <>Selecteer <span className="!font-thin">bonnen</span></> : <><span className="!font-thin">Mijn</span> bonnen</>);
+                break;
+            case 1:
+                setTitle(<><span className="!font-thin">Mijn</span> declaraties</>);
+                break;
+        }
+    }, [currentTabIndex, isInSelectionMode]);
+
     return <>
-        <DeclarationsPageHeader/>
+        <OverviewHeader title={title}/>
+
+        <DeclarationsTabBar />
 
         <Content className="bg-white m-4 rounded-2xl">
 
@@ -275,7 +266,7 @@ export default function Home() {
             {(currentTabIndex === 0) && <>
                 <GroupHeader
                     open={showUnclaimedExpenses}
-                    color="amber"
+                    color="green"
                     className="mt-4"
                     onClick={() => setShowUnclaimedExpenses(!showUnclaimedExpenses)}
                     title={`Nog in te dienen`}
@@ -302,8 +293,8 @@ export default function Home() {
                                 onSwipeLeft={async () => await handleSwipeLeft(item.id)}
                                 allowSwipeLeft={true}
                                 isSelectingItems={isSelectingExpenses}
-                                onTapStart={async (event, info) => await handleTapStart(item, info)}
-                                onTap={async (event, info) => await handleTapEnd(info, item.id)}
+                                onTapStart={async (event: any, info: any) => await handleTapStart(item, info)}
+                                onTap={async (event: any, info: any) => await handleTapEnd(info, item.id)}
                                 onTapCancel={handleTapCancel}
                             />
                         ))
@@ -314,7 +305,7 @@ export default function Home() {
                     && <GroupHeader
                         open={showClaimedExpenses}
                         onClick={() => setShowClaimedExpenses(!showClaimedExpenses)}
-                        color="green"
+                        color="red"
                         className="mt-4"
                         title={`Reeds ingediend`}
                         itemsCount={claimedExpenses?.length}
@@ -337,8 +328,8 @@ export default function Home() {
                             onSwipeLeft={async () => await handleSwipeLeft(expense.id)}
                             allowSwipeLeft={true}
                             isSelectingItems={isSelectingExpenses}
-                            onTapStart={async (event, info) => await handleTapStart(expense, info)}
-                            onTap={async (event, info) => await handleTapEnd(info, expense.id)}
+                            onTapStart={async (event: any, info: any) => await handleTapStart(expense, info)}
+                            onTap={async (event: any, info: any) => await handleTapEnd(info, expense.id)}
                             onTapCancel={handleTapCancel}
                         />
                     )}
@@ -444,7 +435,7 @@ export default function Home() {
     </>
 }
 
-const GroupHeader = ({title, color, className = '', itemsCount = 0, onClick = undefined, open = true, ...props}) => {
+const GroupHeader = ({title, color, className = '', itemsCount = 0, onClick = undefined, open = true, ...props}: any) => {
     const [primaryColor] = useAtom(primaryColorAtom);
     const backgroundColor = !!color ? `bg-${color}-500` : primaryColor;
     const balloonTextColor = !!color ? `text-${color}-500` : 'text-white';
@@ -473,7 +464,7 @@ const GroupHeader = ({title, color, className = '', itemsCount = 0, onClick = un
     );
 }
 
-const ListSection = ({className, children, ...props}) => (
+const ListSection = ({className, children, ...props}: any) => (
     <section className={`grid grid-cols-1 gap-2 divide-y-black/10 ${className}`} {...props}>
         {children}
     </section>

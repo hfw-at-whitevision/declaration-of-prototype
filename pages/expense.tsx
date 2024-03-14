@@ -10,7 +10,7 @@ import {primaryColorAtom} from "@/store/atoms";
 export default function SingleExpensePage() {
     const router = useRouter();
     const id = router.query?.id ?? null;
-    const [expense, setExpense] = useState(null);
+    const [expense, setExpense]: any = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [primaryColor, setPrimaryColor]  = useAtom(primaryColorAtom);
 

@@ -31,7 +31,7 @@ export default function HomePage() {
             {/*    : <RejectionsList className="mt-8"/>*/}
             {/*}*/}
 
-            <ActionsGrid/>
+            {/*<ActionsGrid/>*/}
 
         </Content>
 
