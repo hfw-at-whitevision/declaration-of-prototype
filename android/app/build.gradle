@@ -7,6 +7,7 @@ android {
         applicationId "nl.whitevision.whitevisiondeclaraties"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
+        manifestPlaceholders = [appAuthRedirectScheme: 'com.redirectScheme.comm']
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
