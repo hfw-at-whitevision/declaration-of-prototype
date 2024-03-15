@@ -2,17 +2,17 @@ import useAuth from "@/hooks/useAuth";
 import Button from "@/components/Button";
 import {TfiMicrosoftAlt} from "react-icons/tfi";
 import {useEffect} from "react";
-import {SecureStoragePlugin} from "capacitor-secure-storage-plugin";
 
 const LoginPage = ({children}: any) => {
-    const {login, isAuthenticated} = useAuth();
-    const shouldLoginAutomatically = SecureStoragePlugin.get({ key: "shouldLoginAutomatically" }).then(res => res?.value === "true");
+    const {loginWithMicrosoft, isAuthenticated, shouldLoginWithBiometry, loginWithBiometry} = useAuth();
 
     useEffect(() => {
-        if (shouldLoginAutomatically) {
-            login();
+        console.log('shouldLoginWithBiometry', shouldLoginWithBiometry);
+
+        if (shouldLoginWithBiometry) {
+            loginWithBiometry();
         }
-    }, []);
+    }, [shouldLoginWithBiometry]);
 
     return (
         <>
@@ -29,7 +29,7 @@ const LoginPage = ({children}: any) => {
                         <div className="loginBox__content">
                             <div>
                                 <Button
-                                    onClick={() => login()}
+                                    onClick={() => loginWithMicrosoft()}
                                     primary
                                     padding="small"
                                     rounded="full"

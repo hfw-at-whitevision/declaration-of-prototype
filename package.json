@@ -12,6 +12,7 @@
     "static": "next build && next export && npx cap sync"
   },
   "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^7.1.1",
     "@azure/msal-browser": "^3.10.0",
     "@azure/msal-react": "^2.0.12",
     "@byteowls/capacitor-oauth2": "^5.0.0",

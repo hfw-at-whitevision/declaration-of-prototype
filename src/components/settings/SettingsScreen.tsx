@@ -24,7 +24,7 @@ export default function SettingsScreen() {
         await logout();
     }
 
-    const handleSwitchEnvironment = async (environmentCode: string) => {
+    const handleSwitchEnvironment = async () => {
         const {value, cancelled} = await Dialog.prompt({
             title: 'Omgeving',
             message: 'Voer de nieuwe omgevingscode in:',
@@ -32,8 +32,6 @@ export default function SettingsScreen() {
         if (cancelled) return;
         setEnvironmentCode(value);
     }
-
-
 
     return <>
         <OverviewHeader title="Instellingen" />
@@ -54,7 +52,7 @@ export default function SettingsScreen() {
     </>
 }
 
-const SettingsButton = ({className, children, ...props}) => (
+const SettingsButton = ({className, children, ...props}: any) => (
     <button {...props} className={`p-4 ${className}`}>
         {children}
     </button>

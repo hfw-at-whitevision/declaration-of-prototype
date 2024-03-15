@@ -1,10 +1,18 @@
-import { OAuth2AuthenticateOptions, OAuth2Client } from '@byteowls/capacitor-oauth2';
-import { atom, useAtom } from 'jotai';
-import { useQueryClient } from '@tanstack/react-query';
-import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
-import { jwtDecode } from 'jwt-decode';
+import {OAuth2AuthenticateOptions, OAuth2Client} from '@byteowls/capacitor-oauth2';
+import {atom, useAtom} from 'jotai';
+import {useQueryClient} from '@tanstack/react-query';
+import {SecureStoragePlugin} from 'capacitor-secure-storage-plugin';
+import {jwtDecode} from 'jwt-decode';
 import useCapacitor from '@/hooks/useCapacitor';
 import {useRouter} from "next/router";
+import {Dialog} from "@capacitor/dialog";
+import {
+    AndroidBiometryStrength,
+    BiometricAuth,
+    BiometryError,
+    BiometryErrorType
+} from "@aparajita/capacitor-biometric-auth";
+import {useEffect, useState} from "react";
 
 export const accessTokenAtom = atom<string | undefined>(undefined);
 export const emailAtom = atom<string | undefined>(undefined);
@@ -40,13 +48,40 @@ const useAuth = () => {
     const [email, setEmail]: any = useAtom(emailAtom);
     const isAuthenticated = !!accessToken && !!email;
     const client = useQueryClient();
-    const { isNative } = useCapacitor();
+    const {isNative} = useCapacitor();
+
+    const [refreshToken, setRefreshToken] = useState();
+    const refreshTokenAvailable = !!refreshToken;
+    const shouldAskForBiometryActivation = true;
+    const [shouldLoginWithBiometry, setShouldLoginWithBiometry] = useAtom(shouldLoginWithBiometryAtom);
+
+    useEffect(() => {
+        SecureStoragePlugin.get({key: 'refreshToken'}).then((res: any) => {
+            console.log('refreshToken value in localStorage: ', res);
+            if (res?.value)
+                setRefreshToken(res?.value);
+            else
+                setRefreshToken(undefined);
+        });
+        SecureStoragePlugin.get({key: "loginWithBiometry"}).then((res: any) => {
+            console.log('loginWithBiometry value in localStorage: ', res);
+            if (res?.value === 'true')
+                setShouldLoginWithBiometry(true);
+            else
+                setShouldLoginWithBiometry(false);
+        });
+    }, []);
 
     const responseHandler = async (response: Response | null) => {
+        console.log('responseHandler', response);
         if (!response) return;
         const accessToken = response.access_token;
         const refreshToken = response.access_token_response.refresh_token;
         const decodedToken: any = jwtDecode(accessToken);
+
+        if (shouldAskForBiometryActivation) {
+            await setBiometryAuth();
+        }
 
         setEmail(decodedToken.unique_name as string);
         setAccessToken(accessToken);
@@ -64,38 +99,77 @@ const useAuth = () => {
         await Promise.all([res1, res2]);
     };
 
-    const login = () => {
-        SecureStoragePlugin.get({ key: 'refreshToken' })
-            .then((res) => {
-                console.log('refreshToken found', res?.value);
+    const setBiometryAuth = async () => {
+        console.log('setBiometryAuth');
+        const {value} = await Dialog.confirm({
+            title: 'Biometrie activeren',
+            message: 'Wil je voortaan inloggen met biometrie?',
+        });
+        if (value) {
+            await SecureStoragePlugin.set({key: 'loginWithBiometry', value: 'true'});
+        }
+    }
 
-                const storedRefreshToken = res?.value;
-                // set error om authenticatie flow zonder refresh Token to doorlopen
-                if (!storedRefreshToken || !isNative) throw new Error();
-
+    const loginWithMicrosoft = async () => {
+        try {
+            if (refreshTokenAvailable && isNative) {
+                console.log('refreshTokenAvailable, trying to login with refreshToken');
                 OAuth2Client.refreshToken({
                     appId: azureAdConfig.appId as string,
                     accessTokenEndpoint: azureAdConfig.accessTokenEndpoint as string,
-                    refreshToken: storedRefreshToken,
+                    refreshToken: refreshToken as string,
                     scope: azureAdConfig.scope,
                 })
                     .then(async (response) => {
                         console.log('refreshToken response', response);
                         await responseHandler(response);
                     });
-            })
-            .catch(() => {
+            } else {
+                console.log('refreshToken not available');
                 OAuth2Client.authenticate(azureAdConfig)
                     .then(async (response) => {
                         console.log('authenticate response', response);
                         await responseHandler(response);
                     });
-            });
+            }
+        }
+        catch (e) {
+            console.error('Error while logging in', e);
+        }
     };
+
+    const loginWithBiometry = async () => {
+        console.log('Logging in with biometry');
+        try {
+            await BiometricAuth.authenticate({
+                reason: 'Please authenticate',
+                cancelTitle: 'Cancel',
+                allowDeviceCredential: true,
+                iosFallbackTitle: 'Use passcode',
+                androidTitle: 'Biometric login',
+                androidSubtitle: 'Log in using biometric authentication',
+                androidConfirmationRequired: false,
+                androidBiometryStrength: AndroidBiometryStrength.weak,
+            });
+        } catch (error) {
+            console.log('Biometry error', error);
+
+            // error is always an instance of BiometryError.
+            if (error instanceof BiometryError) {
+                if (error.code !== BiometryErrorType.userCancel) {
+                    // Display the error.
+                    await Dialog.alert({
+                        title: 'Biometry error',
+                        message: error.message,
+                    });
+                }
+            }
+        }
+    }
 
     const logout = async () => {
         await OAuth2Client.logout(azureAdConfig);
-        await SecureStoragePlugin.remove({ key: 'accessToken' });
+        await SecureStoragePlugin.remove({key: 'accessToken'});
         setAccessToken(undefined);
         // clearAccessToken('User has logged out');
         client.removeQueries();
@@ -103,11 +177,15 @@ const useAuth = () => {
     };
 
     return {
-        login,
+        loginWithMicrosoft,
         logout,
         isAuthenticated,
         accessToken,
         username: email,
+        shouldLoginWithBiometry,
+        loginWithBiometry,
     };
 };
 export default useAuth;
+
+const shouldLoginWithBiometryAtom = atom(false);
