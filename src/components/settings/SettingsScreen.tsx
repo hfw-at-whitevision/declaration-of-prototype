@@ -29,27 +29,33 @@ export default function SettingsScreen() {
             title: 'Omgeving',
             message: 'Voer de nieuwe omgevingscode in:',
         });
-
         if (cancelled) return;
-
         setEnvironmentCode(value);
     }
+
+
 
     return <>
         <OverviewHeader title="Instellingen" />
 
         <Content className="bg-white m-4 rounded-2xl">
             <section className="grid grid-cols-1 divide-y divide-y-black/10">
-<button onClick={handleSwitchEnvironment}>
-    Omgeving {environmentCode}
-</button>
+                <SettingsButton onClick={handleSwitchEnvironment}>
+                    Omgeving {environmentCode}
+                </SettingsButton>
 
-                <button onClick={handleLogout}>
+                <SettingsButton onClick={handleLogout}>
                     Uitloggen
-                </button>
+                </SettingsButton>
             </section>
         </Content>
 
         <TabNavigation/>
     </>
 }
+
+const SettingsButton = ({className, children, ...props}) => (
+    <button {...props} className={`p-4 ${className}`}>
+        {children}
+    </button>
+)

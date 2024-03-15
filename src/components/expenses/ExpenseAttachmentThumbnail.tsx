@@ -14,7 +14,7 @@ const ExpenseAttachmentThumbnail = ({imageUrl}) => {
             thumbnail={imageUrl}
         >
             {({ ref, open }) => (
-                <img ref={ref} onClick={open} src={imageUrl} className="w-full h-[100px] p-2 object-contain rounded-md border-2 border-amber-400 cursor-pointer" />
+                <img ref={ref} onClick={open} src={imageUrl} className="w-full max-w-[200px] h-[100px] p-2 object-contain rounded-md border-2 border-amber-400 cursor-pointer" />
             )}
         </Item>
     );

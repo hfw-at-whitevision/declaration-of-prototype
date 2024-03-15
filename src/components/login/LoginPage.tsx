@@ -1,9 +1,19 @@
 import useAuth from "@/hooks/useAuth";
 import Button from "@/components/Button";
 import {TfiMicrosoftAlt} from "react-icons/tfi";
+import {useEffect} from "react";
+import {SecureStoragePlugin} from "capacitor-secure-storage-plugin";
 
 const LoginPage = ({children}: any) => {
     const {login, isAuthenticated} = useAuth();
+    const shouldLoginAutomatically = SecureStoragePlugin.get({ key: "shouldLoginAutomatically" }).then(res => res?.value === "true");
+
+    useEffect(() => {
+        if (shouldLoginAutomatically) {
+            login();
+        }
+    }, []);
+
     return (
         <>
             {

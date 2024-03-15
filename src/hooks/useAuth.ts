@@ -50,10 +50,13 @@ const useAuth = () => {
 
         setEmail(decodedToken.unique_name as string);
         setAccessToken(accessToken);
+
+        console.log('storing the accessToken in localStorage', accessToken);
         const res1 = SecureStoragePlugin.set({
             key: 'accessToken',
             value: accessToken,
         });
+        console.log('storing the refreshToken in localStorage', refreshToken);
         const res2 = SecureStoragePlugin.set({
             key: 'refreshToken',
             value: refreshToken,
@@ -64,6 +67,8 @@ const useAuth = () => {
     const login = () => {
         SecureStoragePlugin.get({ key: 'refreshToken' })
             .then((res) => {
+                console.log('refreshToken found', res?.value);
+
                 const storedRefreshToken = res?.value;
                 // set error om authenticatie flow zonder refresh Token to doorlopen
                 if (!storedRefreshToken || !isNative) throw new Error();
@@ -74,11 +79,17 @@ const useAuth = () => {
                     refreshToken: storedRefreshToken,
                     scope: azureAdConfig.scope,
                 })
-                    .then((response) => responseHandler(response));
+                    .then(async (response) => {
+                        console.log('refreshToken response', response);
+                        await responseHandler(response);
+                    });
             })
             .catch(() => {
                 OAuth2Client.authenticate(azureAdConfig)
-                    .then((response) => responseHandler(response));
+                    .then(async (response) => {
+                        console.log('authenticate response', response);
+                        await responseHandler(response);
+                    });
             });
     };
 
