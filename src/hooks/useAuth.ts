@@ -39,6 +39,8 @@ interface Response {
     [key: string]: any;
 }
 
+let appListener: any;
+
 const useAuth = () => {
     const router = useRouter();
     const [accessToken, setAccessToken]: any = useAtom(accessTokenAtom);
@@ -149,6 +151,7 @@ const useAuth = () => {
                 androidConfirmationRequired: false,
                 androidBiometryStrength: AndroidBiometryStrength.weak,
             });
+            await loginWithMicrosoft();
         } catch (error) {
             console.log('Biometry error', error);
 
@@ -174,8 +177,7 @@ const useAuth = () => {
         await router.push('/');
     };
 
-    let appListener: PluginListenerHandle
-    const updateBiometryInfo = (info: CheckBiometryResult): void => {
+    const updateBiometryInfo = (info: any): void => {
         if (info.isAvailable) {
             setIsBiometryAvailable(true);
         } else {

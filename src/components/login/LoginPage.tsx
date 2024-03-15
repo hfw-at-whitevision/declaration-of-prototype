@@ -18,15 +18,9 @@ const LoginPage = ({children}: any) => {
         <>
             {
                 (!isAuthenticated)
-                    ? <section className="bg-white rounded-2xl m-8 p-4 top-0 right-0 left-0 bottom-0 fixed">
-                        <div
-                            className="loginBox__image"
-                            style={{
-                                backgroundImage: `url(./images/login.jpg)`,
-                            }}
-                        >
-                        </div>
-                        <div className="loginBox__content">
+                    ? <>
+                        <img src="/images/whitevision_logo_2024_yellow.png" alt="WhiteVision" className="h-12 object-contain mx-auto mt-8" />
+                        <section className="bg-white rounded-2xl m-8 mt-28 p-4 top-0 right-0 left-0 bottom-0 fixed">
                             <div>
                                 <Button
                                     onClick={() => loginWithMicrosoft()}
@@ -39,8 +33,8 @@ const LoginPage = ({children}: any) => {
                                     Login met Microsoft
                                 </Button>
                             </div>
-                        </div>
                     </section>
+                    </>
                     : children
             }
         </>
