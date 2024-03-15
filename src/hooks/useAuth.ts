@@ -49,8 +49,9 @@ const useAuth = () => {
 
     const [refreshToken, setRefreshToken] = useState();
     const refreshTokenAvailable = !!refreshToken;
-    const shouldAskForBiometryActivation = true;
+    const [isBiometryAvailable, setIsBiometryAvailable] = useAtom(isBiometryAvailableAtom);
     const [shouldLoginWithBiometry, setShouldLoginWithBiometry] = useAtom(shouldLoginWithBiometryAtom);
+    const shouldAskForBiometryActivation = isBiometryAvailable && !shouldLoginWithBiometry;
 
     useEffect(() => {
         SecureStoragePlugin.get({key: 'refreshToken'}).then((res: any) => {
@@ -173,6 +174,35 @@ const useAuth = () => {
         await router.push('/');
     };
 
+    let appListener: PluginListenerHandle
+    const updateBiometryInfo = (info: CheckBiometryResult): void => {
+        if (info.isAvailable) {
+            setIsBiometryAvailable(true);
+        } else {
+            setIsBiometryAvailable(false);
+        }
+    }
+    const biometryOnMount = async () => {
+        updateBiometryInfo(await BiometricAuth.checkBiometry());
+
+        try {
+            appListener = await BiometricAuth.addResumeListener(updateBiometryInfo)
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error(error.message)
+            }
+        }
+    }
+    const biometryUnMount = async () => {
+        await appListener?.remove();
+    }
+    useEffect(() => {
+        biometryOnMount();
+        return () => {
+            biometryUnMount();
+        }
+    }, []);
+
     return {
         loginWithMicrosoft,
         logout,
@@ -188,3 +218,4 @@ export default useAuth;
 const shouldLoginWithBiometryAtom = atom(false);
 export const accessTokenAtom = atom<string | undefined>(undefined);
 export const emailAtom = atom<string | undefined>(undefined);
+export const isBiometryAvailableAtom = atom(false);
