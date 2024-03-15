@@ -14,9 +14,6 @@ import {
 } from "@aparajita/capacitor-biometric-auth";
 import {useEffect, useState} from "react";
 
-export const accessTokenAtom = atom<string | undefined>(undefined);
-export const emailAtom = atom<string | undefined>(undefined);
-
 const azureAdConfig: OAuth2AuthenticateOptions = {
     appId: 'a468fdc4-dd90-4300-a896-42add09bd2e3',
     authorizationBaseUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
@@ -189,3 +186,5 @@ const useAuth = () => {
 export default useAuth;
 
 const shouldLoginWithBiometryAtom = atom(false);
+export const accessTokenAtom = atom<string | undefined>(undefined);
+export const emailAtom = atom<string | undefined>(undefined);
