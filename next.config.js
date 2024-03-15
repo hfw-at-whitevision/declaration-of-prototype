@@ -4,8 +4,8 @@ const nextConfig = {
         ignoreBuildErrors: true,
         exclude: ["node_modules", ".next"],
     },
-    // reactStrictMode: true,
-    // swcMinify: true,
+    reactStrictMode: true,
+    swcMinify: true,
     images: {
         unoptimized: true
     },
