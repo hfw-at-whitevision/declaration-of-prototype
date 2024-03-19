@@ -3,8 +3,6 @@ type runOcrParams = {
     tenandId: string;
 }
 
-const ocrApiUrl = "https://ocrtransform.whitevision.online/api/RunOcr?code=7lk7OPwwq-HVn8cCfnceJZGSAVzFNiFFc79q7-Ey22pGAzFuIRUBLQ==";
-
 const runOcr = async ({
                           imageBase64,
                           tenandId,
@@ -13,6 +11,7 @@ const runOcr = async ({
         ImageBase64: imageBase64,
         TenantId: tenandId,
     };
+    const ocrApiUrl = process.env.NEXT_PUBLIC_OCR_API_URL;
 
     try {
         const res = await fetch(ocrApiUrl, {
