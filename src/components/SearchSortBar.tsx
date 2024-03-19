@@ -1,4 +1,4 @@
-import {declarationsAtom, searchQueryAtom} from "@/store/atoms";
+import {declarationsAtom, searchQueryAtom} from "@/store/generalAtoms";
 import {BsSearch, BsSortUp, BsXLg} from "react-icons/bs";
 import {useAtom} from 'jotai'
 import {useRef} from "react";

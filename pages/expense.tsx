@@ -1,36 +1,43 @@
-import SingleDeclaration from "@/components/declarations/SingleDeclaration";
 import {getExpense} from "@/firebase";
 import {useRouter} from "next/router";
 import {useEffect, useState} from "react";
-import Loading from "@/components/Loading";
 import SingleExpense from "@/components/expenses/SingleExpense";
 import {useAtom} from "jotai";
-import {primaryColorAtom} from "@/store/atoms";
+import {loadingAtom, primaryColorAtom, scannedImagesAtom} from "@/store/generalAtoms";
 
 export default function SingleExpensePage() {
     const router = useRouter();
-    const id = router.query?.id ?? null;
+    const {id, title, description, totalAmount, date} = router.query || {};
     const [expense, setExpense]: any = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [primaryColor, setPrimaryColor]  = useAtom(primaryColorAtom);
-
+    const [loading, setLoading] = useAtom(loadingAtom);
+    const {isLoading} = loading || {};
+    const [, setPrimaryColor]  = useAtom(primaryColorAtom);
+    const [scannedImages] = useAtom(scannedImagesAtom);
     const isCreatingNewExpense = !id;
 
     useEffect(() => {
         if (!router.isReady) return;
-        setIsLoading(true);
+        setLoading({
+            isLoading: true,
+            message: 'Bon aan het laden..'
+        });
 
         // if we are creating a new expense
         if (isCreatingNewExpense) setExpense({
-            totalAmount: 0.00,
-            date: new Date().toDateString(),
+            title,
+            description,
+            totalAmount,
+            date,
+            attachments: scannedImages,
         });
         // opening an existing expense
         else getExpense(id).then((item: any) => {
             setExpense(item);
         });
 
-        setIsLoading(false);
+        setLoading({
+            isLoading: false,
+        });
     }, [id, router.isReady]);
 
     useEffect(() => {
@@ -41,6 +48,16 @@ export default function SingleExpensePage() {
         }
     }, []);
 
-    if (isLoading || !expense) return <Loading/>
+    useEffect(() => {
+        if (!expense) setLoading({
+            isLoading: true,
+            message: 'Bon aan het laden..'
+        });
+        else setLoading({
+            isLoading: false,
+        });
+    }, [expense]);
+
+    if (isLoading) return null;
     return <SingleExpense expense={expense}/>
 }

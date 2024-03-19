@@ -1,5 +1,5 @@
 import {useAtom} from "jotai";
-import {inputModalAtom} from "@/store/atoms";
+import {inputModalAtom} from "@/store/generalAtoms";
 import React from "react";
 
 export default function CardInput({

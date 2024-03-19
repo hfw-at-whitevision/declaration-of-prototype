@@ -1,32 +1,35 @@
 import {useRouter} from "next/router";
 import Button from "../Button";
 import Content from "../Content";
-import {useEffect, useState} from "react";
-import {
-    createDeclaration,
-    updateDeclaration,
-    updateExpense
-} from "@/firebase";
-import {
-    inputModalAtom, primaryColorAtom,
-} from "@/store/atoms";
+import React, {useEffect, useState} from "react";
+import {deleteDeclaration, updateDeclaration, updateExpense} from "@/firebase";
+import {inputModalAtom, loadingAtom, primaryColorAtom,} from "@/store/generalAtoms";
 import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
-import {LoadingSpinner} from "@/components/Loading";
 import SinglePageHeader from "@/components/declarations/SinglePageHeader";
 import ExpenseAccordion from "@/components/expenses/ExpenseAccordion";
 import {Dialog} from "@capacitor/dialog";
 import DisplayHeading from "@/components/layout/DisplayHeading";
+import {useDeclaration} from "@/hooks/useDeclaration";
+import {SpecialZoomLevel, Viewer, Worker} from "@react-pdf-viewer/core";
+import {defaultLayoutPlugin} from '@react-pdf-viewer/default-layout';
+import useDocbase from "@/hooks/useDocbase";
 
 export default function SingleDeclaration({declaration: inputDeclaration}: any) {
+    const defaultLayoutPluginInstance = defaultLayoutPlugin({
+        sidebarTabs: (defaultTabs) => [],
+    });
     const [declaration, setDeclaration] = useState(inputDeclaration);
     const [expenses, setExpenses] = useState(inputDeclaration?.expenses);
     const expenseIds = expenses?.length > 0 ? expenses?.map((expense: any) => expense?.id) : [];
     const declarationId = useRouter()?.query?.id ?? null;
+    const docbaseId = declaration?.docbaseId;
     const status = declaration?.status ?? 'concept';
     const router = useRouter();
     const allowEdit = !declarationId;
     const containsClaimedExpenses = expenses?.some((expense: any) => expense?.claimedIn?.length > 0);
+    const {postDeclaration} = useDeclaration();
+    const {getDocbasePdf} = useDocbase();
 
     const [title, setTitle] = useState(declaration?.title);
     const [description, setDescription] = useState(inputDeclaration?.description);
@@ -34,6 +37,8 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
     const [date, setDate] = useState(declaration?.date);
     const [category, setCategory] = useState(declaration?.category);
     const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
+    const [pdfBase64, setPdfBase64] = useState();
+    const [loading, setLoading] = useAtom(loadingAtom);
 
     const serializeDeclaration = (props?: any) => ({
         ...declarationId && {id: declarationId},
@@ -58,34 +63,51 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
             if (!value) return;
         }
 
-        // update declaration
-        if (declarationId) {
-            await updateDeclaration(declarationId, serializeDeclaration({
-                status: '100',
-            }));
-        }
-        // posting a new declaration
-        else {
-            const declarationId = await createDeclaration(serializeDeclaration({
-                status: '100',
-                date: new Date().toDateString(),
-            }));
-            await handleUpdateExpenses({
-                claimedInDeclarationId: declarationId,
-            });
-        }
-        // setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
-        // setShowConfirmationOverlay(true);
-        await router.push('/declarations?tabIndex=1');
-        await Toast.show({
-            text: 'Declaratie succesvol ingediend.'
+        setLoading({
+            isLoading: true,
+            message: 'Declaratie wordt ingediend...'
         });
+
+        try {
+            // update declaration
+            if (declarationId) {
+                await updateDeclaration(declarationId, serializeDeclaration({
+                    status: '100',
+                }));
+            }
+            // posting a new declaration
+            else {
+                const declarationToPost = serializeDeclaration({
+                    status: '100',
+                    date: new Date().toDateString(),
+                });
+                const {declarationId} = await postDeclaration({
+                    declaration: declarationToPost,
+                    expenses: expenses,
+                });
+                await handleUpdateExpenses({
+                    claimedInDeclarationId: declarationId,
+                });
+            }
+            // setConfirmationOverlayTitle('Declaratie succesvol ingediend.');
+            // setShowConfirmationOverlay(true);
+            await Toast.show({
+                text: 'Declaratie succesvol ingediend.'
+            });
+            await router.push('/declarations?tabIndex=1');
+        } catch (e) {
+            console.error(e);
+            await Toast.show({
+                text: 'Er is iets misgegaan. Probeer het opnieuw.'
+            });
+        } finally {
+            setLoading({isLoading: false});
+        }
     }
 
     const handleUpdateExpenses = async ({claimedInDeclarationId}: any) => {
         const promises = [];
         for (const expense of expenses) {
-            const claimedIn = expense?.claimedIn || [];
             promises.push(updateExpense(expense.id, {
                 ...expense,
                 claimedIn: expense?.claimedIn?.length > 0
@@ -96,6 +118,21 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
         await Promise.all(promises);
     }
 
+    const handleDeleteDeclaration = async (e: any) => {
+        e.preventDefault();
+
+        const {value} = await Dialog.confirm({
+            title: 'Waarschuwing',
+            message: 'Weet je zeker dat je deze declaratie wilt verwijderen?',
+        });
+        if (!value) return;
+        await deleteDeclaration(declarationId);
+        await Toast.show({
+            text: 'Declaratie succesvol verwijderd.'
+        });
+        await router.push('/declarations?tabIndex=1');
+    }
+
     useEffect(() => {
         setPrimaryColor('bg-gray-100');
 
@@ -103,6 +140,13 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
             setPrimaryColor('bg-amber-400');
         }
     }, []);
+
+    useEffect(() => {
+        if (!docbaseId) return;
+        getDocbasePdf(docbaseId).then((pdfBase64: any) => {
+            setPdfBase64(pdfBase64);
+        });
+    }, [docbaseId]);
 
     return (
         <Content>
@@ -129,7 +173,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                     <div className="flex flex-row justify-between items-center text-xs opacity-50">
                         {!!declarationId &&
                             <span>
-                                DECL-{declarationId}
+                                DECL-{docbaseId ?? declarationId}
                             </span>
                         }
 
@@ -194,12 +238,26 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
 
                     <section className="grid grid-cols-1 gap-2 w-full p-0">
 
-                        {expenses?.length > 0 && expenses?.map((expense: any) => (
-                            <ExpenseAccordion key={expense?.id} expense={expense} showStatus={allowEdit} />
+                        {expenses?.length > 0 && expenses?.map((expense: any, index: number) => (
+                            <ExpenseAccordion key={expense?.id + index} expense={expense} showStatus={allowEdit}/>
                         ))}
 
                     </section>
                 </div>
+
+                {pdfBase64 &&
+                    <Worker workerUrl="./pdf.worker.min.js">
+                        <div className="h-60 singleDeclaration">
+                            <Viewer
+                                fileUrl={pdfBase64}
+                                plugins={[
+                                    defaultLayoutPluginInstance,
+                                ]}
+                                defaultScale={SpecialZoomLevel.PageFit}
+                            />
+                        </div>
+                    </Worker>
+                }
 
                 {/* action buttons */}
                 {allowEdit
@@ -217,11 +275,25 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                         }
                     </div>
                 }
+
+                {!allowEdit &&
+                    <Button
+                        tertiary
+                        padding='small'
+                        rounded="full"
+                        fullWidth
+                        onClick={handleDeleteDeclaration}
+                    >
+                        Verwijderen
+                    </Button>
+                }
             </div>
 
-            <pre className="break-all overflow-x-auto hidden">
-                {JSON.stringify(declaration, null, 2)}
-            </pre>
+            {/*<pre className="break-all overflow-x-auto">*/}
+            {/*    {JSON.stringify(declaration, null, 2)}*/}
+            {/*    <br/>*/}
+            {/*    {JSON.stringify(expenses, null, 2)}*/}
+            {/*</pre>*/}
         </Content>
     )
 }
@@ -238,6 +310,8 @@ const CardInput = (
     }: any
 ) => {
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
+    const isValueSet = value !== undefined && value !== null;
+
     return (
         <button
             disabled={!allowEdit}
@@ -253,7 +327,7 @@ const CardInput = (
             })}
         >
 
-            <span className={(value)
+            <span className={(isValueSet)
                 ? 'absolute top-1 text-[10px] opacity-50'
                 : 'opacity-50'
             }>

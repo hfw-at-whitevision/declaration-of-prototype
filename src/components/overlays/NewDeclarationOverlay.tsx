@@ -1,7 +1,7 @@
 import {useRouter} from "next/router";
 import {BsCamera, BsUpload} from "react-icons/bs";
 import {useAtom} from "jotai";
-import {scannedImagesAtom, showNewDeclarationOverlayAtom} from "@/store/atoms";
+import {scannedImagesAtom, showNewDeclarationOverlayAtom} from "@/store/generalAtoms";
 import {DocumentScanner, ResponseType} from "capacitor-document-scanner";
 import {Capacitor} from "@capacitor/core";
 import {useRef, useState} from "react";

@@ -13,7 +13,7 @@
 }
 
 body {
-    @apply bg-amber-400;
+    @apply bg-amber-400 overflow-x-hidden;
 }
 
 .react-datepicker__input-container input {
@@ -22,4 +22,12 @@ body {
 
 .pswp__img {
     object-fit: contain !important;
+}
+
+.singleDeclaration {
+    @apply rounded-md overflow-hidden;
+}
+
+.singleDeclaration .rpv-default-layout__container {
+    @apply border-none;
 }

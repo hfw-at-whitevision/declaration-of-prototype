@@ -1,8 +1,7 @@
-import {CiFileOn, CiHome, CiReceipt, CiSettings, CiSquareCheck} from "react-icons/ci";
 import {useRouter} from "next/router";
 import {motion} from "framer-motion";
 import {useAtom} from "jotai";
-import {primaryColorAtom} from "@/store/atoms";
+import {primaryColorAtom} from "@/store/generalAtoms";
 import {BsCreditCard2FrontFill, BsFillGearFill, BsFillHouseFill, BsFillPatchCheckFill} from "react-icons/bs";
 
 const tabs = [
@@ -14,18 +13,13 @@ const tabs = [
     {
         icon: BsFillPatchCheckFill,
         label: 'Goedkeuren',
-        // path: '/documents',
+        path: '/advice',
     },
     {
         icon: BsCreditCard2FrontFill,
         label: 'Declaraties',
         path: '/declarations'
     },
-    // {
-    //     icon: CiBookmarkCheck,
-    //     label: 'Goedkeuren',
-    //     path: '/approve'
-    // },
     {
         icon: BsFillGearFill,
         label: 'Instellingen',

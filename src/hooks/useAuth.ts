@@ -13,6 +13,8 @@ import {
     BiometryErrorType
 } from "@aparajita/capacitor-biometric-auth";
 import {useEffect, useState} from "react";
+import useDocbase from "@/hooks/useDocbase";
+import {accessTokenAtom, emailAtom, isBiometryAvailableAtom, shouldLoginWithBiometryAtom} from "@/store/authAtoms";
 
 const azureAdConfig: OAuth2AuthenticateOptions = {
     appId: 'a468fdc4-dd90-4300-a896-42add09bd2e3',
@@ -45,7 +47,9 @@ const useAuth = () => {
     const router = useRouter();
     const [accessToken, setAccessToken]: any = useAtom(accessTokenAtom);
     const [email, setEmail]: any = useAtom(emailAtom);
+
     const isAuthenticated = !!accessToken && !!email;
+
     const client = useQueryClient();
     const {isNative} = useCapacitor();
 
@@ -54,6 +58,7 @@ const useAuth = () => {
     const [isBiometryAvailable, setIsBiometryAvailable] = useAtom(isBiometryAvailableAtom);
     const [shouldLoginWithBiometry, setShouldLoginWithBiometry] = useAtom(shouldLoginWithBiometryAtom);
     const shouldAskForBiometryActivation = isBiometryAvailable && !shouldLoginWithBiometry;
+    const {docbaseAuth} = useDocbase();
 
     useEffect(() => {
         SecureStoragePlugin.get({key: 'refreshToken'}).then((res: any) => {
@@ -63,13 +68,13 @@ const useAuth = () => {
             else
                 setRefreshToken(undefined);
         });
-        SecureStoragePlugin.get({key: "loginWithBiometry"}).then((res: any) => {
-            console.log('loginWithBiometry value in localStorage: ', res);
-            if (res?.value === 'true')
-                setShouldLoginWithBiometry(true);
-            else
-                setShouldLoginWithBiometry(false);
-        });
+        // SecureStoragePlugin.get({key: "loginWithBiometry"}).then((res: any) => {
+        //     console.log('loginWithBiometry value in localStorage: ', res);
+        //     if (res?.value === 'true')
+        //         setShouldLoginWithBiometry(true);
+        //     else
+        //         setShouldLoginWithBiometry(false);
+        // });
     }, []);
 
     const responseHandler = async (response: Response | null) => {
@@ -86,6 +91,13 @@ const useAuth = () => {
         setEmail(decodedToken.unique_name as string);
         setAccessToken(accessToken);
 
+        // authenticate against docbase
+        await docbaseAuth({
+            azureToken: accessToken,
+            emailAddress: decodedToken.unique_name,
+            data: null,
+        });
+
         console.log('storing the accessToken in localStorage', accessToken);
         const res1 = SecureStoragePlugin.set({
             key: 'accessToken',
@@ -100,14 +112,14 @@ const useAuth = () => {
     };
 
     const setBiometryAuth = async () => {
-        console.log('setBiometryAuth');
-        const {value} = await Dialog.confirm({
-            title: 'Biometrie activeren',
-            message: 'Wil je voortaan inloggen met biometrie?',
-        });
-        if (value) {
-            await SecureStoragePlugin.set({key: 'loginWithBiometry', value: 'true'});
-        }
+        // console.log('setBiometryAuth');
+        // const {value} = await Dialog.confirm({
+        //     title: 'Biometrie activeren',
+        //     message: 'Wil je voortaan inloggen met biometrie?',
+        // });
+        // if (value) {
+        //     await SecureStoragePlugin.set({key: 'loginWithBiometry', value: 'true'});
+        // }
     }
 
     const loginWithMicrosoft = async () => {
@@ -139,33 +151,33 @@ const useAuth = () => {
     };
 
     const loginWithBiometry = async () => {
-        console.log('Logging in with biometry');
-        try {
-            await BiometricAuth.authenticate({
-                reason: 'Please authenticate',
-                cancelTitle: 'Cancel',
-                allowDeviceCredential: true,
-                iosFallbackTitle: 'Use passcode',
-                androidTitle: 'Biometric login',
-                androidSubtitle: 'Log in using biometric authentication',
-                androidConfirmationRequired: false,
-                androidBiometryStrength: AndroidBiometryStrength.weak,
-            });
-            await loginWithMicrosoft();
-        } catch (error) {
-            console.log('Biometry error', error);
-
-            // error is always an instance of BiometryError.
-            if (error instanceof BiometryError) {
-                if (error.code !== BiometryErrorType.userCancel) {
-                    // Display the error.
-                    await Dialog.alert({
-                        title: 'Biometry error',
-                        message: error.message,
-                    });
-                }
-            }
-        }
+        // console.log('Logging in with biometry');
+        // try {
+        //     await BiometricAuth.authenticate({
+        //         reason: 'Please authenticate',
+        //         cancelTitle: 'Cancel',
+        //         allowDeviceCredential: true,
+        //         iosFallbackTitle: 'Use passcode',
+        //         androidTitle: 'Biometric login',
+        //         androidSubtitle: 'Log in using biometric authentication',
+        //         androidConfirmationRequired: false,
+        //         androidBiometryStrength: AndroidBiometryStrength.weak,
+        //     });
+        //     await loginWithMicrosoft();
+        // } catch (error) {
+        //     console.log('Biometry error', error);
+        //
+        //     // error is always an instance of BiometryError.
+        //     if (error instanceof BiometryError) {
+        //         if (error.code !== BiometryErrorType.userCancel) {
+        //             // Display the error.
+        //             await Dialog.alert({
+        //                 title: 'Biometry error',
+        //                 message: error.message,
+        //             });
+        //         }
+        //     }
+        // }
     }
 
     const logout = async () => {
@@ -177,33 +189,33 @@ const useAuth = () => {
         await router.push('/');
     };
 
-    const updateBiometryInfo = (info: any): void => {
-        if (info.isAvailable) {
-            setIsBiometryAvailable(true);
-        } else {
-            setIsBiometryAvailable(false);
-        }
-    }
-    const biometryOnMount = async () => {
-        updateBiometryInfo(await BiometricAuth.checkBiometry());
-
-        try {
-            appListener = await BiometricAuth.addResumeListener(updateBiometryInfo)
-        } catch (error) {
-            if (error instanceof Error) {
-                console.error(error.message)
-            }
-        }
-    }
-    const biometryUnMount = async () => {
-        await appListener?.remove();
-    }
-    useEffect(() => {
-        biometryOnMount();
-        return () => {
-            biometryUnMount();
-        }
-    }, []);
+    // const updateBiometryInfo = (info: any): void => {
+    //     if (info.isAvailable) {
+    //         setIsBiometryAvailable(true);
+    //     } else {
+    //         setIsBiometryAvailable(false);
+    //     }
+    // }
+    // const biometryOnMount = async () => {
+    //     updateBiometryInfo(await BiometricAuth.checkBiometry());
+    //
+    //     try {
+    //         appListener = await BiometricAuth.addResumeListener(updateBiometryInfo)
+    //     } catch (error) {
+    //         if (error instanceof Error) {
+    //             console.error(error.message)
+    //         }
+    //     }
+    // }
+    // const biometryUnMount = async () => {
+    //     await appListener?.remove();
+    // }
+    // useEffect(() => {
+    //     biometryOnMount();
+    //     return () => {
+    //         biometryUnMount();
+    //     }
+    // }, []);
 
     return {
         loginWithMicrosoft,
@@ -216,8 +228,3 @@ const useAuth = () => {
     };
 };
 export default useAuth;
-
-const shouldLoginWithBiometryAtom = atom(false);
-export const accessTokenAtom = atom<string | undefined>(undefined);
-export const emailAtom = atom<string | undefined>(undefined);
-export const isBiometryAvailableAtom = atom(false);

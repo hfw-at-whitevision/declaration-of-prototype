@@ -3,13 +3,15 @@ import {getDeclaration, getExpense} from "@/firebase";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
+// import useDocbase from "@/hooks/useDocbase";
 
 export default function DeclarationScreenPage() {
     const router = useRouter();
     const id = router.query?.id ?? null;
     const [declaration, setDeclaration]: any = useState(null);
     const { createFromExpenses } = router.query;
-    const isCreatingFromExpenses = (createFromExpenses) ? createFromExpenses?.length > 0 : true;
+    const isCreatingFromExpenses = (createFromExpenses) ? createFromExpenses?.length > 0 : false;
+    // const {getDocbasePdf} = useDocbase();
 
     useEffect(() => {
         // if we are creating a declaration from selected expenses
@@ -36,14 +38,16 @@ export default function DeclarationScreenPage() {
             return;
         }
 
+        // if we are viewing an existing declaration
         if (!id || !router.isReady) return;
-        getDeclaration(id).then((declaration: any) => {
+        getDeclaration(id).then(async (declaration: any) => {
             const expensePromises = declaration?.expenses?.map((expenseId: any) => getExpense(expenseId));
-            Promise.all(expensePromises).then((expenses: any) => {
-                setDeclaration({
-                    ...declaration,
-                    expenses,
-                });
+            // const pdfBase64 = await getDocbasePdf(declaration?.docbaseId);
+            const expenses = await Promise.all(expensePromises);
+            setDeclaration({
+                ...declaration,
+                expenses,
+                // pdfBase64,
             });
         });
     }, [id, router.isReady, createFromExpenses]);

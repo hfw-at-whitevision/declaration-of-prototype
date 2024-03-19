@@ -44,4 +44,13 @@ export const selectedItemIdsAtom = atom<any>([]);
 // UI
 export const primaryColorAtom = atom<any>('bg-amber-400');
 
-export const environmentCodeAtom = atom<string>("");
+export const environmentCodeAtom = atomWithStorage<string>("environmentCode", "");
+
+export const loadingAtom = atom<any>({
+    isLoading: false,
+    message: '',
+});
+
+export const docbaseTokenAtom = atomWithStorage<string>("docbaseToken", undefined);
+
+export const lightboxImageAtom = atom<any>(null);

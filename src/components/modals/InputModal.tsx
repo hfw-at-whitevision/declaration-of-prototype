@@ -1,4 +1,4 @@
-import {inputModalAtom} from "@/store/atoms"
+import {inputModalAtom} from "@/store/generalAtoms"
 import {useAtom} from "jotai"
 import {useEffect, useRef, useState} from "react";
 import {motion} from "framer-motion";

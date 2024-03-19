@@ -1,5 +1,5 @@
 import {useAtom} from "jotai";
-import {currentTabIndexAtom, primaryColorAtom} from "@/store/atoms";
+import {currentTabIndexAtom, primaryColorAtom} from "@/store/generalAtoms";
 import {motion} from 'framer-motion';
 import {useRouter} from "next/router";
 

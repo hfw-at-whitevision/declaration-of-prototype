@@ -1,23 +1,39 @@
 import {BiImport, BiScan} from "react-icons/bi";
-import {BsFileEarmark, BsFileEarmarkPlus, BsPlusLg} from "react-icons/bs";
+import {BsFileEarmarkPlus, BsPlusLg} from "react-icons/bs";
 import React, {useRef, useState} from "react";
 import {motion} from "framer-motion";
 import {useRouter} from "next/router";
 import {useAtom} from "jotai";
-import {currentTabIndexAtom, IsSelectingItemsAtom, scannedImagesAtom} from "@/store/atoms";
+import {currentTabIndexAtom, IsSelectingItemsAtom, loadingAtom, scannedImagesAtom} from "@/store/generalAtoms";
 import {Capacitor} from "@capacitor/core";
 import {DocumentScanner, ResponseType} from "capacitor-document-scanner";
 import {Filesystem} from "@capacitor/filesystem";
 import {Dialog} from "@capacitor/dialog";
+import useOcr from "@/hooks/useOcr";
+import {removeBase64DataHeader} from "@/utils";
 
 export default function PlusMenu() {
     const router = useRouter();
     const [showMenu, setShowMenu] = useState(false);
-    const [scannedImages, setScannedImages]: any = useAtom(scannedImagesAtom);
+    const [, setScannedImages]: any = useAtom(scannedImagesAtom);
     const fileInputRef: any = useRef(null);
-    const [selectedFiles, setSelectedFiles]: any = useState([]);
+    const [, setSelectedFiles]: any = useState([]);
     const [, setIsSelectingItems] = useAtom(IsSelectingItemsAtom);
-    const [currentTabIndex, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
+    const [, setCurrentTabIndex] = useAtom(currentTabIndexAtom);
+    const [, setLoading] = useAtom(loadingAtom);
+    const {runOcr} = useOcr();
+
+    const createNewExpense = ({ocrResult = {}}: any) => {
+        const newExpense = {
+            title: ocrResult?.headers?.MerchantName ?? 'Nieuwe bon',
+            description: ocrResult?.lines?.[0]?.Description ?? '',
+            totalAmount: ocrResult?.headers?.Total ?? 0,
+            date: !!ocrResult?.headers?.TransactionDate ? new Date(ocrResult.headers.TransactionDate).toDateString() : new Date().toDateString(),
+        }
+        const urlQuery = new URLSearchParams(newExpense).toString();
+        console.log('Creating a new expense: ', newExpense);
+        router.push(`/expense?${urlQuery}`);
+    }
 
     const handleCameraClick = async (e: any) => {
         e.preventDefault();
@@ -54,37 +70,63 @@ export default function PlusMenu() {
     }
 
     const handleFileInputChange = async (e: any) => {
+        setLoading({
+            isLoading: true,
+            message: 'Bon wordt gescand..'
+        });
+
         try {
             const selectedFiles = e?.target?.files;
             setSelectedFiles(selectedFiles);
             if (!selectedFiles.length) return;
-
+            const selectedFile = selectedFiles[0];
             const base64Images: any = [];
-            for (const selectedFile of selectedFiles) {
-                if (Capacitor.isNativePlatform()) {
-                    console.log('selectedFile', selectedFile)
-                    const content = await Filesystem.readFile({
-                        path: selectedFile.path,
-                        // encoding: 'base64',
+            let ocrResult: any = null;
+
+            // mobile
+            if (Capacitor.isNativePlatform()) {
+                console.log('selectedFile', selectedFile)
+                const base64Image = await Filesystem.readFile({
+                    path: selectedFile.path,
+                });
+                await setScannedImages([base64Image]);
+                console.log('ocr-ing base64Image');
+                runOcr({
+                    imageBase64: removeBase64DataHeader(base64Image),
+                    tenandId: 'DEV',
+                })
+                    .then((result) => {
+                        ocrResult = result;
+                        createNewExpense({ocrResult});
                     });
-                    base64Images.push(content);
-                } else {
-                    const reader = new FileReader();
-                    await reader.readAsDataURL(selectedFile);
-                    reader.onloadend = () => {
-                        const base64Image = reader.result;
-                        base64Images.push(base64Image);
-                    }
+            }
+            // desktop
+            else {
+                const reader = new FileReader();
+                await reader.readAsDataURL(selectedFile);
+                reader.onloadend = async () => {
+                    const base64Image = reader.result;
+                    await setScannedImages([base64Image]);
+                    console.log('ocr-ing base64Image');
+                    runOcr({
+                        imageBase64: removeBase64DataHeader(base64Image),
+                        tenandId: 'DEV',
+                    })
+                        .then((result) => {
+                            ocrResult = result;
+                            createNewExpense({ocrResult});
+                        });
                 }
             }
-
-            await setScannedImages(base64Images);
-            await router.push('/expense');
-        }
-        catch (e: any) {
+        } catch (e: any) {
             await Dialog.alert({
                 title: 'Fout',
                 message: 'Er is een fout opgetreden bij het importeren van de bonnen: ' + e?.message ?? '-',
+            });
+        }
+        finally {
+            setLoading({
+                isLoading: false,
             });
         }
     }
@@ -117,15 +159,15 @@ export default function PlusMenu() {
                 onClick={() => handleToggleMenu(false)}
             />
             <motion.h2
-                animate={showMenu ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
+                animate={showMenu ? {opacity: 1} : {opacity: 0}}
+                transition={{duration: 0.4, delay: 0.2}}
                 className={`px-4 py-2 font-bold`}
             >
                 Nieuw
             </motion.h2>
             <motion.button
-                animate={showMenu ? { x: 0, opacity: 1 } : { x: 100, opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                animate={showMenu ? {x: 0, opacity: 1} : {x: 100, opacity: 0}}
+                transition={{duration: 0.2}}
                 className="z-50 p-4 text-right flex flex-row items-center gap-2 hover:bg-gray-100"
                 onClick={handleFileImportClick}
             >
@@ -135,15 +177,14 @@ export default function PlusMenu() {
                 <input
                     type="file"
                     accept="image/*"
-                    multiple
                     hidden
                     onChange={async (e) => await handleFileInputChange(e)}
                     ref={fileInputRef}
                 />
             </motion.button>
             <motion.button
-                animate={showMenu ? { x: 0, opacity: 1 } : { x: 100, opacity: 0 }}
-                transition={{ duration: 0.2, delay: 0.2 }}
+                animate={showMenu ? {x: 0, opacity: 1} : {x: 100, opacity: 0}}
+                transition={{duration: 0.2, delay: 0.2}}
                 className="p-4 text-right flex flex-row items-center gap-2 hover:bg-gray-100 z-50"
                 onClick={handleCameraClick}
             >
@@ -151,8 +192,8 @@ export default function PlusMenu() {
                 Scan bon
             </motion.button>
             <motion.button
-                animate={showMenu ? { x: 0, opacity: 1 } : { x: 100, opacity: 0 }}
-                transition={{ duration: 0.2, delay: 0.4 }}
+                animate={showMenu ? {x: 0, opacity: 1} : {x: 100, opacity: 0}}
+                transition={{duration: 0.2, delay: 0.4}}
                 className="p-4 text-right flex flex-row items-center gap-2 hover:bg-gray-100 z-50"
                 onClick={handleCreateDeclaration}
             >
@@ -177,5 +218,5 @@ export default function PlusMenu() {
         >
             <BsPlusLg className="w-8 h-8 opacity-75"/>
         </motion.button>
-        </>
+    </>
 }

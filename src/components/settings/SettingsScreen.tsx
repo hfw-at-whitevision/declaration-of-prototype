@@ -4,9 +4,9 @@ import TabNavigation from "@/components/TabNavigation";
 import React from "react";
 import useAuth from "@/hooks/useAuth";
 import {Dialog} from "@capacitor/dialog";
-import CardInput from "@/components/layout/CardInput";
 import {useAtom} from "jotai";
-import {environmentCodeAtom} from "@/store/atoms";
+import {environmentCodeAtom} from "@/store/generalAtoms";
+import {AiOutlineEnvironment, AiOutlinePoweroff} from "react-icons/ai";
 
 export default function SettingsScreen() {
     const {logout} = useAuth();
@@ -38,11 +38,11 @@ export default function SettingsScreen() {
 
         <Content className="bg-white m-4 rounded-2xl">
             <section className="grid grid-cols-1 divide-y divide-y-black/10">
-                <SettingsButton onClick={handleSwitchEnvironment}>
+                <SettingsButton onClick={handleSwitchEnvironment} Icon={AiOutlineEnvironment}>
                     Omgeving {environmentCode}
                 </SettingsButton>
 
-                <SettingsButton onClick={handleLogout}>
+                <SettingsButton onClick={handleLogout} Icon={AiOutlinePoweroff}>
                     Uitloggen
                 </SettingsButton>
             </section>
@@ -52,8 +52,9 @@ export default function SettingsScreen() {
     </>
 }
 
-const SettingsButton = ({className, children, ...props}: any) => (
-    <button {...props} className={`p-4 ${className}`}>
+const SettingsButton = ({className, children, Icon, ...props}: any) => (
+    <button {...props} className={`p-4 ${className} relative flex flex-row items-center justify-center`}>
+        <Icon className="absolute left-4 w-6 h-6 opacity-25"/>
         {children}
     </button>
 )

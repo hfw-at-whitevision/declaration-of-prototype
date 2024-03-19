@@ -9,7 +9,13 @@ const nextConfig = {
     images: {
         unoptimized: true
     },
-    output: 'export'
+    output: 'export',
+    // for react-pdf
+    // webpack: (config) => {
+    //     config.resolve.alias.canvas = false;
+    //
+    //     return config;
+    // },
 };
 
 module.exports = nextConfig;

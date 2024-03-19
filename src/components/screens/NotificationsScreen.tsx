@@ -1,10 +1,11 @@
-import { getNotifications } from '@/firebase';
+import {getNotifications} from '@/firebase';
+
 import parse from 'html-react-parser'
-import { useEffect } from 'react'
-import { BsCheckLg, BsExclamationDiamond } from 'react-icons/bs'
-import { useAtom } from "jotai";
-import { notificationsAtom, showNotificationsScreenAtom } from "@/store/atoms";
-import { AiOutlineClose } from 'react-icons/ai';
+import {useEffect} from 'react'
+import {BsCheckLg, BsExclamationDiamond} from 'react-icons/bs'
+import {useAtom} from "jotai";
+import {notificationsAtom, showNotificationsScreenAtom} from "@/store/generalAtoms";
+import {AiOutlineClose} from 'react-icons/ai';
 
 export default function NotificationsScreen() {
     const [notifications, setNotifications] = useAtom(notificationsAtom);
@@ -19,20 +20,26 @@ export default function NotificationsScreen() {
     const notificationIcon = (type: string) => {
         switch (type) {
             case 'warning':
-                return <BsExclamationDiamond className="text-red-500 w-10 h-10" />;
+                return <BsExclamationDiamond className="text-red-500 w-8 h-8"/>;
             case 'success':
-                return <BsCheckLg className="w-10 h-10 text-green-500" />;
+                return <BsCheckLg className="w-8 h-8 text-green-500"/>;
             default:
                 return null;
         }
     }
 
-    if (!showNotificationsScreen) return null;
-    return <div className="absolute inset-0 bg-gray-100 z-20 p-4 py-8 pt-16 text-sm">
-
-        <div className="flex flex-row justify-end w-full">
-            <AiOutlineClose className="bg-black/10 cursor-pointer rounded-full w-8 h-8 p-1 opacity-50" strokeWidth={1} onClick={() => setShowNotificationsScreen(false)} />
-        </div>
+    return <div
+        className={`
+            absolute inset-0 bg-gray-100 z-20 p-4 py-8 pt-16 text-sm transition-all duration-500 ease-in-out
+            ${!showNotificationsScreen ? 'translate-y-[-100%] h-0 overflow-hidden' : 'translate-y-0 h-full overflow-y-auto'}
+        `}
+    >
+        <button
+            onClick={() => setShowNotificationsScreen(false)}
+            className="flex flex-row justify-end ml-auto p-4 rounded-full bg-black/5"
+        >
+            <AiOutlineClose className="cursor-pointer w-6 h-6 opacity-50" strokeWidth={1}/>
+        </button>
 
         <section className="w-full flex flex-col space-y-2 mt-4">
 
@@ -42,7 +49,7 @@ export default function NotificationsScreen() {
                     .map((notification: any) => (
                         <div
                             key={JSON.stringify(notification)}
-                            className="p-4 bg-white flex flex-row gap-4 rounded-lg shadow-xl shadow-gray-500/5"
+                            className="p-8 bg-white flex flex-row gap-4 rounded-lg items-start justify-start"
                         >
                             {notificationIcon(notification.type)}
 

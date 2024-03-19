@@ -3,7 +3,7 @@ import {
     notificationsAtom, primaryColorAtom, selectedItemIdsAtom,
     showNewDeclarationOverlayAtom,
     showNotificationsScreenAtom
-} from "@/store/atoms";
+} from "@/store/generalAtoms";
 import {BsBell, BsBellFill} from "react-icons/bs";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import {useAtom, useAtomValue} from "jotai";
@@ -50,7 +50,7 @@ export default function OverviewHeader({title}: any) {
                     {/*</button>*/}
 
                     <button
-                        className="bg-black/5 rounded-full p-4 z-20 relative"
+                        className="bg-black/5 rounded-full p-4 z-10 relative"
                         onClick={() => setShowNotificationsScreen((prev: any) => !prev)}
                     >
                         <BsBellFill className="w-6 h-6" />

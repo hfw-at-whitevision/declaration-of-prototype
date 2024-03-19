@@ -1,10 +1,9 @@
-import {useAtom, useAtomValue} from 'jotai'
+import {useAtom} from 'jotai'
 import {
     currentTabIndexAtom,
-    declarationsAtom, IsSelectingItemsAtom, notificationsAtom, primaryColorAtom,
-    searchQueryAtom, selectedItemIdsAtom, showNewDeclarationOverlayAtom, showNotificationsScreenAtom,
-    showOverlayAtom,
-} from '@/store/atoms'
+    declarationsAtom, loadingAtom, IsSelectingItemsAtom, primaryColorAtom,
+    searchQueryAtom, selectedItemIdsAtom, showOverlayAtom,
+} from '@/store/generalAtoms'
 import React, {useEffect, useState} from 'react';
 import {deleteDeclaration, getDeclarations, getExpenses} from '@/firebase';
 import DeclarationCard from '@/components/declarations/DeclarationCard';
@@ -16,21 +15,13 @@ import Overlay from "@/components/overlays/Overlay";
 import Button from '@/components/Button';
 import {Haptics} from '@capacitor/haptics';
 import {
-    BsArrowLeft,
-    BsArrowRight,
-    BsCheck2All,
     BsCheckLg,
-    BsChevronDown,
     BsHourglassTop,
-    BsPlusLg,
-    BsTrash, BsXLg
+    BsXLg
 } from "react-icons/bs";
-import {Toast} from "@capacitor/toast";
 import {Dialog} from "@capacitor/dialog";
 import TabNavigation from "@/components/TabNavigation";
-import {BiImport, BiScan} from "react-icons/bi";
 import PlusMenu from "@/components/declarations/PlusMenu";
-import {tabs} from '@/constants/defaults';
 import ExpenseCard from "@/components/expenses/ExpenseCard";
 import {displayFont} from "@/components/layout/DisplayHeading";
 import {FaChevronDown} from "react-icons/fa";
@@ -50,7 +41,7 @@ export default function Home() {
     const [isSelectingItems, setIsSelectingItems] = useAtom(IsSelectingItemsAtom);
     const isSelectingExpenses = selectedItemIds.length > 0 || isSelectingItems;
     const isInSelectionMode = selectedItemIds?.length > 0 || isSelectingItems;
-    const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
+    const [, setPrimaryColor] = useAtom(primaryColorAtom);
     const backgroundColor = isInSelectionMode
         ? 'bg-amber-500'
         : (currentTabIndex === 0)
@@ -73,9 +64,10 @@ export default function Home() {
     const declarations: any = items
         ?.filter((item: any) => declarationStatusFilters?.length ? declarationStatusFilters.includes(item?.status) : true)
         ?.filter((item: any) => JSON.stringify(item || {}).toLowerCase().includes(searchQuery.toLowerCase()))
-        ?.sort((a: any, b: any) => new Date(b?.date).getTime() - new Date(a?.date).getTime());    // allow section mode only for expenses
+        ?.sort((a: any, b: any) => new Date(a?.date).getTime() - new Date(b?.date).getTime());
     const [showClaimedExpenses, setShowClaimedExpenses] = useState(false);
     const [showUnclaimedExpenses, setShowUnclaimedExpenses] = useState(true);
+    const [, setLoading] = useAtom(loadingAtom);
 
     const {tabIndex: tab} = router?.query || {};
     useEffect(() => {
@@ -106,19 +98,6 @@ export default function Home() {
         tapStartY = info.point.y;
         console.log('tap start', tapStartX, tapStartY);
 
-        // if we are in selection mode
-        // if (isSelectingExpenses) {
-        //     await handleTap(info, item?.id);
-        //     return;
-        // }
-
-        // if we are not in selection mode, open item directly
-        // if (!allowSelectionMode) {
-        //     if (currentTabIndex === 0) handleOpenExpense(item.id);
-        //     else handleOpenDeclaration(item.id);
-        //     return;
-        // }
-
         longPressStartTimestamp = new Date().getTime();
 
         if (longPressTimer) clearTimeout(longPressTimer);
@@ -141,13 +120,6 @@ export default function Home() {
         const now = new Date().getTime();
         const pressDuration = now - longPressStartTimestamp;
         resetTap();
-
-        // cancel out swipes horizontally or vertically
-        // if (Math.abs(tapStartX - info.point.x) > 5 || Math.abs(tapStartY - info.point.y) > 5) {
-        //     console.log('tap cancelled');
-        //     resetTap();
-        //     return;
-        // }
 
         // if successfully CLICKED (NOT swiping)
         console.log('tap success');
@@ -205,10 +177,21 @@ export default function Home() {
 
     const handleCreateDeclaration = async () => {
         if (!selectedItemIds.length) return;
+
+        setLoading({
+            isLoading: true,
+            message: 'Declaratie wordt aangemaakt..',
+        })
+
         const serializedSelectedExpenseIds: any = selectedItemIds.join(',');
         setIsSelectingItems(false);
         setSelectedItemIds([]);
         await router.push('/declaration?createFromExpenses=' + serializedSelectedExpenseIds);
+
+        setLoading({
+            isLoading: false,
+            message: '',
+        })
     }
 
     const handleCancelCreateDeclaration = () => {
@@ -246,7 +229,8 @@ export default function Home() {
     useEffect(() => {
         switch (currentTabIndex) {
             case 0:
-                setTitle(isInSelectionMode ? <>Selecteer <span className="!font-thin">bonnen</span></> : <><span className="!font-thin">Mijn</span> bonnen</>);
+                setTitle(isInSelectionMode ? <>Selecteer <span className="!font-thin">bonnen</span></> : <><span
+                    className="!font-thin">Mijn</span> bonnen</>);
                 break;
             case 1:
                 setTitle(<><span className="!font-thin">Mijn</span> declaraties</>);
@@ -257,7 +241,7 @@ export default function Home() {
     return <>
         <OverviewHeader title={title}/>
 
-        <DeclarationsTabBar />
+        <DeclarationsTabBar/>
 
         <Content className="bg-white m-4 rounded-2xl">
 
@@ -386,31 +370,17 @@ export default function Home() {
                         ))}
                 </ListSection>
             </>}
-
-            {/*<pre className="text-xs mt-8 overflow-x-auto">*/}
-            {/*    notifications: {JSON.stringify(notifications, null, 2)}*/}
-            {/*    <br/>*/}
-            {/*    tabs: {JSON.stringify(tabs, null, 2)}*/}
-            {/*    <br/>*/}
-            {/*    searchQuery: {searchQuery}*/}
-            {/*    <br/>*/}
-            {/*    declarations: {JSON.stringify(items, null, 2)}*/}
-            {/*</pre>*/}
         </Content>
 
         <div className="h-16 w-full bg-transparent"/>
 
-        {!isSelectingExpenses &&
-            <PlusMenu/>
-        }
-
         {isSelectingExpenses &&
-            <div className="fixed bottom-4 right-4 left-4 z-50 grid grid-cols-2 gap-2">
+            <div className="fixed bottom-4 right-4 left-4 z-50 flex flex-row gap-2">
                 <Button
                     primary
                     disabled={selectedItemIds.length === 0}
                     padding='small'
-                    className={`!rounded-full !font-black text-xs !bg-black w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
+                    className={`!rounded-full !font-black !bg-black flex-1 w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
                     onClick={handleCreateDeclaration}
                 >
                     {/*<BsArrowRight className="w-3 h-3"/>*/}
@@ -419,23 +389,34 @@ export default function Home() {
                 <Button
                     primary
                     padding='small'
-                    className="!rounded-full !font-black text-xs !bg-red-600 w-full"
+                    className="!rounded-full !font-black !bg-red-600 w-16"
                     onClick={handleCancelCreateDeclaration}
                 >
-                    Annuleren
+                    <BsXLg className="w-3 h-3" strokeWidth={2} />
                 </Button>
             </div>
         }
 
         {!isSelectingExpenses &&
-            <TabNavigation/>
+            <>
+                <PlusMenu/>
+                <TabNavigation/>
+            </>
         }
 
         <Overlay/>
     </>
 }
 
-const GroupHeader = ({title, color, className = '', itemsCount = 0, onClick = undefined, open = true, ...props}: any) => {
+const GroupHeader = ({
+                         title,
+                         color,
+                         className = '',
+                         itemsCount = 0,
+                         onClick = undefined,
+                         open = true,
+                         ...props
+                     }: any) => {
     const [primaryColor] = useAtom(primaryColorAtom);
     const backgroundColor = !!color ? `bg-${color}-500` : primaryColor;
     const balloonTextColor = !!color ? `text-${color}-500` : 'text-white';
@@ -452,7 +433,8 @@ const GroupHeader = ({title, color, className = '', itemsCount = 0, onClick = un
 
             <span className="flex flex-row items-center justify-center">
                 {title}
-                <span className={`ml-1 w-4 h-4 bg-white font-black rounded-full text-amber-500 flex items-center justify-center ${balloonTextColor}`}>
+                <span
+                    className={`ml-1 w-4 h-4 bg-white font-black rounded-full text-amber-500 flex items-center justify-center ${balloonTextColor}`}>
                     {itemsCount}
                 </span>
             </span>

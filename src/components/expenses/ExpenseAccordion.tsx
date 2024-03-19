@@ -53,8 +53,8 @@ export default function ExpenseAccordion({expense, showStatus = true}: any) {
             <section className={`${open ? 'flex flex-row items-end justify-between' : 'hidden'} px-2`}>
                 <Gallery>
                     <div className={`flex flex-row gap-2 relative pt-4`}>
-                        {expense?.attachments?.map((image: any) => (
-                            <ExpenseAttachmentThumbnail key={image?.id} imageUrl={image}/>
+                        {expense?.attachments?.map((image: any, index: number) => (
+                            <ExpenseAttachmentThumbnail key={image?.id + index} imageUrl={image}/>
                         ))}
                     </div>
                 </Gallery>

@@ -4,7 +4,7 @@ import {
     showConfirmationOverlayAtom,
     showNewDeclarationOverlayAtom,
     trulyShowConfirmationOverlayAtom
-} from "@/store/atoms";
+} from "@/store/generalAtoms";
 import NewDeclarationOverlay from "@/components/overlays/NewDeclarationOverlay";
 import ConfirmationOverlay from "@/components/overlays/ConfirmationOverlay";
 import {useEffect} from "react";

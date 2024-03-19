@@ -42,7 +42,7 @@ export default function Button(
             ${padding === 'large' ? 'p-8' : 'p-4'}
             ${primary ? "bg-amber-400 text-white" : ""}
             ${!primary && !tertiary ? "bg-gray-200 text-black" : ""}
-            ${tertiary ? "bg-transparent text-black" : ""}
+            ${tertiary ? "bg-transparent text-black/75" : ""}
             ${outline && primary ? 'border-2 border-amber-400 border-solid !text-amber-400 !bg-transparent' : ''}
             ${className}
         `}

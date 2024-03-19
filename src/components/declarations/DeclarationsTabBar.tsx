@@ -1,6 +1,6 @@
 import TabBar from "@/components/TabBar";
 import {tabs} from "@/constants/defaults";
-import {primaryColorAtom} from "@/store/atoms";
+import {primaryColorAtom} from "@/store/generalAtoms";
 import {useAtom} from "jotai";
 
 export default function DeclarationsTabBar() {

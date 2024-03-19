@@ -1,7 +1,7 @@
 import React from "react";
 import {FcCheckmark} from "react-icons/fc";
 import {useAtom} from "jotai";
-import {trulyShowConfirmationOverlayAtom} from "@/store/atoms";
+import {trulyShowConfirmationOverlayAtom} from "@/store/generalAtoms";
 
 export default function ConfirmationOverlay({title, ...props}: any) {
     const [trulyShowConfirmationOverlay] = useAtom(trulyShowConfirmationOverlayAtom);

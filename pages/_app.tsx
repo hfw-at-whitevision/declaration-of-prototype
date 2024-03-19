@@ -1,10 +1,9 @@
 import type {AppProps} from "next/app";
-import {Inter} from "next/font/google";
 import InputModal from "@/components/modals/InputModal";
 import {useAtom} from "jotai";
-import {inputModalAtom, primaryColorAtom} from "@/store/atoms";
+import {inputModalAtom, primaryColorAtom} from "@/store/generalAtoms";
 import {defineCustomElements} from '@ionic/pwa-elements/loader';
-// import useSplashScreen from "@/hooks/useSplashscreen.ts.old";
+import useSplashScreen from "@/hooks/useSplashscreen";
 import useSwipeBack from "@/hooks/useSwipeBack";
 import usePushNotifications from "@/hooks/usePushNotifications";
 import useNativeStatusBar from "@/hooks/useNativeStatusBar";
@@ -15,10 +14,13 @@ import {displayFont} from "@/components/layout/DisplayHeading";
 import {useIsAuthenticated} from "@azure/msal-react";
 import "@/styles/globals.css";
 import dynamic from "next/dynamic";
+import Loading from "@/components/layout/Loading";
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 const LoginPage = dynamic(async () => await import('@/components/login/LoginPage'), {ssr: false});
 
-const defaultFont = Inter({subsets: ["latin"]});
+// const defaultFont = Inter({subsets: ["latin"]});
 
 // @ts-ignore
 process.browser ? defineCustomElements(window) : null;
@@ -26,7 +28,7 @@ process.browser ? defineCustomElements(window) : null;
 export const queryClient = new QueryClient();
 
 export default function DOPApp({Component, pageProps}: AppProps) {
-    // useSplashScreen();
+    useSplashScreen();
     useSwipeBack();
     // usePushNotifications();
     useNativeStatusBar();
@@ -44,10 +46,10 @@ export default function DOPApp({Component, pageProps}: AppProps) {
                 <section
                     className={`
                     w-full flex flex-col relative border-black overflow-y-auto bg-no-repeat bg-bottom bg-[url('/${bgDotsImage}')] bg-[length:100%]
-                    ${primaryColor} transition-all duration-500 ease-in-out
+                    ${primaryColor} transition-all duration-500 ease-in-out overflow-x-hidden
                 `}>
                     {/*<BackgroundInset className="z-40" />*/}
-                    <div id="content" className="z-[1] h-full">
+                    <div id="content" className="z-[1] h-full overflow-x-hidden">
                         <LoginPage>
                             <Component {...pageProps} />
                         </LoginPage>
@@ -62,6 +64,8 @@ export default function DOPApp({Component, pageProps}: AppProps) {
                     options={inputModal?.options}
                     onConfirm={inputModal?.onConfirm}
                 />
+
+                <Loading />
 
                 <AppUrlListener/>
             </div>

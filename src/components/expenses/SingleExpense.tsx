@@ -5,24 +5,19 @@ import React, {useEffect, useState} from "react";
 import CardInput from '@/components/layout/CardInput';
 import {
     createDeclaration, createExpense,
-    deleteDeclaration, deleteExpense,
-    getExpenseAttachments,
-    updateDeclaration,
+    deleteExpense,
     updateExpense
 } from "@/firebase";
 import {
-    inputModalAtom, primaryColorAtom,
+    inputModalAtom, loadingAtom, primaryColorAtom,
     scannedImagesAtom,
-} from "@/store/atoms";
+} from "@/store/generalAtoms";
 import {useAtom} from "jotai";
 import {Toast} from '@capacitor/toast';
 import {LoadingSpinner} from "@/components/Loading";
 import SinglePageHeader from "@/components/declarations/SinglePageHeader";
 import {Gallery, Item} from 'react-photoswipe-gallery'
 import ExpenseAttachmentThumbnail from "@/components/expenses/ExpenseAttachmentThumbnail";
-import DeclarationCard from "@/components/declarations/DeclarationCard";
-import DeclarationAccordion from "@/components/declarations/DeclarationAccordion";
-import {useDeclaration} from "@/hooks/useDeclaration";
 import {Dialog} from "@capacitor/dialog";
 import ClaimedInDeclarationCard from "@/components/expenses/ClaimedInDeclaration";
 
@@ -42,7 +37,6 @@ export default function SingleExpense({expense: inputExpense}: any) {
     const [totalAmount, setTotalAmount] = useState(expense?.totalAmount);
     const [date, setDate] = useState(expense?.date);
     const [category, setCategory] = useState(expense?.category);
-    const [attachments, setAttachments] = useState(expense?.attachments);
 
     const serializeExpense = (props?: any) => ({
         ...expenseId
@@ -63,10 +57,14 @@ export default function SingleExpense({expense: inputExpense}: any) {
         status: props?.status ?? status,
     });
 
-    const [isSaving, setIsSaving] = useState(false);
+    const [loading, setLoading] = useAtom(loadingAtom);
+    const {isLoading} = loading || {};
     const handleSave = async (e: any) => {
         e.preventDefault();
-        setIsSaving(true);
+        setLoading({
+            isLoading: true,
+            message: 'Bon wordt opgeslagen..',
+        })
 
         // update
         if (expenseId) {
@@ -82,7 +80,9 @@ export default function SingleExpense({expense: inputExpense}: any) {
             text: 'Bon opgeslagen.',
         });
 
-        setIsSaving(false);
+        setLoading({
+            isLoading: false,
+        })
         await router.push('/declarations');
     }
 
@@ -131,33 +131,17 @@ export default function SingleExpense({expense: inputExpense}: any) {
 
     const handleDelete = async (e: any) => {
         e.preventDefault();
+        const {value} = await Dialog.confirm({
+            title: 'Bon verwijderen',
+            message: 'Weet je zeker dat je deze bon wilt verwijderen?',
+        });
+        if (!value) return;
         await deleteExpense(expenseId);
         await Toast.show({
             text: 'Bon verwijderd.',
         });
         await router.push('/declarations');
     }
-
-    useEffect(() => {
-        if (!scannedImages?.length || !router.isReady) return;
-        setExpense((oldDeclaration: any) => ({
-            ...oldDeclaration,
-            attachments: scannedImages,
-        }));
-
-        return () => {
-            setScannedImages([]);
-        }
-    }, [router.pathname, router.asPath, scannedImages, router.isReady]);
-
-    useEffect(() => {
-        if (!expenseId) return;
-        console.log('Fetching expense attachments: ', expense);
-        getExpenseAttachments(expense?.attachments)
-            .then((attachments: any) => {
-                setScannedImages(attachments);
-            });
-    }, [expenseId]);
 
     useEffect(() => {
         setPrimaryColor('bg-gray-100');
@@ -270,17 +254,13 @@ export default function SingleExpense({expense: inputExpense}: any) {
                         Bijlagen
                     </span>
 
-                    <Gallery options={{
-                        hideAnimationDuration: 0,
-                        showAnimationDuration: 0,
-                        showHideAnimationType: 'none',
-                        zoomAnimationDuration: 0,
-                        maxWidthToAnimate: 1,
-                    }}>
+                    <Gallery>
                         {expense?.attachments?.map((attachment: any, i: any) => (
                             <ExpenseAttachmentThumbnail key={attachment + i} imageUrl={attachment}/>
                         ))}
                     </Gallery>
+
+
                 </div>
 
                 {/* action buttons */}
@@ -292,14 +272,14 @@ export default function SingleExpense({expense: inputExpense}: any) {
                             padding='small'
                             fullWidth
                             onClick={handleSave}
-                            disabled={isSaving}
+                            disabled={isLoading}
                         >
-                            {isSaving &&
+                            {isLoading &&
                                 <span className="absolute inset-0 flex items-center justify-center">
                                         <LoadingSpinner className="w-5 h-5"/>
                                     </span>
                             }
-                            <span className={`!transition-none ${isSaving ? 'opacity-0' : ''}`}>
+                            <span className={`!transition-none ${isLoading ? 'opacity-0' : ''}`}>
                                     Opslaan
                                 </span>
                         </Button>
@@ -316,21 +296,22 @@ export default function SingleExpense({expense: inputExpense}: any) {
                     </Button>
                 </div>
 
-                {allowEdit
-                    && <Button
+                <Button
                         tertiary
                         padding='small'
+                        rounded="full"
                         fullWidth
                         onClick={handleDelete}
                     >
                         Verwijderen
                     </Button>
-                }
             </div>
 
-            <pre className="break-all overflow-x-auto hidden">
-                {JSON.stringify(expense, null, 2)}
-            </pre>
+            {/*<pre className="break-all overflow-x-auto">*/}
+            {/*    {JSON.stringify(expense, null, 2)}*/}
+
+            {/*    {JSON.stringify(scannedImages, null, 2)}*/}
+            {/*</pre>*/}
         </Content>
     )
 }
