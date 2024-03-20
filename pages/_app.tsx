@@ -49,7 +49,7 @@ export default function DOPApp({Component, pageProps}: AppProps) {
                     ${primaryColor} transition-all duration-500 ease-in-out overflow-x-hidden
                 `}>
                     {/*<BackgroundInset className="z-40" />*/}
-                    <div id="content" className="z-[1] h-full overflow-x-hidden">
+                    <div id="content" className="z-[1] h-full overflow-x-hidden flex flex-col">
                         <LoginPage>
                             <Component {...pageProps} />
                         </LoginPage>

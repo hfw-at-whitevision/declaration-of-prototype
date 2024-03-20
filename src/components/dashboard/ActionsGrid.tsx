@@ -12,7 +12,7 @@ export default function ActionsGrid() {
         <ActionCard Icon={BsCreditCard2FrontFill} route="declarations">
             Declaraties indienen
         </ActionCard>
-        <ActionCard Icon={RiQrScanFill}>
+        <ActionCard Icon={RiQrScanFill} route="scanpage">
             Documenten scannen
         </ActionCard>
 
@@ -22,6 +22,7 @@ export default function ActionsGrid() {
 const ActionCard = ({Icon = undefined, className = '', children, route, ...props}: any) => {
     const router = useRouter();
     const handleGoToPage = (route: string) => {
+        if (!route) return;
         router.push(`/${route}`);
     }
 

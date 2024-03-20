@@ -6,7 +6,10 @@ import BackgroundInset from "@/components/primitives/BackgroundInset";
 
 export default function AuthenticatePage() {
     return <>
-        <div className="fixed inset-0 flex items-center justify-center text-gray p-8">
+        <div className={`
+            fixed inset-0 flex items-center justify-center text-gray p-8 bg-gray-100
+            bg-no-repeat bg-bottom bg-[url('/bg-dots.png')] bg-[length:100%]
+        `}>
             <Swiper
                 className="h-full"
                 pagination={{
@@ -21,7 +24,7 @@ export default function AuthenticatePage() {
                         </h2>
 
                     <span>
-                        Fijn dat je aan de slag gaat met ded nieuwe WhiteVision smartphone app.
+                        Fijn dat je aan de slag gaat met de nieuwe WhiteVision smartphone app.
                     </span>
 
                     <span>

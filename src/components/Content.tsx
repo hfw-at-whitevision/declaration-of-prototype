@@ -11,7 +11,7 @@ export default function Content({children, className = '', ...props}: any) {
     }
     return (
         <motion.div
-            className={`p-4 py-4 grid gap-2 ${className}`}
+            className={`p-4 py-4 flex flex-col w-full justify-start gap-2 ${className}`}
             variants={screenVariants}
             whileInView="onscreen"
             initial="offscreen"
