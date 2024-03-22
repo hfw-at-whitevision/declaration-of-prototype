@@ -5,3 +5,6 @@ export const shouldLoginWithBiometryAtom = atomWithStorage("shouldLoginWithBiome
 export const accessTokenAtom = atom<string | undefined>(undefined);
 export const emailAtom = atom<string | undefined>(undefined);
 export const isBiometryAvailableAtom = atom(false);
+export const userAtom: any = atom<any>(undefined);
+export const environmentCodeAtom = atomWithStorage<string>("environmentCode", "");
+export const docbaseTokenAtom = atomWithStorage<string>("docbaseToken", undefined);

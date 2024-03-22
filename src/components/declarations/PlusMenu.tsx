@@ -23,16 +23,16 @@ export default function PlusMenu() {
     const [, setLoading] = useAtom(loadingAtom);
     const {runOcr} = useOcr();
 
-    const createNewExpense = ({ocrResult = {}}: any) => {
+    const createNewExpense = async ({ocrData}: any = {}) => {
         const newExpense = {
-            title: ocrResult?.headers?.MerchantName ?? 'Nieuwe bon',
-            description: ocrResult?.lines?.[0]?.Description ?? '',
-            totalAmount: ocrResult?.headers?.Total ?? 0,
-            date: !!ocrResult?.headers?.TransactionDate ? new Date(ocrResult.headers.TransactionDate).toDateString() : new Date().toDateString(),
+            title: ocrData?.headers?.MerchantName ?? 'Nieuwe bon',
+            description: ocrData?.lines?.[0]?.Description ?? '',
+            totalAmount: ocrData?.headers?.Total ?? 0,
+            date: !!ocrData?.headers?.TransactionDate ? new Date(ocrData.headers.TransactionDate).toDateString() : new Date().toDateString(),
         }
+        console.log('Creating a new expense: ', newExpense, ocrData);
         const urlQuery = new URLSearchParams(newExpense).toString();
-        console.log('Creating a new expense: ', newExpense);
-        router.push(`/expense?${urlQuery}`);
+        await router.push(`/expense?${urlQuery}`);
     }
 
     const handleCameraClick = async (e: any) => {
@@ -58,7 +58,7 @@ export default function PlusMenu() {
         }
     }
 
-    const handleFileImportClick = () => {
+    const handleFileImportClick = (e) => {
         fileInputRef.current.click();
     }
 
@@ -80,8 +80,6 @@ export default function PlusMenu() {
             setSelectedFiles(selectedFiles);
             if (!selectedFiles.length) return;
             const selectedFile = selectedFiles[0];
-            const base64Images: any = [];
-            let ocrResult: any = null;
 
             // mobile
             if (Capacitor.isNativePlatform()) {
@@ -90,15 +88,10 @@ export default function PlusMenu() {
                     path: selectedFile.path,
                 });
                 await setScannedImages([base64Image]);
-                console.log('ocr-ing base64Image');
-                runOcr({
+                const ocrResult = await runOcr({
                     imageBase64: removeBase64DataHeader(base64Image),
-                    tenandId: 'DEV',
-                })
-                    .then((result) => {
-                        ocrResult = result;
-                        createNewExpense({ocrResult});
-                    });
+                });
+                await createNewExpense({ocrData: ocrResult});
             }
             // desktop
             else {
@@ -107,15 +100,10 @@ export default function PlusMenu() {
                 reader.onloadend = async () => {
                     const base64Image = reader.result;
                     await setScannedImages([base64Image]);
-                    console.log('ocr-ing base64Image');
-                    runOcr({
+                    const ocrResult = await runOcr({
                         imageBase64: removeBase64DataHeader(base64Image),
-                        tenandId: 'DEV',
-                    })
-                        .then((result) => {
-                            ocrResult = result;
-                            createNewExpense({ocrResult});
-                        });
+                    });
+                    await createNewExpense({ocrData: ocrResult});
                 }
             }
         } catch (e: any) {
@@ -123,8 +111,7 @@ export default function PlusMenu() {
                 title: 'Fout',
                 message: 'Er is een fout opgetreden bij het importeren van de bonnen: ' + e?.message ?? '-',
             });
-        }
-        finally {
+        } finally {
             setLoading({
                 isLoading: false,
             });
@@ -178,7 +165,8 @@ export default function PlusMenu() {
                     type="file"
                     accept="image/*"
                     hidden
-                    onChange={async (e) => await handleFileInputChange(e)}
+                    multiple={false}
+                    onChange={handleFileInputChange}
                     ref={fileInputRef}
                 />
             </motion.button>
@@ -213,7 +201,7 @@ export default function PlusMenu() {
                     rotate: 0,
                 }
             }
-            className="w-16 h-16 bg-white shadow-md rounded-full flex items-center justify-center z-50 fixed bottom-24 right-4"
+            className="w-16 h-16 bg-white shadow-md rounded-full flex items-center justify-center z-40 fixed bottom-24 right-4"
             onClick={handleToggleMenu}
         >
             <BsPlusLg className="w-8 h-8 opacity-75"/>

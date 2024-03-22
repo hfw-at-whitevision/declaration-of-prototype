@@ -5,12 +5,20 @@ import React from "react";
 import useAuth from "@/hooks/useAuth";
 import {Dialog} from "@capacitor/dialog";
 import {useAtom} from "jotai";
-import {environmentCodeAtom} from "@/store/generalAtoms";
-import {AiOutlineEnvironment, AiOutlinePoweroff} from "react-icons/ai";
+import TilesGrid from "@/components/dashboard/TilesGrid";
+import {environmentCodeAtom} from "@/store/authAtoms";
+import {BsFillQuestionCircleFill, BsGeoFill, BsPower} from "react-icons/bs";
+import useDocbase from "@/hooks/useDocbase";
 
 export default function SettingsScreen() {
     const {logout} = useAuth();
-    const [environmentCode, setEnvironmentCode] = useAtom(environmentCodeAtom);
+    const {switchEnvironment} = useDocbase();
+    const {user} = useAuth();
+    const [environmentCode] = useAtom(environmentCodeAtom);
+
+    const truncatedEmailAddress = (!!user?.emailAddress)
+        ? user.emailAddress.substring(0, 10) + '...'
+        : '';
 
     const handleLogout = async (e) => {
         e.preventDefault();
@@ -30,31 +38,48 @@ export default function SettingsScreen() {
             message: 'Voer de nieuwe omgevingscode in:',
         });
         if (cancelled) return;
-        setEnvironmentCode(value);
+        const res = await switchEnvironment(value);
+        if (res) {
+            await Dialog.confirm({
+                title: 'Omgeving',
+                message: 'Omgeving succesvol gewijzigd naar ' + value,
+            });
+        }
+        else await Dialog.alert({
+            title: 'Omgeving',
+            message: 'Oops! Het wijzigen van de omgeving is niet gelukt..',
+        });
     }
 
     return <>
-        <OverviewHeader title="Instellingen" />
+        <OverviewHeader title="Instellingen"/>
 
-        <Content className="bg-white m-4 rounded-2xl">
-            <section className="grid grid-cols-1 divide-y divide-y-black/10">
-                <SettingsButton onClick={handleSwitchEnvironment} Icon={AiOutlineEnvironment}>
-                    Omgeving {environmentCode}
-                </SettingsButton>
+        <Content className="bg-white rounded-3xl mb-32 mt-4" vAlign="center">
 
-                <SettingsButton onClick={handleLogout} Icon={AiOutlinePoweroff}>
-                    Uitloggen
-                </SettingsButton>
-            </section>
+            <TilesGrid items={[
+                {
+                    Icon: BsGeoFill,
+                    onClick: handleSwitchEnvironment,
+                    color: 'gray',
+                    label: 'Omgeving',
+                    value: environmentCode,
+                },
+                {
+                    Icon: BsFillQuestionCircleFill,
+                    color: 'emerald',
+                    label: 'Support',
+                },
+                {
+                    Icon: BsPower,
+                    onClick: handleLogout,
+                    color: 'red',
+                    label: 'Uitloggen',
+                    value: truncatedEmailAddress,
+                },
+            ]}
+            />
         </Content>
 
         <TabNavigation/>
     </>
 }
-
-const SettingsButton = ({className, children, Icon, ...props}: any) => (
-    <button {...props} className={`p-4 ${className} relative flex flex-row items-center justify-center`}>
-        <Icon className="absolute left-4 w-6 h-6 opacity-25"/>
-        {children}
-    </button>
-)

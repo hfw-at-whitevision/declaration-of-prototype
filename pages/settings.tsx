@@ -8,7 +8,7 @@ const SettingsScreen = dynamic(async () => await import('@/components/settings/S
 export default function SettingsPage() {
     const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
     useEffect(() => {
-        setPrimaryColor('bg-gray-700');
+        setPrimaryColor('bg-gray-900');
     }, []);
 
     return <SettingsScreen />

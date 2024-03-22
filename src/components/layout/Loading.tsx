@@ -13,7 +13,7 @@ export default function Loading() {
             `}>
             <LoadingSpinner />
             {message &&
-                <div className="text-black text-sm ml-2">{message}</div>
+                <div className="text-white text-2xl ml-4">{message}</div>
             }
         </div>
     </>

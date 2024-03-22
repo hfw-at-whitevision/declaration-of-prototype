@@ -14,7 +14,13 @@ import {
 } from "@aparajita/capacitor-biometric-auth";
 import {useEffect, useState} from "react";
 import useDocbase from "@/hooks/useDocbase";
-import {accessTokenAtom, emailAtom, isBiometryAvailableAtom, shouldLoginWithBiometryAtom} from "@/store/authAtoms";
+import {
+    accessTokenAtom, docbaseTokenAtom,
+    emailAtom, environmentCodeAtom,
+    isBiometryAvailableAtom,
+    shouldLoginWithBiometryAtom,
+    userAtom
+} from "@/store/authAtoms";
 
 const azureAdConfig: OAuth2AuthenticateOptions = {
     appId: 'a468fdc4-dd90-4300-a896-42add09bd2e3',
@@ -41,14 +47,21 @@ interface Response {
     [key: string]: any;
 }
 
+interface ResponseInterface {
+    response?: Response;
+    environmentCode?: string;
+}
+
 let appListener: any;
 
 const useAuth = () => {
     const router = useRouter();
     const [accessToken, setAccessToken]: any = useAtom(accessTokenAtom);
+    const [docbaseToken, setDocbaseToken] = useAtom(docbaseTokenAtom);
     const [email, setEmail]: any = useAtom(emailAtom);
+    const [user, setUser] = useAtom(userAtom);
 
-    const isAuthenticated = !!accessToken && !!email;
+    const isAuthenticated = !!accessToken && !!email && !!docbaseToken;
 
     const client = useQueryClient();
     const {isNative} = useCapacitor();
@@ -58,7 +71,7 @@ const useAuth = () => {
     const [isBiometryAvailable, setIsBiometryAvailable] = useAtom(isBiometryAvailableAtom);
     const [shouldLoginWithBiometry, setShouldLoginWithBiometry] = useAtom(shouldLoginWithBiometryAtom);
     const shouldAskForBiometryActivation = isBiometryAvailable && !shouldLoginWithBiometry;
-    const {docbaseAuth} = useDocbase();
+    const {docbaseAuthenticate} = useDocbase();
 
     useEffect(() => {
         SecureStoragePlugin.get({key: 'refreshToken'}).then((res: any) => {
@@ -77,7 +90,27 @@ const useAuth = () => {
         // });
     }, []);
 
-    const responseHandler = async (response: Response | null) => {
+    const parseUserDetails = async (jwt: string) => {
+        if (!jwt) return;
+        const decodedToken: any = jwtDecode(jwt);
+        setEmail(decodedToken.unique_name as string);
+        const user = {
+            userName: decodedToken.upn,
+            emailAddress: decodedToken.unique_name,
+            fullName: decodedToken.name,
+            firstName: decodedToken.given_name,
+            lastName: decodedToken.family_name,
+        }
+        setUser(user);
+    }
+
+    useEffect(() => {
+        if (accessToken) {
+            parseUserDetails(accessToken);
+        }
+    }, [accessToken]);
+
+    const responseHandler = async ({response, environmentCode}: ResponseInterface = {}) => {
         console.log('responseHandler', response);
         if (!response) return;
         const accessToken = response.access_token;
@@ -88,15 +121,16 @@ const useAuth = () => {
             await setBiometryAuth();
         }
 
-        setEmail(decodedToken.unique_name as string);
-        setAccessToken(accessToken);
-
         // authenticate against docbase
-        await docbaseAuth({
+        const res = await docbaseAuthenticate({
             azureToken: accessToken,
             emailAddress: decodedToken.unique_name,
+            environmentCode,
             data: null,
         });
+
+        setEmail(decodedToken.unique_name as string);
+        setAccessToken(accessToken);
 
         console.log('storing the accessToken in localStorage', accessToken);
         const res1 = SecureStoragePlugin.set({
@@ -109,6 +143,9 @@ const useAuth = () => {
             value: refreshToken,
         });
         await Promise.all([res1, res2]);
+        await router.push('/');
+
+        return res;
     };
 
     const setBiometryAuth = async () => {
@@ -122,11 +159,11 @@ const useAuth = () => {
         // }
     }
 
-    const loginWithMicrosoft = async () => {
+    const loginWithMicrosoft = async ({environmentCode = undefined} = {}) => {
         try {
             if (refreshTokenAvailable && isNative) {
                 console.log('refreshTokenAvailable, trying to login with refreshToken');
-                OAuth2Client.refreshToken({
+                return OAuth2Client.refreshToken({
                     appId: azureAdConfig.appId as string,
                     accessTokenEndpoint: azureAdConfig.accessTokenEndpoint as string,
                     refreshToken: refreshToken as string,
@@ -134,14 +171,14 @@ const useAuth = () => {
                 })
                     .then(async (response) => {
                         console.log('refreshToken response', response);
-                        await responseHandler(response);
+                        return await responseHandler({response, environmentCode});
                     });
             } else {
                 console.log('refreshToken not available');
-                OAuth2Client.authenticate(azureAdConfig)
+                return OAuth2Client.authenticate(azureAdConfig)
                     .then(async (response) => {
                         console.log('authenticate response', response);
-                        await responseHandler(response);
+                        return await responseHandler({response, environmentCode});
                     });
             }
         }
@@ -184,7 +221,9 @@ const useAuth = () => {
         await OAuth2Client.logout(azureAdConfig);
         await SecureStoragePlugin.remove({key: 'accessToken'});
         setAccessToken(undefined);
-        // clearAccessToken('User has logged out');
+        setEmail(undefined);
+        setDocbaseToken(undefined);
+        setUser(undefined);
         client.removeQueries();
         await router.push('/');
     };
@@ -225,6 +264,7 @@ const useAuth = () => {
         username: email,
         shouldLoginWithBiometry,
         loginWithBiometry,
+        user,
     };
 };
 export default useAuth;

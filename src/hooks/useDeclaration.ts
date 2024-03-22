@@ -1,7 +1,7 @@
 import {createDeclaration, getDeclaration} from "@/firebase";
 import {useQuery} from "@tanstack/react-query";
 import {useAtom} from "jotai";
-import {docbaseTokenAtom} from "@/store/generalAtoms";
+import {docbaseTokenAtom} from "@/store/authAtoms";
 import {removeBase64DataHeader} from "@/utils";
 
 export const useFetchDeclaration = ({declarationId}) => {

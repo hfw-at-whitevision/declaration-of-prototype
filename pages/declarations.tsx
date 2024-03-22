@@ -229,7 +229,7 @@ export default function Home() {
     useEffect(() => {
         switch (currentTabIndex) {
             case 0:
-                setTitle(isInSelectionMode ? <>Selecteer <span className="!font-thin">bonnen</span></> : <><span
+                setTitle(isInSelectionMode ? <>Selecteer <span className="!font-thin ml-2">bonnen</span></> : <><span
                     className="!font-thin mr-2">Mijn</span> bonnen</>);
                 break;
             case 1:
@@ -243,7 +243,7 @@ export default function Home() {
 
         <DeclarationsTabBar/>
 
-        <Content className="declarationsOverviewContent bg-white m-4 rounded-2xl" vAlign="center">
+        <Content className="declarationsOverviewContent bg-white rounded-3xl mb-32" key={`declarations-` + currentTabIndex}>
 
             <SearchSortBar/>
 
@@ -380,7 +380,7 @@ export default function Home() {
                     primary
                     disabled={selectedItemIds.length === 0}
                     padding='small'
-                    className={`!rounded-full !font-black !bg-black flex-1 w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
+                    className={`!rounded-full !bg-black flex-1 w-full ${selectedItemIds.length === 0 && 'opacity-75 pointer-events-none'}'}}`}
                     onClick={handleCreateDeclaration}
                 >
                     {/*<BsArrowRight className="w-3 h-3"/>*/}
