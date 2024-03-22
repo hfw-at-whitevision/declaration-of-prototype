@@ -14,8 +14,21 @@ export default function DeclarationScreenPage() {
     // const {getDocbasePdf} = useDocbase();
 
     useEffect(() => {
+        if (!router.isReady) return;
+
+        // if we are viewing an existing declaration
+        if (!!id) getDeclaration(id).then(async (declaration: any) => {
+            const expensePromises = declaration?.expenses?.map((expenseId: any) => getExpense(expenseId));
+            // const pdfBase64 = await getDocbasePdf(declaration?.docbaseId);
+            const expenses = await Promise.all(expensePromises);
+            setDeclaration({
+                ...declaration,
+                expenses,
+                // pdfBase64,
+            });
+        });
         // if we are creating a declaration from selected expenses
-        if (isCreatingFromExpenses) {
+        else if (isCreatingFromExpenses) {
             const expensesArray = createFromExpenses?.toString()?.split(',') ?? [];
             let declarationToCreate = {
                 title: 'Nieuwe declaratie',
@@ -37,19 +50,6 @@ export default function DeclarationScreenPage() {
             });
             return;
         }
-
-        // if we are viewing an existing declaration
-        if (!id || !router.isReady) return;
-        getDeclaration(id).then(async (declaration: any) => {
-            const expensePromises = declaration?.expenses?.map((expenseId: any) => getExpense(expenseId));
-            // const pdfBase64 = await getDocbasePdf(declaration?.docbaseId);
-            const expenses = await Promise.all(expensePromises);
-            setDeclaration({
-                ...declaration,
-                expenses,
-                // pdfBase64,
-            });
-        });
     }, [id, router.isReady, createFromExpenses]);
 
     if (!declaration || !createFromExpenses && !id) return <Loading />

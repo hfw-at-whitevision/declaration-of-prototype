@@ -1,14 +1,16 @@
 import {useAtom} from "jotai";
 import {accessTokenAtom, emailAtom, environmentCodeAtom, docbaseTokenAtom} from "@/store/authAtoms";
-import {useEffect} from "react";
 
 const useDocbaseGetPdf = ({baseApiUrl}) => {
-    const getDocbasePdf = async ({docbaseId, username, docbaseToken, baseApiUrl: inputBaseApiUrl = baseApiUrl}) => {
+    const [docbaseToken] = useAtom(docbaseTokenAtom);
+    const [emailAddress] = useAtom(emailAtom);
+
+    const getDocbasePdf = async ({docbaseId, baseApiUrl: inputBaseApiUrl = baseApiUrl}) => {
         try {
             var myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
             var urlencoded = new URLSearchParams();
-            urlencoded.append("username", username);
+            urlencoded.append("username", emailAddress);
             urlencoded.append("password", "123hjkqwecvb");
             urlencoded.append("version", "wvsa-hybrid-0.10");
 

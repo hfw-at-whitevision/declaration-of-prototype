@@ -143,7 +143,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
 
     useEffect(() => {
         if (!docbaseId) return;
-        getDocbasePdf(docbaseId).then((pdfBase64: any) => {
+        getDocbasePdf({docbaseId}).then((pdfBase64: any) => {
             setPdfBase64(pdfBase64);
         });
     }, [docbaseId]);
