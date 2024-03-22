@@ -10,7 +10,7 @@ import {useEffect, useState} from "react";
 import DisplayHeading from "@/components/layout/DisplayHeading";
 import {useRouter} from "next/router";
 
-export default function OverviewHeader({title, backButton = false}: any) {
+export default function OverviewHeader({title, backButton = false, backToDashboard = false}: any) {
     const router = useRouter();
     const [, setShowNotificationsScreen] = useAtom(showNotificationsScreenAtom);
     const isSelectingItems = useAtomValue(IsSelectingItemsAtom);
@@ -35,7 +35,8 @@ export default function OverviewHeader({title, backButton = false}: any) {
 
     const handleBackButtonClick = (e) => {
         e.preventDefault();
-        router.push('/');
+        if (backToDashboard) router.push('/');
+        else router.back();
     }
 
     return <>
