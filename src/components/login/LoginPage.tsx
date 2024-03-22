@@ -24,8 +24,7 @@ const LoginPage = ({children}: any) => {
         const res = await loginWithMicrosoft({
             environmentCode: inputEnvironmentCode,
         });
-        if (res) return;
-        await Dialog.alert({
+        if (!res) await Dialog.alert({
             title: 'Login',
             message: 'Oops! Het inloggen is niet gelukt..',
         });

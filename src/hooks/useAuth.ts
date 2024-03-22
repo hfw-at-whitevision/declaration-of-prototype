@@ -1,11 +1,10 @@
-import {OAuth2AuthenticateOptions, OAuth2Client} from '@byteowls/capacitor-oauth2';
 import {atom, useAtom} from 'jotai';
 import {useQueryClient} from '@tanstack/react-query';
 import {SecureStoragePlugin} from 'capacitor-secure-storage-plugin';
 import {jwtDecode} from 'jwt-decode';
 import useCapacitor from '@/hooks/useCapacitor';
 import {useRouter} from "next/router";
-import {Dialog} from "@capacitor/dialog";
+import {PublicClientApplication} from '@azure/msal-browser';
 import {
     AndroidBiometryStrength,
     BiometricAuth,
@@ -21,8 +20,9 @@ import {
     shouldLoginWithBiometryAtom,
     userAtom
 } from "@/store/authAtoms";
+import {msalInstance} from "../../pages/_app";
 
-const azureAdConfig: OAuth2AuthenticateOptions = {
+const azureAdConfig = {
     appId: 'a468fdc4-dd90-4300-a896-42add09bd2e3',
     authorizationBaseUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
     scope: 'https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/User.Read',
@@ -43,6 +43,8 @@ const azureAdConfig: OAuth2AuthenticateOptions = {
     },
 };
 
+const scopes = ['User.Read', 'openid', 'profile', 'offline_access'];
+
 interface Response {
     [key: string]: any;
 }
@@ -60,6 +62,7 @@ const useAuth = () => {
     const [docbaseToken, setDocbaseToken] = useAtom(docbaseTokenAtom);
     const [email, setEmail]: any = useAtom(emailAtom);
     const [user, setUser] = useAtom(userAtom);
+    const [environmentCode, setEnvironmentCode] = useAtom(environmentCodeAtom);
 
     const isAuthenticated = !!accessToken && !!email && !!docbaseToken;
 
@@ -73,22 +76,36 @@ const useAuth = () => {
     const shouldAskForBiometryActivation = isBiometryAvailable && !shouldLoginWithBiometry;
     const {docbaseAuthenticate} = useDocbase();
 
-    useEffect(() => {
-        SecureStoragePlugin.get({key: 'refreshToken'}).then((res: any) => {
-            console.log('refreshToken value in localStorage: ', res);
-            if (res?.value)
-                setRefreshToken(res?.value);
-            else
-                setRefreshToken(undefined);
-        });
-        // SecureStoragePlugin.get({key: "loginWithBiometry"}).then((res: any) => {
-        //     console.log('loginWithBiometry value in localStorage: ', res);
-        //     if (res?.value === 'true')
-        //         setShouldLoginWithBiometry(true);
-        //     else
-        //         setShouldLoginWithBiometry(false);
-        // });
-    }, []);
+    // useEffect(() => {
+    //     if (!router.isReady) return;
+    //     SecureStoragePlugin.get({key: 'accessToken'}).then((accessTokenRes: any) => {
+    //         SecureStoragePlugin.get({key: 'environmentCode'}).then((environmentCodeRes: any) => {
+    //             SecureStoragePlugin.get({key: 'homeAccountId'}).then((homeAccountIdRes: any) => {
+    //                 console.log('accessToken value in localStorage: ', accessTokenRes);
+    //                 console.log('environmentCode value in localStorage: ', environmentCodeRes);
+    //                 console.log('homeAccountId value in localStorage: ', homeAccountIdRes);
+    //                 if (!!accessTokenRes?.value && !!environmentCodeRes?.value && !!homeAccountIdRes?.value) {
+    //                     console.log('accessToken available in localStorage, trying to acquire token silently');
+    //                     const storedAccessToken = accessTokenRes?.value;
+    //                     const storedEnvironmentCode = environmentCodeRes?.value;
+    //                     return msalInstance.acquireTokenSilent({scopes}).then(async (res: any) => {
+    //                         return await responseHandler({response: res, environmentCode: storedEnvironmentCode});
+    //                     });
+    //                 } else {
+    //                     console.log('accessToken or environmentCode not available in localStorage, clearing the accessToken atom');
+    //                     setAccessToken(undefined);
+    //                 }
+    //             });
+    //         });
+    //     });
+    //     // SecureStoragePlugin.get({key: "loginWithBiometry"}).then((res: any) => {
+    //     //     console.log('loginWithBiometry value in localStorage: ', res);
+    //     //     if (res?.value === 'true')
+    //     //         setShouldLoginWithBiometry(true);
+    //     //     else
+    //     //         setShouldLoginWithBiometry(false);
+    //     // });
+    // }, [router.isReady]);
 
     const parseUserDetails = async (jwt: string) => {
         if (!jwt) return;
@@ -113,13 +130,27 @@ const useAuth = () => {
     const responseHandler = async ({response, environmentCode}: ResponseInterface = {}) => {
         console.log('responseHandler', response);
         if (!response) return;
-        const accessToken = response.access_token;
-        const refreshToken = response.access_token_response.refresh_token;
+
+        let homeAccountId = response.account.homeAccountId; // alternatively: resp.account.homeAccountId or resp.account.username
+        const currentAccounts = msalInstance.getAllAccounts();
+        if (currentAccounts.length < 1) { // No cached accounts
+            return;
+        } else if (currentAccounts.length > 1) { // Multiple account scenario
+            // Add account selection code here
+            homeAccountId = currentAccounts[0].homeAccountId;
+        } else if (currentAccounts.length === 1) {
+            homeAccountId = currentAccounts[0].homeAccountId; // Single account scenario
+        }
+
+        console.log('homeAccountId', homeAccountId);
+        await SecureStoragePlugin.set({key: 'homeAccountId', value: homeAccountId});
+
+        const accessToken = response.accessToken;
         const decodedToken: any = jwtDecode(accessToken);
 
-        if (shouldAskForBiometryActivation) {
-            await setBiometryAuth();
-        }
+        // if (shouldAskForBiometryActivation) {
+        //     await setBiometryAuth();
+        // }
 
         // authenticate against docbase
         const res = await docbaseAuthenticate({
@@ -130,21 +161,20 @@ const useAuth = () => {
         });
 
         setEmail(decodedToken.unique_name as string);
-        setAccessToken(accessToken);
 
-        console.log('storing the accessToken in localStorage', accessToken);
+        console.log('storing the accessToken and environmentCode in secureStorage', accessToken, environmentCode);
         const res1 = SecureStoragePlugin.set({
             key: 'accessToken',
             value: accessToken,
         });
-        console.log('storing the refreshToken in localStorage', refreshToken);
         const res2 = SecureStoragePlugin.set({
-            key: 'refreshToken',
-            value: refreshToken,
+            key: 'environmentCode',
+            value: environmentCode,
         });
+        setAccessToken(accessToken);
+        setEnvironmentCode(environmentCode);
         await Promise.all([res1, res2]);
-        await router.push('/');
-
+        // await router.push('/');
         return res;
     };
 
@@ -159,30 +189,31 @@ const useAuth = () => {
         // }
     }
 
-    const loginWithMicrosoft = async ({environmentCode = undefined} = {}) => {
+    const loginWithMicrosoft = async ({environmentCode: inputEnvironmentCode = environmentCode} = {}) => {
+        const account = msalInstance.getAllAccounts()[0];
+        console.log('loginWithMicrosoft', account, inputEnvironmentCode);
         try {
-            if (refreshTokenAvailable && isNative) {
-                console.log('refreshTokenAvailable, trying to login with refreshToken');
-                return OAuth2Client.refreshToken({
-                    appId: azureAdConfig.appId as string,
-                    accessTokenEndpoint: azureAdConfig.accessTokenEndpoint as string,
-                    refreshToken: refreshToken as string,
-                    scope: azureAdConfig.scope,
-                })
-                    .then(async (response) => {
-                        console.log('refreshToken response', response);
-                        return await responseHandler({response, environmentCode});
-                    });
+            if (account && accessToken && environmentCode) {
+                console.log('accessToken available, trying to acquire token silently');
+                const res = await msalInstance.acquireTokenSilent({scopes});
+                console.log('acquireTokenSilent response', res);
+                await responseHandler({response: res, environmentCode: inputEnvironmentCode});
+                return res;
             } else {
-                console.log('refreshToken not available');
-                return OAuth2Client.authenticate(azureAdConfig)
-                    .then(async (response) => {
-                        console.log('authenticate response', response);
-                        return await responseHandler({response, environmentCode});
+                console.log('accessToken not available, trying to login with popup');
+                const res = await msalInstance.loginPopup({scopes})
+                    .then(async (res2: any) => {
+                        console.log('loginPopup response', res2);
+                        msalInstance.setActiveAccount(res2.account);
+                        return await responseHandler({response: res2, environmentCode: inputEnvironmentCode});
+                    })
+                    .catch((error: any) => {
+                        console.error('Error while logging in', error);
                     });
+                // await responseHandler({response: res, environmentCode: inputEnvironmentCode});
+                return res;
             }
-        }
-        catch (e) {
+        } catch (e) {
             console.error('Error while logging in', e);
         }
     };
@@ -218,14 +249,20 @@ const useAuth = () => {
     }
 
     const logout = async () => {
-        await OAuth2Client.logout(azureAdConfig);
+        await router.push('http://localhost:3000');
+        const currentAccount = msalInstance.getActiveAccount();
+        await msalInstance.logoutRedirect({
+            account: currentAccount,
+            onRedirectNavigate: () => {
+                return false;
+            },
+        });
         await SecureStoragePlugin.remove({key: 'accessToken'});
         setAccessToken(undefined);
         setEmail(undefined);
         setDocbaseToken(undefined);
         setUser(undefined);
         client.removeQueries();
-        await router.push('/');
     };
 
     // const updateBiometryInfo = (info: any): void => {

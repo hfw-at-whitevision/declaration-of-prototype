@@ -11,14 +11,15 @@ import useApp from "@/hooks/useApp";
 import AppUrlListener from "@/components/AppUrlListener";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {displayFont} from "@/components/layout/DisplayHeading";
-import {useIsAuthenticated} from "@azure/msal-react";
 import "@/styles/globals.css";
-import dynamic from "next/dynamic";
 import Loading from "@/components/layout/Loading";
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import LoginPage from "@/components/login/LoginPage";
+import {msalConfig} from "@/other/authConfig";
+import {PublicClientApplication} from "@azure/msal-browser";
+import {useEffect} from "react";
 
-const LoginPage = dynamic(async () => await import('@/components/login/LoginPage'), {ssr: false});
 
 // const defaultFont = Inter({subsets: ["latin"]});
 
@@ -26,6 +27,8 @@ const LoginPage = dynamic(async () => await import('@/components/login/LoginPage
 process.browser ? defineCustomElements(window) : null;
 
 export const queryClient = new QueryClient();
+
+export const msalInstance = await PublicClientApplication.createPublicClientApplication(msalConfig);
 
 export default function DOPApp({Component, pageProps}: AppProps) {
     // useSplashScreen();
@@ -37,6 +40,13 @@ export default function DOPApp({Component, pageProps}: AppProps) {
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
     const [primaryColor] = useAtom(primaryColorAtom);
     const bgDotsImage = (primaryColor === 'bg-gray-100') ? 'bg-dots.png' : 'bg-dots-white.png';
+
+    useEffect(() => {
+        msalInstance.handleRedirectPromise()
+            .then((res) => {
+                console.log('Redirect promise:', res);
+            });
+    }, []);
 
     return (
         <QueryClientProvider client={queryClient}>

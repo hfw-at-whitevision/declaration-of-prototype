@@ -129,6 +129,13 @@ export default function PlusMenu() {
     }
 
     return <>
+        <motion.div
+            id="plusMenu-inset"
+            className="fixed inset-0 z-30 bg-black/50"
+            onClick={() => handleToggleMenu(false)}
+            animate={showMenu ? {opacity: 1, zIndex: 30} : {opacity: 0, zIndex: -1}}
+        />
+
         <motion.nav
             layout
             animate={showMenu ? 'open' : 'closed'}
@@ -140,11 +147,6 @@ export default function PlusMenu() {
                 fixed right-4 bottom-40 flex flex-col items-end
             `}
         >
-            <div
-                id="plusMenu-inset"
-                className="fixed inset-0 z-30"
-                onClick={() => handleToggleMenu(false)}
-            />
             <motion.h2
                 animate={showMenu ? {opacity: 1} : {opacity: 0}}
                 transition={{duration: 0.4, delay: 0.2}}
