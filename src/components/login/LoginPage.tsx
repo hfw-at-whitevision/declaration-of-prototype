@@ -1,6 +1,5 @@
 import useAuth from "@/hooks/useAuth";
 import Button from "@/components/Button";
-import {TfiMicrosoftAlt} from "react-icons/tfi";
 import {useEffect} from "react";
 import {useAtom} from "jotai";
 import {accessTokenAtom} from "@/store/authAtoms";

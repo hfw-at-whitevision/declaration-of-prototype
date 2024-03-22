@@ -1,6 +1,6 @@
 import {motion} from 'framer-motion';
 
-export default function Content({children, className = '', ...props}: any) {
+export default function Content({children, vAlign = 'start', className = '', ...props}: any) {
     const screenVariants = {
         offscreen: {
             x: '100%',
@@ -9,9 +9,12 @@ export default function Content({children, className = '', ...props}: any) {
             x: 0,
         }
     }
+
+    const verticalAlignment = (vAlign === 'center') ? 'justify-center' : 'justify-start';
+
     return (
         <motion.div
-            className={`p-4 py-4 flex flex-col w-full justify-start gap-2 ${className}`}
+            className={`Content p-4 py-4 flex-1 flex flex-col w-full ${verticalAlignment} gap-2 ${className}`}
             variants={screenVariants}
             whileInView="onscreen"
             initial="offscreen"

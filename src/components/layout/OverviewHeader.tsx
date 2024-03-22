@@ -1,16 +1,17 @@
 import {
     currentTabIndexAtom, IsSelectingItemsAtom,
     notificationsAtom, primaryColorAtom, selectedItemIdsAtom,
-    showNewDeclarationOverlayAtom,
     showNotificationsScreenAtom
 } from "@/store/generalAtoms";
-import {BsBell, BsBellFill} from "react-icons/bs";
+import {BsArrowLeft, BsBell, BsBellFill, BsChevronLeft} from "react-icons/bs";
 import NotificationsScreen from "../screens/NotificationsScreen";
 import {useAtom, useAtomValue} from "jotai";
 import {useEffect, useState} from "react";
 import DisplayHeading from "@/components/layout/DisplayHeading";
+import {useRouter} from "next/router";
 
-export default function OverviewHeader({title}: any) {
+export default function OverviewHeader({title, backButton = false}: any) {
+    const router = useRouter();
     const [, setShowNotificationsScreen] = useAtom(showNotificationsScreenAtom);
     const isSelectingItems = useAtomValue(IsSelectingItemsAtom);
     const selectedItemIds = useAtomValue(selectedItemIdsAtom);
@@ -32,13 +33,38 @@ export default function OverviewHeader({title}: any) {
         ?.filter((notification: any) => notification.type === 'warning' || notification.type === 'success')
         ?.length;
 
-    return <>
-        <NotificationsScreen />
+    const handleBackButtonClick = (e) => {
+        e.preventDefault();
+        router.push('/');
+    }
 
-        <header className={`flex flex-col transition-all duration-500 ease-in-out bg-transparent p-4 pb-0 pt-16 gap-4 z-10`}>
+    return <>
+        <NotificationsScreen/>
+
+        <header
+            className={`overviewHeader shrink flex flex-col transition-all duration-500 ease-in-out bg-transparent p-4 pb-0 pt-16 gap-4 z-10`}>
             <div className="flex flex-row justify-between items-center">
-                <DisplayHeading className="text-white font-extrabold text-4xl tracking-tight">
-                    {title}
+                <DisplayHeading
+                    className="text-white font-extrabold text-4xl tracking-tight flex flex-row items-center">
+
+                    {backButton &&
+                        <button
+                            className="rounded-full pl-0 p-4 relative text-sm mr-4 flex flex-row items-center justify-center font-black"
+                            onClick={handleBackButtonClick}
+                        >
+                            <BsChevronLeft className="w-4 h-4" strokeWidth={2}/>
+                        </button>
+                    }
+
+                    <span className="flex flex-row items-center">
+                    {title ??
+                        <img
+                            src={'/images/whitevision_logo_2024_yellow.png'}
+                            alt="WhiteVision"
+                            className="w-[180px]"
+                        />
+                    }
+                    </span>
                 </DisplayHeading>
 
                 <div className="flex flex-row gap-2 text-white">
@@ -53,7 +79,7 @@ export default function OverviewHeader({title}: any) {
                         className="bg-black/5 rounded-full p-4 z-10 relative"
                         onClick={() => setShowNotificationsScreen((prev: any) => !prev)}
                     >
-                        <BsBellFill className="w-6 h-6" />
+                        <BsBellFill className="w-6 h-6"/>
 
                         {urgentNotifications
                             ? <span

@@ -1,6 +1,6 @@
 import Button from "@/components/Button";
 import {Capacitor} from "@capacitor/core";
-import React, {useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Dialog} from "@capacitor/dialog";
 import {useAtom} from "jotai";
 import {loadingAtom} from "@/store/generalAtoms";
@@ -12,19 +12,35 @@ import useCamera from "@/hooks/useCamera";
 import DisplayHeading from "@/components/layout/DisplayHeading";
 import {BsArrowClockwise, BsBoxArrowInDown, BsCamera, BsShare, BsTrash} from "react-icons/bs";
 import {Swiper, SwiperSlide, useSwiper} from 'swiper/react';
-import {Pagination} from 'swiper/modules';
+import {HashNavigation, Pagination} from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import {useRouter} from "next/router";
+import InfoMessage from "@/components/primitives/message/InfoMessage";
+import {useParams} from "next/navigation";
+
+let swipeTimer = null;
 
 export default function ScanPage() {
+    const router = useRouter();
+    const params = useParams();
     const [, setLoading] = useAtom(loadingAtom);
     const [scannedImages, setScannedImages] = useState([]);
-    const [, setSelectedFiles]: any = useState([]);
     const fileInputRef: any = useRef(null);
     const {imagesToPdfShare} = usePdf();
     const {takePhoto} = useCamera();
     const isSharePdfAllowed = scannedImages?.length > 0;
     const swiperRef = useRef(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    useEffect(() => {
+        const hash = window.location.hash;
+        setActiveIndex(hash ? Number(hash) : 0);
+
+        return () => {
+            setActiveIndex(0);
+        }
+    }, [params]);
 
     const handleDownloadPdf = async (e: any) => {
         e.preventDefault();
@@ -39,15 +55,19 @@ export default function ScanPage() {
         const {base64Images} = await takePhoto();
         if (!base64Images?.length) return;
         setScannedImages(oldData => oldData?.concat(base64Images));
-        swipeToLastSlide();
+        swipeToSlide();
     }
 
     const handleFileImportClick = () => {
         fileInputRef.current.click();
     }
 
-    const swipeToLastSlide = () => {
-        // swiperRef.current.swiper.slideTo(scannedImages.length - 1);
+    const swipeToSlide = (index = scannedImages?.length - 1) => {
+        if (!swiperRef.current?.swiper) return;
+        if (swipeTimer) clearTimeout(swipeTimer);
+        swipeTimer = setTimeout(() => {
+            swiperRef.current.swiper.slideTo(index);
+        }, 100);
     }
 
     const handleFileInputChange = async (e: any) => {
@@ -60,9 +80,14 @@ export default function ScanPage() {
 
         try {
             const selectedFiles = e?.target?.files;
-            setSelectedFiles(selectedFiles);
             if (!selectedFiles.length) return;
+
             const selectedFile = selectedFiles[0];
+            const swipeToNewIndex = scannedImages.length;
+
+            console.log('handleFileInputChange: selectedFile', selectedFile);
+            console.log('handleFileInputChange: old number of scannedImages', scannedImages.length);
+            console.log('handleFileInputChange: swipeToNewIndex', swipeToNewIndex);
 
             // mobile
             if (Capacitor.isNativePlatform()) {
@@ -81,7 +106,7 @@ export default function ScanPage() {
                     await setScannedImages((oldData) => ([...oldData, base64Image]));
                 }
             }
-            swipeToLastSlide();
+            swipeToSlide(swipeToNewIndex);
         } catch (e: any) {
             await Dialog.alert({
                 title: 'Fout',
@@ -97,12 +122,14 @@ export default function ScanPage() {
 
     const handleDeleteCurrentImage = async (e: any) => {
         e.preventDefault();
-        if (!scannedImages.length) return;
         const {value: confirmed} = await Dialog.confirm({
             title: 'Verwijderen',
             message: 'Weet je zeker dat je deze scan wilt verwijderen?',
         });
         if (!confirmed) return;
+
+        console.log('handleDeleteCurrentImage: deleting image with index ' + activeIndex);
+
         setScannedImages((oldData: any) => {
             const updatedImages = oldData?.filter((image: any, index: number) => index !== activeIndex)
             return updatedImages;
@@ -110,14 +137,19 @@ export default function ScanPage() {
     }
 
     return <>
-        <OverviewHeader title={<>Scan <span className="font-thin">& verzend</span></>}/>
+        <OverviewHeader
+            backButton
+            title={<>Scan <span className="font-thin ml-2">& verzend</span></>}
+        />
 
         <Content className="flex flex-1 items-start">
-            <DisplayHeading className="text-sm">
-                Scan of importeer een document en deel als PDF.
-            </DisplayHeading>
+            {(scannedImages?.length === 0) && (
+                <DisplayHeading className="font-thin text-3xl">
+                    Scan of importeer een document en deel als PDF.
+                </DisplayHeading>
+            )}
 
-            <section className="mt-8 w-full grid grid-cols-1 gap-2">
+            <section className="w-full grid grid-cols-1 gap-2 my-auto">
                 <Button
                     primary
                     padding="small"
@@ -147,13 +179,13 @@ export default function ScanPage() {
                 </Button>
             </section>
 
-            {scannedImages?.length > 0 && <>
-                <section className="w-full h-full bg-white p-4 rounded-2xl w-full flex flex-col gap-4">
-                    <div className="flex flex-row gap-2 items-center justify-end">
-                        <Button secondary padding="small" className="w-8 h-8" rounded="full">
+            {scannedImages?.length > 0
+                && <section className="w-full h-full bg-white p-2 rounded-2xl w-full flex flex-col gap-4 relative">
+                    <div className="flex flex-row gap-2 items-center justify-end absolute z-[2] top-4 right-4">
+                        <Button secondary padding="small" className="w-12 h-8 !bg-gray-200" rounded="full">
                             <BsArrowClockwise className="w-4 h-4"/>
                         </Button>
-                        <Button secondary padding="small" className="w-8 h-8 !bg-red-500 text-white"
+                        <Button secondary padding="small" className="w-12 h-8 !bg-red-500 text-white"
                                 rounded="full"
                                 onClick={handleDeleteCurrentImage}>
                             <BsTrash className="w-4 h-4"/>
@@ -166,12 +198,16 @@ export default function ScanPage() {
                         pagination={{
                             dynamicBullets: true,
                         }}
-                        modules={[Pagination]}
+                        modules={[Pagination, HashNavigation]}
+                        hashNavigation={true}
+                        onSlideChange={(swiper) => {
+                            setActiveIndex(swiper.activeIndex);
+                        }}
                     >
                         {scannedImages?.map((image: any, index: number) =>
-                            <SwiperSlide key={`scanpage-${index}`}>
+                            <SwiperSlide key={`scanpage-${index}`} data-hash={`${index}`}>
                                 <section
-                                    className="absolute rounded-md overflow-hidden flex flex-col items-center justify-center gap-4 text-center">
+                                    className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center rounded-lg overflow-hidden">
                                     <img
                                         key={`scanpage-image-${index}`}
                                         src={image}
@@ -182,18 +218,23 @@ export default function ScanPage() {
                         )}
                     </Swiper>
                 </section>
+            }
 
+            <InfoMessage color='zinc' className='font-thin'>
+                Tip: scan het document op een donker achtergrond voor het beste resultaat.
+            </InfoMessage>
+
+            {scannedImages?.length > 0 &&
                 <Button
                     className="w-full"
                     color="black"
                     onClick={handleDownloadPdf}
                     disabled={!isSharePdfAllowed}
-                    rounded="full"
                     icon={<BsShare className="w-6 h-6"/>}
                 >
                     Deel als PDF
                 </Button>
-            </>}
+            }
         </Content>
     </>
 }

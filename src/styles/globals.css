@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* general */
 *:not(input) {
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -16,18 +17,21 @@ body {
     @apply bg-amber-400 overflow-x-hidden;
 }
 
-.react-datepicker__input-container input {
-    @apply w-full outline-none ring-2 rounded-md p-2 ring-amber-400;
-}
-
-.pswp__img {
-    object-fit: contain !important;
-}
-
+/* declarations */
 .singleDeclaration {
     @apply rounded-md overflow-hidden;
 }
 
 .singleDeclaration .rpv-default-layout__container {
     @apply border-none;
+}
+
+/* react-date-picker */
+.react-datepicker__input-container input {
+    @apply w-full outline-none ring-2 rounded-md p-2 ring-amber-400;
+}
+
+/* react-pdf-viewer */
+.pswp__img {
+    object-fit: contain !important;
 }

@@ -2,14 +2,14 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import Content from "@/components/Content";
 import TabNavigation from "@/components/TabNavigation";
 import PlusMenu from "@/components/declarations/PlusMenu";
-import WaitingForApprovalList from "@/components/dashboard/WaitingForApprovalList";
-import RejectionsList from "@/components/dashboard/RejectionsList";
 import ActionsGrid from "@/components/dashboard/ActionsGrid";
 import {useRouter} from "next/router";
 import DisplayHeading from "@/components/layout/DisplayHeading";
 import {useAtom} from "jotai";
 import {primaryColorAtom} from "@/store/generalAtoms";
 import {useEffect} from "react";
+import {BsFillPersonLinesFill} from "react-icons/bs";
+import OverviewHeader from "@/components/layout/OverviewHeader";
 
 export default function HomePage() {
     const isApprover = process.env.NEXT_PUBLIC_IS_APPROVER === 'true';
@@ -25,14 +25,28 @@ export default function HomePage() {
     }, []);
 
     return <>
-        <DashboardHeader/>
+        <OverviewHeader/>
 
         <Content className="">
 
-            <section className="py-4 flex flex-col text-center">
-                <DisplayHeading className="font-extrabold text-3xl">Welkom {name ?? 'onbekende'}!</DisplayHeading>
-                <small className="mt-4 opacity-50">{email ?? 'anoniempje'}</small>
-                <small className="opacity-50">{company ?? 'anoniem bedrijf'}</small>
+            <button className="rounded-2xl bg-black/10 p-4 text-black/80 relative pl-20">
+                <BsFillPersonLinesFill className="absolute top-5 left-4 w-8 h-8"/>
+
+                <span className="flex flex-col text-sm items-start">
+                    <span className="font-extrabold">
+                        {name ?? 'onbekende'}
+                    </span>
+                    <span className="font-thin">
+                    {email ?? 'geen email'} - {company ?? 'geen bedrijf'}
+                    </span>
+                </span>
+            </button>
+
+            <section className="py-8 flex flex-col">
+                <DisplayHeading className="font-extrabold text-3xl">
+                    <span className="font-thin mr-2">Welkom</span>
+                    {name ?? 'onbekende'}!
+                </DisplayHeading>
             </section>
             {/*{isApprover*/}
             {/*    ? <WaitingForApprovalList/>*/}
@@ -42,8 +56,6 @@ export default function HomePage() {
             <ActionsGrid/>
 
         </Content>
-
-        <PlusMenu/>
 
         <TabNavigation/>
     </>

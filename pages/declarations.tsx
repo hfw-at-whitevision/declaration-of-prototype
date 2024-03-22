@@ -224,16 +224,16 @@ export default function Home() {
             setDeclarationStatusFilters(declarationStatusFilters?.length ? [...declarationStatusFilters, status] : [status]);
     }
 
-    const [title, setTitle]: any = useState(<><span className="!font-thin">Mijn</span> bonnen</>);
+    const [title, setTitle]: any = useState(<><span className="!font-thin mr-2">Mijn</span> bonnen</>);
 
     useEffect(() => {
         switch (currentTabIndex) {
             case 0:
                 setTitle(isInSelectionMode ? <>Selecteer <span className="!font-thin">bonnen</span></> : <><span
-                    className="!font-thin">Mijn</span> bonnen</>);
+                    className="!font-thin mr-2">Mijn</span> bonnen</>);
                 break;
             case 1:
-                setTitle(<><span className="!font-thin">Mijn</span> declaraties</>);
+                setTitle(<><span className="!font-thin mr-2">Mijn</span> declaraties</>);
                 break;
         }
     }, [currentTabIndex, isInSelectionMode]);
@@ -243,7 +243,7 @@ export default function Home() {
 
         <DeclarationsTabBar/>
 
-        <Content className="bg-white m-4 rounded-2xl">
+        <Content className="declarationsOverviewContent bg-white m-4 rounded-2xl" vAlign="center">
 
             <SearchSortBar/>
 

@@ -15,7 +15,7 @@ export default function AdvicePage() {
     }, []);
 
     return <>
-        <OverviewHeader title={<>Goedkeuren <span className="!font-thin !text-sm">& advies</span></>}/>
+        <OverviewHeader title={<>Goedkeuren <span className="!font-thin !text-lg ml-1">& advies</span></>}/>
 
         <TabNavigation/>
     </>

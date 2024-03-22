@@ -53,7 +53,7 @@ export default function Button(
         whileHover={{scale: 1.01}}
         whileTap={{scale: 0.99, backgroundColor: 'rgba(0, 0, 0, 0.1)'}}
         className={`
-            inline-flex flex-row justify-center items-center font-extrabold gap-2
+            inline-flex flex-row justify-center items-center font-bold gap-2
             ${rounded === 'medium' ? 'rounded-md' : ''}
             ${rounded === 'large' ? 'rounded-lg' : ''}
             ${rounded === 'full' ? 'rounded-full' : ''}
