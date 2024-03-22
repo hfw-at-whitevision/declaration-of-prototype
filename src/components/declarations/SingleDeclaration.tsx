@@ -276,8 +276,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                 }
 
                 {showPdf &&
-                    <section
-                        className="pdfModal fixed inset-0 z-50 bg-black/50 flex flex-col items-center justify-center">"
+                    <section className="pdfModal fixed inset-0 z-50 bg-black/50 flex flex-col items-center justify-center">
                         <button
                             className="absolute top-4 right-4 bg-white p-4 rounded-full"
                             onClick={closePdf}
