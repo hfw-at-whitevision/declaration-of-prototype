@@ -70,7 +70,7 @@ const Tile = ({
             </span>
         </span>
 
-        <span className="text-white z-10">
+        <span className="text-white z-10 text-left">
             {label} {children}
         </span>
     </motion.button>

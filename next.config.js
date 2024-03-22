@@ -2,7 +2,6 @@
 const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
-        exclude: ["node_modules", ".next"],
     },
     reactStrictMode: true,
     swcMinify: true,

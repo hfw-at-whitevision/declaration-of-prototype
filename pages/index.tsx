@@ -45,7 +45,7 @@ export default function HomePage() {
                 <BsFillPersonLinesFill className="w-8 h-8 mr-4"/>
 
                 <span className="flex flex-col text-sm items-start">
-                    <span className="font-extrabold">
+                    <span className="font-extrabold text-nowrap overflow-hidden">
                         {firstName} <span className="font-thin">({emailAddress})</span>
                     </span>
                     <span className="font-thin">
