@@ -24,6 +24,7 @@ export default function Content({children, vAlign = 'start', className = '', ...
                     type: 'spring',
                     bounce: 0.0,
                     duration: 0.2,
+                    delay: 0.2,
                 }}
                 viewport={{
                     once: false,
