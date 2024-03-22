@@ -11,7 +11,6 @@
     "static": "next build && next export && npx cap sync"
   },
   "dependencies": {
-    "@aparajita/capacitor-biometric-auth": "^7.1.1",
     "@azure/msal-browser": "^3.10.0",
     "@azure/msal-react": "^2.0.12",
     "@byteowls/capacitor-oauth2": "^5.0.0",
@@ -33,7 +32,6 @@
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
     "@tanstack/react-query": "^5.26.3",
-    "axios": "^1.6.7",
     "capacitor-document-scanner": "^2.0.0",
     "capacitor-secure-storage-plugin": "^0.9.0",
     "firebase": "^10.4.0",

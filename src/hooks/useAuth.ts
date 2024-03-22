@@ -1,16 +1,9 @@
-import {atom, useAtom} from 'jotai';
+import {useAtom} from 'jotai';
 import {useQueryClient} from '@tanstack/react-query';
 import {SecureStoragePlugin} from 'capacitor-secure-storage-plugin';
 import {jwtDecode} from 'jwt-decode';
 import useCapacitor from '@/hooks/useCapacitor';
 import {useRouter} from "next/router";
-import {PublicClientApplication} from '@azure/msal-browser';
-import {
-    AndroidBiometryStrength,
-    BiometricAuth,
-    BiometryError,
-    BiometryErrorType
-} from "@aparajita/capacitor-biometric-auth";
 import {useEffect, useState} from "react";
 import useDocbase from "@/hooks/useDocbase";
 import {

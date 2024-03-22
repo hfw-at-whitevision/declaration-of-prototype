@@ -5,10 +5,10 @@ import {inputModalAtom, primaryColorAtom} from "@/store/generalAtoms";
 import {defineCustomElements} from '@ionic/pwa-elements/loader';
 import useSplashScreen from "@/hooks/useSplashscreen";
 import useSwipeBack from "@/hooks/useSwipeBack";
-import usePushNotifications from "@/hooks/usePushNotifications";
+// import usePushNotifications from "@/hooks/usePushNotifications";
 import useNativeStatusBar from "@/hooks/useNativeStatusBar";
-import useApp from "@/hooks/useApp";
-import AppUrlListener from "@/components/AppUrlListener";
+// import useApp from "@/hooks/useApp";
+// import AppUrlListener from "@/components/AppUrlListener";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {displayFont} from "@/components/layout/DisplayHeading";
 import "@/styles/globals.css";
@@ -19,32 +19,36 @@ import LoginPage from "@/components/login/LoginPage";
 import {msalConfig} from "@/other/authConfig";
 import {PublicClientApplication} from "@azure/msal-browser";
 import {useEffect} from "react";
+import useFileSystem from "@/hooks/useFileSystem";
 
 
 // const defaultFont = Inter({subsets: ["latin"]});
 
 // @ts-ignore
-process.browser ? defineCustomElements(window) : null;
+if (process.browser) defineCustomElements(window);
 
 export const queryClient = new QueryClient();
 
 export const msalInstance = await PublicClientApplication.createPublicClientApplication(msalConfig);
 
 export default function DOPApp({Component, pageProps}: AppProps) {
-    // useSplashScreen();
+    useSplashScreen();
     useSwipeBack();
     // usePushNotifications();
     useNativeStatusBar();
-    useApp();
-
+    // useApp();
+    const {requestPermissions} = useFileSystem();
     const [inputModal, setInputModal] = useAtom(inputModalAtom);
     const [primaryColor] = useAtom(primaryColorAtom);
     const bgDotsImage = (primaryColor === 'bg-gray-100') ? 'bg-dots.png' : 'bg-dots-white.png';
 
     useEffect(() => {
-        msalInstance.handleRedirectPromise()
-            .then((res) => {
-                console.log('Redirect promise:', res);
+        requestPermissions()
+            .then(() => {
+                msalInstance.handleRedirectPromise()
+                    .then((res) => {
+                        console.log('Redirect promise:', res);
+                    });
             });
     }, []);
 
@@ -75,9 +79,9 @@ export default function DOPApp({Component, pageProps}: AppProps) {
                     onConfirm={inputModal?.onConfirm}
                 />
 
-                <Loading />
+                <Loading/>
 
-                <AppUrlListener/>
+                {/*<AppUrlListener/>*/}
             </div>
         </QueryClientProvider>
     );

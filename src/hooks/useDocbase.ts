@@ -70,7 +70,7 @@ const useDocbaseAuthenticate = () => {
         urlencoded.append("option", inputAzureToken ?? azureToken);
         urlencoded.append("data", data);
 
-        var requestOptions = {
+        var requestOptions: any = {
             method: 'POST',
             headers: myHeaders,
             body: urlencoded,
@@ -125,7 +125,7 @@ const useDocbasePost = () => {
         urlencoded.append("token", docbaseToken);
         urlencoded.append("data", data);
 
-        const requestOptions = {
+        const requestOptions: any = {
             method: 'POST',
             headers: myHeaders,
             body: urlencoded,

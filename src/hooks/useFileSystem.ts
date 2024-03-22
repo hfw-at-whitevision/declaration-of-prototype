@@ -44,10 +44,21 @@ const readFilePath = async () => {
     console.log('data:', contents);
 };
 
+const checkPermissions = async () => {
+    const permissions = await Filesystem.checkPermissions();
+    console.log('requestPermissions:', permissions);
+}
+
+const requestPermissions = async () => {
+    const permissions = await Filesystem.requestPermissions();
+    console.log('requestPermissions:', permissions);
+}
 
 const useFileSystem = () => {
     return {
         writeTemporaryFile,
+        checkPermissions,
+        requestPermissions,
     }
 }
 
