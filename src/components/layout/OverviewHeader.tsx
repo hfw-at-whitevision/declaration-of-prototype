@@ -46,7 +46,7 @@ export default function OverviewHeader({title, backButton = false, backToDashboa
             className={`overviewHeader shrink flex flex-col transition-all duration-500 ease-in-out bg-transparent p-4 pb-0 pt-16 gap-4 z-10`}>
             <div className="flex flex-row justify-between items-center">
                 <DisplayHeading
-                    className="text-white font-extrabold text-4xl tracking-tight flex flex-row items-center">
+                    className="text-white font-extrabold text-4xl tracking-tight flex flex-row items-center overflow-hidden">
 
                     {backButton &&
                         <button
@@ -57,7 +57,7 @@ export default function OverviewHeader({title, backButton = false, backToDashboa
                         </button>
                     }
 
-                    <span className="flex flex-row items-center">
+                    <span className="flex flex-row items-center text-nowrap">
                     {title ??
                         <img
                             src={'/images/whitevision_logo_2024_yellow.png'}

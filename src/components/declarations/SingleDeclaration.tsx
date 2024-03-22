@@ -14,6 +14,8 @@ import {useDeclaration} from "@/hooks/useDeclaration";
 import {SpecialZoomLevel, Viewer, Worker} from "@react-pdf-viewer/core";
 import {defaultLayoutPlugin} from '@react-pdf-viewer/default-layout';
 import useDocbase from "@/hooks/useDocbase";
+import {BsX} from "react-icons/bs";
+import {useParams} from "next/navigation";
 
 export default function SingleDeclaration({declaration: inputDeclaration}: any) {
     const defaultLayoutPluginInstance = defaultLayoutPlugin({
@@ -39,6 +41,28 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
     const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
     const [pdfBase64, setPdfBase64] = useState();
     const [loading, setLoading] = useAtom(loadingAtom);
+    const [showPdf, setShowPdf] = useState(false);
+    const params = useParams();
+
+    useEffect(() => {
+        const hash = window.location.hash;
+        if (hash === '#showPdf') {
+            setShowPdf(true);
+        }
+        else setShowPdf(false);
+    }, [params]);
+
+    const openPdf = async (e) => {
+        e.preventDefault();
+        // push router to same url with hash
+        await router.push(router.asPath + '#showPdf');
+    }
+
+    const closePdf = async (e) => {
+        e.preventDefault();
+        // push router to same url without hash
+        await router.push(router.asPath.replace('#showPdf', ''));
+    }
 
     const serializeDeclaration = (props?: any) => ({
         ...declarationId && {id: declarationId},
@@ -152,7 +176,7 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
         <Content>
             <div className="mt-8 grid gap-2 text-xs">
 
-                <SinglePageHeader status={declaration?.status}/>
+                <SinglePageHeader backToDeclarations status={declaration?.status}/>
 
                 <div className="my-4 space-y-2 rounded-md">
                     <DisplayHeading
@@ -246,17 +270,32 @@ export default function SingleDeclaration({declaration: inputDeclaration}: any) 
                 </div>
 
                 {pdfBase64 &&
-                    <Worker workerUrl="./pdf.worker.min.js">
-                        <div className="h-60 singleDeclaration">
-                            <Viewer
-                                fileUrl={pdfBase64}
-                                plugins={[
-                                    defaultLayoutPluginInstance,
-                                ]}
-                                defaultScale={SpecialZoomLevel.PageFit}
-                            />
-                        </div>
-                    </Worker>
+                    <Button primary padding="small" onClick={openPdf}>
+                        Toon voorblad
+                    </Button>
+                }
+
+                {showPdf &&
+                    <section
+                        className="pdfModal fixed inset-0 z-50 bg-black/50 flex flex-col items-center justify-center">"
+                        <button
+                            className="absolute top-4 right-4 bg-white p-4 rounded-full"
+                            onClick={closePdf}
+                        >
+                            <BsX className="w-6 h-6"/>
+                        </button>
+                        <Worker workerUrl="./pdf.worker.min.js">
+                            <div className="top-20 left-4 right-4 bottom-4 absolute singleDeclaration overflow-y-auto">
+                                <Viewer
+                                    fileUrl={pdfBase64}
+                                    plugins={[
+                                        defaultLayoutPluginInstance,
+                                    ]}
+                                    defaultScale={SpecialZoomLevel.PageFit}
+                                />
+                            </div>
+                        </Worker>
+                    </section>
                 }
 
                 {/* action buttons */}

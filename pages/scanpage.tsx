@@ -139,13 +139,13 @@ export default function ScanPage() {
     return <>
         <OverviewHeader
             backButton
-            title={<>Scan <span className="font-thin ml-2">& verzend</span></>}
+            title={<>Scan <span className="font-thin ml-2 text-base">& verzend</span></>}
         />
 
         <Content className="flex flex-1 items-start">
             {(scannedImages?.length === 0) && (
                 <DisplayHeading className="font-thin text-3xl">
-                    Scan of importeer een document en deel als PDF.
+                    Scan of importeer een document en deel deze als PDF.
                 </DisplayHeading>
             )}
 

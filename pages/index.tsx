@@ -18,6 +18,7 @@ import {
 import OverviewHeader from "@/components/layout/OverviewHeader";
 import {environmentCodeAtom, userAtom} from "@/store/authAtoms";
 import {RiQrScanFill} from "react-icons/ri";
+import useDocbase from "@/hooks/useDocbase";
 
 export default function HomePage() {
     const router = useRouter();
@@ -25,6 +26,7 @@ export default function HomePage() {
     const [user] = useAtom(userAtom);
     const {firstName, emailAddress}: any = user ?? {};
     const [environmentCode] = useAtom(environmentCodeAtom);
+    const {getDeclarationMetadata} = useDocbase();
 
     const [primaryColor, setPrimaryColor] = useAtom(primaryColorAtom);
     useEffect(() => {
@@ -36,6 +38,13 @@ export default function HomePage() {
         router.push('/settings');
     }
 
+    useEffect(() => {
+        getDeclarationMetadata()
+            .then(res => {
+                console.log('gdm', res);
+            });
+    }, []);
+
     return <>
         <OverviewHeader/>
 
@@ -44,7 +53,7 @@ export default function HomePage() {
             <button className="rounded-2xl bg-black/10 p-4 text-black/80 relative flex flex-row items-center justify-start" onClick={handleProfileClick}>
                 <BsFillPersonLinesFill className="w-8 h-8 mr-4"/>
 
-                <span className="flex flex-col text-sm items-start">
+                <span className="flex flex-col text-xs items-start">
                     <span className="font-extrabold text-nowrap overflow-hidden">
                         {firstName} <span className="font-thin">({emailAddress})</span>
                     </span>

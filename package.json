@@ -51,6 +51,7 @@
     "react-icons": "^4.11.0",
     "react-photoswipe-gallery": "^3.0.1",
     "sass": "^1.72.0",
+    "simple-xml-to-json": "^1.2.0",
     "swiper": "^11.0.7"
   },
   "devDependencies": {

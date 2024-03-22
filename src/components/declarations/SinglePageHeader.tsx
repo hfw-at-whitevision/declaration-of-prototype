@@ -3,7 +3,7 @@ import {BsArrowLeft} from "react-icons/bs";
 import {useRouter} from "next/router";
 import {useParseStatus} from "@/hooks/useParseStatus";
 
-export default function SingleDeclarationHeader({status = '100'}) {
+export default function SingleDeclarationHeader({backToDeclarations = false, backToExpenses = false, status = '100'}) {
     const router = useRouter();
     const parsedStatus = useParseStatus(status);
     let statusColor = 'bg-amber-400';
@@ -20,11 +20,18 @@ export default function SingleDeclarationHeader({status = '100'}) {
             break;
     }
 
+    const handleBack = (e) => {
+        e.preventDefault();
+        if (backToDeclarations) router.push('/declarations?tabIndex=1');
+        else if (backToExpenses) router.push('/declarations');
+        else router.back();
+    }
+
     return <div className="w-full justify-between items-center flex">
         <Button
             secondary
             padding='small'
-            onClick={() => router.back()}
+            onClick={handleBack}
             rounded="full"
             className="h-12"
         >

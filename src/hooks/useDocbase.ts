@@ -1,6 +1,8 @@
 import {useAtom} from "jotai";
 import {accessTokenAtom, emailAtom, environmentCodeAtom, docbaseTokenAtom} from "@/store/authAtoms";
 
+const {convertXML} = require("simple-xml-to-json")
+
 const useDocbaseGetPdf = ({baseApiUrl}) => {
     const [docbaseToken] = useAtom(docbaseTokenAtom);
     const [emailAddress] = useAtom(emailAtom);
@@ -51,7 +53,12 @@ const useDocbaseAuthenticate = () => {
     const [azureToken] = useAtom(accessTokenAtom);
     const [emailAddress] = useAtom(emailAtom);
 
-    const docbaseAuthenticate = async ({azureToken: inputAzureToken = undefined, username: inputUsername = undefined, environmentCode: inputEnvironmentCode = environmentCode, data}: any = {}) => {
+    const docbaseAuthenticate = async ({
+                                           azureToken: inputAzureToken = undefined,
+                                           username: inputUsername = undefined,
+                                           environmentCode: inputEnvironmentCode = environmentCode,
+                                           data
+                                       }: any = {}) => {
         console.log('docbaseAuthenticate: inputAzureToken, inputUsername, data', inputAzureToken, inputUsername, data);
 
         var myHeaders = new Headers();
@@ -93,12 +100,84 @@ const useDocbaseAuthenticate = () => {
         docbaseAuthenticate,
     }
 }
+const useDocbasePost = () => {
+    const [docbaseToken, setDocbaseToken] = useAtom(docbaseTokenAtom);
+    const [environmentCode, setEnvironmentCode] = useAtom(environmentCodeAtom);
+    const [azureToken] = useAtom(accessTokenAtom);
+    const [emailAddress] = useAtom(emailAtom);
+
+    const docbasePost = async ({
+                                   jsonResponse = false,
+                                   endpoint,
+                                   azureToken: inputAzureToken = undefined,
+                                   username: inputUsername = undefined,
+                                   environmentCode: inputEnvironmentCode = environmentCode,
+                                   data
+                               }: any = {}) => {
+        console.log('docbasePost: inputAzureToken, inputUsername, data', inputAzureToken, inputUsername, data);
+
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+        const urlencoded = new URLSearchParams();
+        urlencoded.append("username", inputUsername ?? emailAddress);
+        urlencoded.append("password", "123hjkqwecvb");
+        urlencoded.append("version", "wvsa-hybrid-0.10");
+        urlencoded.append("token", docbaseToken);
+        urlencoded.append("data", data);
+
+        const requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: urlencoded,
+            redirect: 'follow'
+        };
+
+        const baseApiUrl = getBaseApiUrl(inputEnvironmentCode ?? environmentCode);
+        const res = await fetch(baseApiUrl + "/MobileApi/MobileApi.asmx/" + endpoint, requestOptions)
+        if (!res.ok) {
+            const message = `Error in docbasePost for endpoint ${endpoint}: ${res.statusText}`;
+            console.error(message);
+            throw new Error(message);
+        }
+        const response = await res.text();
+        if (jsonResponse) {
+            return convertXML(response);
+        }
+        return response;
+    }
+
+    return {
+        docbasePost,
+    }
+}
+
+const useDocbaseMetadata = () => {
+    const {docbasePost} = useDocbasePost();
+    const getDeclarationMetadata = async () => {
+        const res = await docbasePost({
+            endpoint: 'GetDeclarationMetadata',
+            jsonResponse: true,
+        });
+        const response = res?.DeclarationMetadata?.children;
+        const parsedResponse = {
+            categories: response?.[0]?.Categories?.children,
+            additionalFields: response?.[1]?.AdditionalFields?.children,
+            documentList: response?.[2]?.DocumentList?.children,
+        }
+        console.log('getDeclarationMetadata result', parsedResponse);
+        return parsedResponse;
+    }
+    return {
+        getDeclarationMetadata,
+    }
+}
 
 const useDocbase = () => {
     const [environmentCode] = useAtom(environmentCodeAtom);
     const baseApiUrl = getBaseApiUrl(environmentCode);
     const {docbaseAuthenticate}: any = useDocbaseAuthenticate();
     const {getDocbasePdf} = useDocbaseGetPdf({baseApiUrl});
+    const {getDeclarationMetadata} = useDocbaseMetadata();
 
     const switchEnvironment = async (environmentCode) => {
         if (!environmentCode) return;
@@ -109,6 +188,7 @@ const useDocbase = () => {
     }
 
     return {
+        getDeclarationMetadata,
         switchEnvironment,
         docbaseAuthenticate,
         getDocbasePdf,
@@ -116,7 +196,7 @@ const useDocbase = () => {
 }
 export default useDocbase;
 
-const getBaseApiUrl = (environmentCode) => {
+const getBaseApiUrl = (environmentCode: string) => {
     switch (environmentCode) {
         case 'dev':
             return `https://devweb.docbaseweb.nl`;
