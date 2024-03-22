@@ -16,7 +16,7 @@ const useDocbaseGetPdf = ({baseApiUrl}) => {
             urlencoded.append("password", "123hjkqwecvb");
             urlencoded.append("version", "wvsa-hybrid-0.10");
 
-            var requestOptions = {
+            var requestOptions: any = {
                 method: 'POST',
                 headers: myHeaders,
                 body: urlencoded,

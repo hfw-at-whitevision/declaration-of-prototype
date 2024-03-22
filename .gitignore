@@ -37,6 +37,4 @@ next-env.d.ts
 .sentryclirc
 
 # custom
-/android
-/ios
 /out
